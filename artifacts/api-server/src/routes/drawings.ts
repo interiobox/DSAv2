@@ -19,10 +19,20 @@ import {
   ListDrawingCommentsResponse,
   CreateDrawingCommentBody,
   CreateDrawingCommentResponse,
+  UpdateDrawingUploadParams,
+  UpdateDrawingUploadBody,
+  UpdateDrawingUploadResponse,
+  DeleteDrawingUploadParams,
+  UpdateDrawingCommentParams,
+  UpdateDrawingCommentBody,
+  UpdateDrawingCommentResponse,
+  DeleteDrawingCommentParams,
 } from "@workspace/api-zod";
 import { addActivity, getIdParam, listDrawingRows, toDateString } from "../lib/drawings";
+import { ObjectStorageService } from "../lib/objectStorage";
 
 const router: IRouter = Router();
+const objectStorageService = new ObjectStorageService();
 
 router.get("/drawings", async (req, res): Promise<void> => {
   const parsed = ListDrawingsQueryParams.safeParse(req.query);
@@ -122,11 +132,18 @@ router.delete("/drawings/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [drawing] = await db.delete(drawingsTable).where(eq(drawingsTable.id, parsed.data.id)).returning();
+  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, parsed.data.id));
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
   }
+  const uploads = await db.select().from(drawingUploadsTable).where(eq(drawingUploadsTable.drawingId, drawing.id));
+  for (const upload of uploads) {
+    await objectStorageService.deleteObjectEntity(upload.filePath);
+  }
+  await db.delete(drawingCommentsTable).where(eq(drawingCommentsTable.drawingId, drawing.id));
+  await db.delete(drawingUploadsTable).where(eq(drawingUploadsTable.drawingId, drawing.id));
+  await db.delete(drawingsTable).where(eq(drawingsTable.id, drawing.id));
   res.sendStatus(204);
 });
 
@@ -183,6 +200,68 @@ router.post("/drawings/:id/uploads", async (req, res): Promise<void> => {
   res.status(201).json(RecordDrawingUploadResponse.parse(upload));
 });
 
+router.patch("/drawings/:id/uploads/:uploadId", async (req, res): Promise<void> => {
+  const params = UpdateDrawingUploadParams.safeParse(req.params);
+  const body = UpdateDrawingUploadBody.safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+  const [upload] = await db.select().from(drawingUploadsTable).where(eq(drawingUploadsTable.id, params.data.uploadId));
+  if (!upload || upload.drawingId !== params.data.id) {
+    res.status(404).json({ error: "Upload not found" });
+    return;
+  }
+  const [updated] = await db.update(drawingUploadsTable).set(body.data)
+    .where(eq(drawingUploadsTable.id, upload.id)).returning();
+  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, upload.drawingId));
+  if (drawing?.attachmentPath === upload.filePath) {
+    await db.update(drawingsTable).set({
+      attachmentName: updated.fileName,
+      attachmentSize: updated.fileSize,
+      attachmentContentType: updated.contentType,
+      updatedAt: new Date(),
+    }).where(eq(drawingsTable.id, upload.drawingId));
+  }
+  await addActivity("drawing_updated", `${updated.fileName} upload metadata was edited`, upload.drawingId);
+  res.json(UpdateDrawingUploadResponse.parse(updated));
+});
+
+router.delete("/drawings/:id/uploads/:uploadId", async (req, res): Promise<void> => {
+  const params = DeleteDrawingUploadParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const [upload] = await db.select().from(drawingUploadsTable).where(eq(drawingUploadsTable.id, params.data.uploadId));
+  if (!upload || upload.drawingId !== params.data.id) {
+    res.status(404).json({ error: "Upload not found" });
+    return;
+  }
+  await objectStorageService.deleteObjectEntity(upload.filePath);
+  await db.delete(drawingUploadsTable).where(eq(drawingUploadsTable.id, upload.id));
+  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, upload.drawingId));
+  if (drawing?.attachmentPath === upload.filePath) {
+    const [replacement] = await db.select().from(drawingUploadsTable)
+      .where(eq(drawingUploadsTable.drawingId, upload.drawingId))
+      .orderBy(desc(drawingUploadsTable.uploadedAt))
+      .limit(1);
+    await db.update(drawingsTable).set({
+      attachmentPath: replacement?.filePath ?? null,
+      attachmentName: replacement?.fileName ?? null,
+      attachmentSize: replacement?.fileSize ?? null,
+      attachmentContentType: replacement?.contentType ?? null,
+      updatedAt: new Date(),
+    }).where(eq(drawingsTable.id, upload.drawingId));
+  }
+  await addActivity("drawing_updated", `${upload.fileName} upload was deleted`, upload.drawingId);
+  res.sendStatus(204);
+});
+
 router.get("/drawings/:id/comments", async (req, res): Promise<void> => {
   const parsed = GetDrawingParams.safeParse(req.params);
   if (!parsed.success) {
@@ -222,6 +301,44 @@ router.post("/drawings/:id/comments", async (req, res): Promise<void> => {
   }).returning();
   await addActivity("comment_added", `${comment.author} commented on ${drawing.drawingNumber}`, drawing.id);
   res.status(201).json(CreateDrawingCommentResponse.parse(comment));
+});
+
+router.patch("/drawings/:id/comments/:commentId", async (req, res): Promise<void> => {
+  const params = UpdateDrawingCommentParams.safeParse(req.params);
+  const body = UpdateDrawingCommentBody.safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+  const [comment] = await db.select().from(drawingCommentsTable).where(eq(drawingCommentsTable.id, params.data.commentId));
+  if (!comment || comment.drawingId !== params.data.id) {
+    res.status(404).json({ error: "Comment not found" });
+    return;
+  }
+  const [updated] = await db.update(drawingCommentsTable).set(body.data)
+    .where(eq(drawingCommentsTable.id, comment.id)).returning();
+  await addActivity("drawing_updated", `${updated.author} edited a review comment`, comment.drawingId);
+  res.json(UpdateDrawingCommentResponse.parse(updated));
+});
+
+router.delete("/drawings/:id/comments/:commentId", async (req, res): Promise<void> => {
+  const params = DeleteDrawingCommentParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const [comment] = await db.select().from(drawingCommentsTable).where(eq(drawingCommentsTable.id, params.data.commentId));
+  if (!comment || comment.drawingId !== params.data.id) {
+    res.status(404).json({ error: "Comment not found" });
+    return;
+  }
+  await db.delete(drawingCommentsTable).where(eq(drawingCommentsTable.id, comment.id));
+  await addActivity("drawing_updated", `${comment.author}'s review comment was deleted`, comment.drawingId);
+  res.sendStatus(204);
 });
 
 export default router;

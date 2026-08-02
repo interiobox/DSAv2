@@ -157,6 +157,41 @@ paths:
                 $ref: "#/components/schemas/DrawingUpload"
         "404":
           description: Drawing not found
+  /drawings/{id}/uploads/{uploadId}:
+    patch:
+      operationId: updateDrawingUpload
+      tags: [drawings]
+      summary: Edit drawing upload metadata
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - $ref: "#/components/parameters/UploadId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrawingUploadUpdate"
+      responses:
+        "200":
+          description: Updated upload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrawingUpload"
+        "404":
+          description: Upload not found
+    delete:
+      operationId: deleteDrawingUpload
+      tags: [drawings]
+      summary: Delete a drawing upload and its stored file
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - $ref: "#/components/parameters/UploadId"
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Upload not found
   /drawings/{id}/comments:
     get:
       operationId: listDrawingComments
@@ -194,6 +229,41 @@ paths:
                 $ref: "#/components/schemas/DrawingComment"
         "404":
           description: Drawing not found
+  /drawings/{id}/comments/{commentId}:
+    patch:
+      operationId: updateDrawingComment
+      tags: [drawings]
+      summary: Edit a drawing review comment
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - $ref: "#/components/parameters/CommentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrawingCommentUpdate"
+      responses:
+        "200":
+          description: Updated comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrawingComment"
+        "404":
+          description: Comment not found
+    delete:
+      operationId: deleteDrawingComment
+      tags: [drawings]
+      summary: Delete a drawing review comment
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - $ref: "#/components/parameters/CommentId"
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Comment not found
   /dashboard:
     get:
       operationId: getDashboardSummary
@@ -268,6 +338,20 @@ components:
   parameters:
     Id:
       name: id
+      in: path
+      required: true
+      schema:
+        type: number
+        minimum: 1
+    UploadId:
+      name: uploadId
+      in: path
+      required: true
+      schema:
+        type: number
+        minimum: 1
+    CommentId:
+      name: commentId
       in: path
       required: true
       schema:
@@ -477,6 +561,21 @@ components:
           type: string
           minLength: 1
       required: [filePath, fileName, fileSize, contentType, uploadedBy]
+    DrawingUploadUpdate:
+      type: object
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+        fileSize:
+          type: number
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+        uploadedBy:
+          type: string
+          minLength: 1
     DrawingComment:
       type: object
       properties:
@@ -502,6 +601,15 @@ components:
           type: string
           minLength: 1
       required: [comment, author]
+    DrawingCommentUpdate:
+      type: object
+      properties:
+        comment:
+          type: string
+          minLength: 1
+        author:
+          type: string
+          minLength: 1
     UploadUrlRequest:
       type: object
       properties:

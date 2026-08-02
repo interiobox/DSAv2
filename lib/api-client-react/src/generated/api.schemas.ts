@@ -197,6 +197,17 @@ export interface DrawingUploadInput {
   uploadedBy: string;
 }
 
+export interface DrawingUploadUpdate {
+  /** @minLength 1 */
+  fileName?: string;
+  /** @minimum 1 */
+  fileSize?: number;
+  /** @minLength 1 */
+  contentType?: string;
+  /** @minLength 1 */
+  uploadedBy?: string;
+}
+
 export interface DrawingComment {
   id: number;
   drawingId: number;
@@ -210,6 +221,13 @@ export interface DrawingCommentInput {
   comment: string;
   /** @minLength 1 */
   author: string;
+}
+
+export interface DrawingCommentUpdate {
+  /** @minLength 1 */
+  comment?: string;
+  /** @minLength 1 */
+  author?: string;
 }
 
 export interface UploadUrlRequest {

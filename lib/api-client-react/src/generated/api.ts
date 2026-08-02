@@ -25,10 +25,12 @@ import type {
   Drawing,
   DrawingComment,
   DrawingCommentInput,
+  DrawingCommentUpdate,
   DrawingInput,
   DrawingUpdate,
   DrawingUpload,
   DrawingUploadInput,
+  DrawingUploadUpdate,
   ErrorEnvelope,
   HealthStatus,
   ListDrawingsParams,
@@ -664,6 +666,153 @@ export const useRecordDrawingUpload = <TError = ErrorType<void>,
       return useMutation(getRecordDrawingUploadMutationOptions(options));
     }
 
+export const getUpdateDrawingUploadUrl = (id: number,
+    uploadId: number,) => {
+
+
+
+
+  return `/api/drawings/${id}/uploads/${uploadId}`
+}
+
+/**
+ * @summary Edit drawing upload metadata
+ */
+export const updateDrawingUpload = async (id: number,
+    uploadId: number,
+    drawingUploadUpdate: DrawingUploadUpdate, options?: Parameters<typeof customFetch>[1]): Promise<DrawingUpload> => {
+
+  return customFetch<DrawingUpload>(getUpdateDrawingUploadUrl(id,uploadId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(drawingUploadUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateDrawingUploadMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDrawingUpload>>, TError,{id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDrawingUpload>>, TError,{id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>}, TContext> => {
+
+const mutationKey = ['updateDrawingUpload'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDrawingUpload>>, {id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>}> = (props) => {
+          const {id,uploadId,data} = props ?? {};
+
+          return  updateDrawingUpload(id,uploadId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDrawingUploadMutationResult = NonNullable<Awaited<ReturnType<typeof updateDrawingUpload>>>
+    export type UpdateDrawingUploadMutationBody = BodyType<DrawingUploadUpdate>
+    export type UpdateDrawingUploadMutationError = ErrorType<void>
+
+    /**
+ * @summary Edit drawing upload metadata
+ */
+export const useUpdateDrawingUpload = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDrawingUpload>>, TError,{id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDrawingUpload>>,
+        TError,
+        {id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateDrawingUploadMutationOptions(options));
+    }
+
+export const getDeleteDrawingUploadUrl = (id: number,
+    uploadId: number,) => {
+
+
+
+
+  return `/api/drawings/${id}/uploads/${uploadId}`
+}
+
+/**
+ * @summary Delete a drawing upload and its stored file
+ */
+export const deleteDrawingUpload = async (id: number,
+    uploadId: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteDrawingUploadUrl(id,uploadId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteDrawingUploadMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDrawingUpload>>, TError,{id: number;uploadId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDrawingUpload>>, TError,{id: number;uploadId: number}, TContext> => {
+
+const mutationKey = ['deleteDrawingUpload'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDrawingUpload>>, {id: number;uploadId: number}> = (props) => {
+          const {id,uploadId} = props ?? {};
+
+          return  deleteDrawingUpload(id,uploadId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDrawingUploadMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDrawingUpload>>>
+
+    export type DeleteDrawingUploadMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a drawing upload and its stored file
+ */
+export const useDeleteDrawingUpload = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDrawingUpload>>, TError,{id: number;uploadId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDrawingUpload>>,
+        TError,
+        {id: number;uploadId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteDrawingUploadMutationOptions(options));
+    }
+
 export const getListDrawingCommentsUrl = (id: number,) => {
 
 
@@ -811,6 +960,153 @@ export const useCreateDrawingComment = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getCreateDrawingCommentMutationOptions(options));
+    }
+
+export const getUpdateDrawingCommentUrl = (id: number,
+    commentId: number,) => {
+
+
+
+
+  return `/api/drawings/${id}/comments/${commentId}`
+}
+
+/**
+ * @summary Edit a drawing review comment
+ */
+export const updateDrawingComment = async (id: number,
+    commentId: number,
+    drawingCommentUpdate: DrawingCommentUpdate, options?: Parameters<typeof customFetch>[1]): Promise<DrawingComment> => {
+
+  return customFetch<DrawingComment>(getUpdateDrawingCommentUrl(id,commentId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(drawingCommentUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateDrawingCommentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDrawingComment>>, TError,{id: number;commentId: number;data: BodyType<DrawingCommentUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDrawingComment>>, TError,{id: number;commentId: number;data: BodyType<DrawingCommentUpdate>}, TContext> => {
+
+const mutationKey = ['updateDrawingComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDrawingComment>>, {id: number;commentId: number;data: BodyType<DrawingCommentUpdate>}> = (props) => {
+          const {id,commentId,data} = props ?? {};
+
+          return  updateDrawingComment(id,commentId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDrawingCommentMutationResult = NonNullable<Awaited<ReturnType<typeof updateDrawingComment>>>
+    export type UpdateDrawingCommentMutationBody = BodyType<DrawingCommentUpdate>
+    export type UpdateDrawingCommentMutationError = ErrorType<void>
+
+    /**
+ * @summary Edit a drawing review comment
+ */
+export const useUpdateDrawingComment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDrawingComment>>, TError,{id: number;commentId: number;data: BodyType<DrawingCommentUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDrawingComment>>,
+        TError,
+        {id: number;commentId: number;data: BodyType<DrawingCommentUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateDrawingCommentMutationOptions(options));
+    }
+
+export const getDeleteDrawingCommentUrl = (id: number,
+    commentId: number,) => {
+
+
+
+
+  return `/api/drawings/${id}/comments/${commentId}`
+}
+
+/**
+ * @summary Delete a drawing review comment
+ */
+export const deleteDrawingComment = async (id: number,
+    commentId: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteDrawingCommentUrl(id,commentId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteDrawingCommentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDrawingComment>>, TError,{id: number;commentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDrawingComment>>, TError,{id: number;commentId: number}, TContext> => {
+
+const mutationKey = ['deleteDrawingComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDrawingComment>>, {id: number;commentId: number}> = (props) => {
+          const {id,commentId} = props ?? {};
+
+          return  deleteDrawingComment(id,commentId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDrawingCommentMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDrawingComment>>>
+
+    export type DeleteDrawingCommentMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a drawing review comment
+ */
+export const useDeleteDrawingComment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDrawingComment>>, TError,{id: number;commentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDrawingComment>>,
+        TError,
+        {id: number;commentId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteDrawingCommentMutationOptions(options));
     }
 
 export const getGetDashboardSummaryUrl = () => {

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useRoute, Link, useLocation } from "wouter"
 import { useQueryClient } from "@tanstack/react-query"
-import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, User, FileText, Upload, Download, Loader2, History, MessageSquare } from "lucide-react"
+import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, User, FileText, Upload, Download, Loader2, History, MessageSquare, Pencil, MoreHorizontal } from "lucide-react"
 
 import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from "@workspace/api-client-react"
 import type { DrawingStatus } from "@workspace/api-client-react"
@@ -12,6 +12,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { formatDate } from "@/lib/utils"
 
@@ -32,6 +35,26 @@ type DrawingComment = {
   comment: string
   author: string
   createdAt: string
+}
+
+type DrawingForm = {
+  drawingNumber: string
+  title: string
+  discipline: string
+  status: string
+  revision: string
+  projectName: string
+  sheetSize: string
+  author: string
+  description: string
+  dueDate: string
+}
+
+type UploadForm = {
+  fileName: string
+  fileSize: string
+  contentType: string
+  uploadedBy: string
 }
 
 export default function DrawingDetail() {
@@ -56,6 +79,11 @@ export default function DrawingDetail() {
   const [reviewerName, setReviewerName] = React.useState(() => localStorage.getItem("drawing-reviewer-name") ?? "")
   const [commentText, setCommentText] = React.useState("")
   const [isSavingComment, setIsSavingComment] = React.useState(false)
+  const [isEditOpen, setIsEditOpen] = React.useState(false)
+  const [isSavingDrawing, setIsSavingDrawing] = React.useState(false)
+  const [drawingForm, setDrawingForm] = React.useState<DrawingForm | null>(null)
+  const [editingUpload, setEditingUpload] = React.useState<DrawingUpload | null>(null)
+  const [uploadForm, setUploadForm] = React.useState<UploadForm>({ fileName: "", fileSize: "", contentType: "", uploadedBy: "" })
 
   const loadUploads = React.useCallback(async () => {
     const response = await fetch(`/api/drawings/${id}/uploads`)
@@ -121,6 +149,51 @@ export default function DrawingDetail() {
         setLocation("/drawings")
       }
     })
+  }
+
+  const openDrawingEdit = () => {
+    setDrawingForm({
+      drawingNumber: drawing.drawingNumber,
+      title: drawing.title,
+      discipline: drawing.discipline,
+      status: drawing.status,
+      revision: drawing.revision,
+      projectName: drawing.projectName,
+      sheetSize: drawing.sheetSize,
+      author: drawing.author,
+      description: drawing.description ?? "",
+      dueDate: drawing.dueDate ?? "",
+    })
+    setIsEditOpen(true)
+  }
+
+  const handleDrawingSave = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!drawingForm) return
+    setIsSavingDrawing(true)
+    try {
+      const response = await fetch(`/api/drawings/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...drawingForm,
+          description: drawingForm.description || null,
+          dueDate: drawingForm.dueDate || null,
+        }),
+      })
+      if (!response.ok) throw new Error("The drawing could not be updated")
+      const updated = await response.json()
+      queryClient.setQueryData(getGetDrawingQueryKey(id), updated)
+      queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
+      queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() })
+      queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      setIsEditOpen(false)
+      toast({ title: "Drawing updated" })
+    } catch (error) {
+      toast({ title: "Update failed", description: error instanceof Error ? error.message : "The drawing could not be updated." })
+    } finally {
+      setIsSavingDrawing(false)
+    }
   }
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,6 +290,88 @@ export default function DrawingDetail() {
     }
   }
 
+  const openUploadEdit = (upload: DrawingUpload) => {
+    setEditingUpload(upload)
+    setUploadForm({
+      fileName: upload.fileName,
+      fileSize: String(upload.fileSize),
+      contentType: upload.contentType,
+      uploadedBy: upload.uploadedBy,
+    })
+  }
+
+  const handleUploadSave = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!editingUpload) return
+    try {
+      const response = await fetch(`/api/drawings/${id}/uploads/${editingUpload.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: uploadForm.fileName.trim(),
+          fileSize: Number(uploadForm.fileSize),
+          contentType: uploadForm.contentType.trim(),
+          uploadedBy: uploadForm.uploadedBy.trim(),
+        }),
+      })
+      if (!response.ok) throw new Error("The upload could not be updated")
+      await loadUploads()
+      queryClient.invalidateQueries({ queryKey: getGetDrawingQueryKey(id) })
+      queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      setEditingUpload(null)
+      toast({ title: "Upload updated" })
+    } catch (error) {
+      toast({ title: "Update failed", description: error instanceof Error ? error.message : "The upload could not be updated." })
+    }
+  }
+
+  const handleUploadDelete = async (upload: DrawingUpload) => {
+    if (!confirm(`Delete ${upload.fileName}? This also removes the stored file.`)) return
+    try {
+      const response = await fetch(`/api/drawings/${id}/uploads/${upload.id}`, { method: "DELETE" })
+      if (!response.ok) throw new Error("The upload could not be deleted")
+      await loadUploads()
+      queryClient.invalidateQueries({ queryKey: getGetDrawingQueryKey(id) })
+      queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      toast({ title: "Upload deleted" })
+    } catch (error) {
+      toast({ title: "Delete failed", description: error instanceof Error ? error.message : "The upload could not be deleted." })
+    }
+  }
+
+  const handleCommentEdit = async (item: DrawingComment) => {
+    const comment = window.prompt("Edit comment", item.comment)
+    if (comment === null || !comment.trim()) return
+    const author = window.prompt("Edit reviewer name", item.author)
+    if (author === null || !author.trim()) return
+    try {
+      const response = await fetch(`/api/drawings/${id}/comments/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comment: comment.trim(), author: author.trim() }),
+      })
+      if (!response.ok) throw new Error("The comment could not be updated")
+      await loadComments()
+      queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      toast({ title: "Comment updated" })
+    } catch (error) {
+      toast({ title: "Update failed", description: error instanceof Error ? error.message : "The comment could not be updated." })
+    }
+  }
+
+  const handleCommentDelete = async (item: DrawingComment) => {
+    if (!confirm("Delete this review comment?")) return
+    try {
+      const response = await fetch(`/api/drawings/${id}/comments/${item.id}`, { method: "DELETE" })
+      if (!response.ok) throw new Error("The comment could not be deleted")
+      await loadComments()
+      queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      toast({ title: "Comment deleted" })
+    } catch (error) {
+      toast({ title: "Delete failed", description: error instanceof Error ? error.message : "The comment could not be deleted." })
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col bg-background/50 h-full overflow-hidden">
       {/* Header */}
@@ -239,7 +394,10 @@ export default function DrawingDetail() {
           <p className="text-lg text-muted-foreground font-medium">{drawing.title}</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={openDrawingEdit}>
+            <Pencil className="mr-2 h-4 w-4" /> Edit
+          </Button>
           {drawing.status === 'draft' && (
             <Button variant="outline" size="sm" onClick={() => handleStatusChange('in_review')}>
               <Clock className="w-4 h-4 mr-2" /> Request Review
@@ -374,7 +532,25 @@ export default function DrawingDetail() {
                             Uploaded by <span className="font-medium text-foreground">{upload.uploadedBy}</span> · {formatDate(upload.uploadedAt)} · {(upload.fileSize / 1024 / 1024).toFixed(2)} MB
                           </p>
                         </div>
-                        <span className="shrink-0 font-mono text-xs text-muted-foreground">{upload.contentType}</span>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <span className="font-mono text-xs text-muted-foreground">{upload.contentType}</span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Upload actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openUploadEdit(upload)}>
+                                <Pencil className="mr-2 h-4 w-4" /> Edit details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => void handleUploadDelete(upload)}>
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete upload
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -420,8 +596,26 @@ export default function DrawingDetail() {
                     comments.map((item) => (
                       <div key={item.id} className="border-t pt-4">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="font-medium text-foreground">{item.author}</span>
-                          <span className="text-xs text-muted-foreground">{formatDate(item.createdAt)}</span>
+                          <div>
+                            <span className="font-medium text-foreground">{item.author}</span>
+                            <span className="ml-2 text-xs text-muted-foreground">{formatDate(item.createdAt)}</span>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Comment actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => void handleCommentEdit(item)}>
+                                <Pencil className="mr-2 h-4 w-4" /> Edit comment
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => void handleCommentDelete(item)}>
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete comment
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                         <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">{item.comment}</p>
                       </div>
@@ -475,6 +669,71 @@ export default function DrawingDetail() {
 
         </div>
       </div>
+
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit drawing</DialogTitle>
+            <DialogDescription>Update the drawing information used during review.</DialogDescription>
+          </DialogHeader>
+          {drawingForm && (
+            <form onSubmit={handleDrawingSave} className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Input value={drawingForm.drawingNumber} onChange={(e) => setDrawingForm({ ...drawingForm, drawingNumber: e.target.value })} placeholder="Drawing number" aria-label="Drawing number" required />
+                <Input value={drawingForm.revision} onChange={(e) => setDrawingForm({ ...drawingForm, revision: e.target.value })} placeholder="Revision" aria-label="Revision" required />
+              </div>
+              <Input value={drawingForm.title} onChange={(e) => setDrawingForm({ ...drawingForm, title: e.target.value })} placeholder="Title" aria-label="Title" required />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Select value={drawingForm.status} onValueChange={(status) => setDrawingForm({ ...drawingForm, status })}>
+                  <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+                  <SelectContent>{["draft", "in_review", "approved", "issued", "superseded"].map((status) => <SelectItem key={status} value={status} className="capitalize">{status.replace("_", " ")}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={drawingForm.discipline} onValueChange={(discipline) => setDrawingForm({ ...drawingForm, discipline })}>
+                  <SelectTrigger><SelectValue placeholder="Discipline" /></SelectTrigger>
+                  <SelectContent>{["architectural", "structural", "mechanical", "electrical", "plumbing", "landscape", "interiors"].map((discipline) => <SelectItem key={discipline} value={discipline} className="capitalize">{discipline}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Input value={drawingForm.projectName} onChange={(e) => setDrawingForm({ ...drawingForm, projectName: e.target.value })} placeholder="Project" aria-label="Project" required />
+                <Input value={drawingForm.author} onChange={(e) => setDrawingForm({ ...drawingForm, author: e.target.value })} placeholder="Author" aria-label="Author" required />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Select value={drawingForm.sheetSize} onValueChange={(sheetSize) => setDrawingForm({ ...drawingForm, sheetSize })}>
+                  <SelectTrigger><SelectValue placeholder="Sheet size" /></SelectTrigger>
+                  <SelectContent>{["A0", "A1", "A2", "A3", "A4"].map((size) => <SelectItem key={size} value={size}>{size}</SelectItem>)}</SelectContent>
+                </Select>
+                <Input type="date" value={drawingForm.dueDate} onChange={(e) => setDrawingForm({ ...drawingForm, dueDate: e.target.value })} aria-label="Due date" />
+              </div>
+              <Textarea value={drawingForm.description} onChange={(e) => setDrawingForm({ ...drawingForm, description: e.target.value })} placeholder="Description or notes" aria-label="Description or notes" rows={3} />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                <Button type="submit" disabled={isSavingDrawing}>{isSavingDrawing ? "Saving..." : "Save changes"}</Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editingUpload !== null} onOpenChange={(open) => !open && setEditingUpload(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit upload details</DialogTitle>
+            <DialogDescription>Change the label and uploader information without replacing the file.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUploadSave} className="space-y-4">
+            <Input value={uploadForm.fileName} onChange={(e) => setUploadForm({ ...uploadForm, fileName: e.target.value })} placeholder="File name" aria-label="File name" required />
+            <Input value={uploadForm.uploadedBy} onChange={(e) => setUploadForm({ ...uploadForm, uploadedBy: e.target.value })} placeholder="Uploaded by" aria-label="Uploaded by" required />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input type="number" min="1" value={uploadForm.fileSize} onChange={(e) => setUploadForm({ ...uploadForm, fileSize: e.target.value })} placeholder="Size in bytes" aria-label="File size" required />
+              <Input value={uploadForm.contentType} onChange={(e) => setUploadForm({ ...uploadForm, contentType: e.target.value })} placeholder="Content type" aria-label="Content type" required />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditingUpload(null)}>Cancel</Button>
+              <Button type="submit">Save changes</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

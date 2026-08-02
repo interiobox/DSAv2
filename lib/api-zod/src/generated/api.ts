@@ -257,6 +257,58 @@ export const RecordDrawingUploadResponse = zod.object({
 
 
 /**
+ * @summary Edit drawing upload metadata
+ */
+
+
+
+
+export const UpdateDrawingUploadParams = zod.object({
+  "id": zod.coerce.number().min(1),
+  "uploadId": zod.coerce.number().min(1)
+})
+
+
+
+
+
+
+
+export const UpdateDrawingUploadBody = zod.object({
+  "fileName": zod.string().min(1).optional(),
+  "fileSize": zod.number().min(1).optional(),
+  "contentType": zod.string().min(1).optional(),
+  "uploadedBy": zod.string().min(1).optional()
+})
+
+export const UpdateDrawingUploadResponse = zod.object({
+  "id": zod.number(),
+  "drawingId": zod.number(),
+  "filePath": zod.string(),
+  "fileName": zod.string(),
+  "fileSize": zod.number(),
+  "contentType": zod.string(),
+  "uploadedBy": zod.string(),
+  "uploadedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a drawing upload and its stored file
+ */
+
+
+
+
+export const DeleteDrawingUploadParams = zod.object({
+  "id": zod.coerce.number().min(1),
+  "uploadId": zod.coerce.number().min(1)
+})
+
+export const DeleteDrawingUploadResponse = zod.void()
+
+
+/**
  * @summary List review comments for a drawing
  */
 
@@ -302,6 +354,51 @@ export const CreateDrawingCommentResponse = zod.object({
   "author": zod.string(),
   "createdAt": zod.coerce.date()
 })
+
+
+/**
+ * @summary Edit a drawing review comment
+ */
+
+
+
+
+export const UpdateDrawingCommentParams = zod.object({
+  "id": zod.coerce.number().min(1),
+  "commentId": zod.coerce.number().min(1)
+})
+
+
+
+
+
+export const UpdateDrawingCommentBody = zod.object({
+  "comment": zod.string().min(1).optional(),
+  "author": zod.string().min(1).optional()
+})
+
+export const UpdateDrawingCommentResponse = zod.object({
+  "id": zod.number(),
+  "drawingId": zod.number(),
+  "comment": zod.string(),
+  "author": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a drawing review comment
+ */
+
+
+
+
+export const DeleteDrawingCommentParams = zod.object({
+  "id": zod.coerce.number().min(1),
+  "commentId": zod.coerce.number().min(1)
+})
+
+export const DeleteDrawingCommentResponse = zod.void()
 
 
 /**

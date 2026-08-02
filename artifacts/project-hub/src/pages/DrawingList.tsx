@@ -156,10 +156,9 @@ export default function DrawingList() {
             </div>
           ) : (
             drawings?.map((drawing) => (
-              <button
-                type="button"
+              <div
                 key={drawing.id}
-                className="w-full rounded-lg border bg-card p-4 text-left shadow-sm transition-colors active:bg-muted/50"
+                className="rounded-lg border bg-card p-4 text-left shadow-sm transition-colors active:bg-muted/50"
                 onClick={() => setLocation(`/drawings/${drawing.id}`)}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -167,13 +166,31 @@ export default function DrawingList() {
                     <p className="font-mono text-sm font-semibold text-primary">{drawing.drawingNumber}</p>
                     <h2 className="mt-1 truncate font-medium text-foreground">{drawing.title}</h2>
                   </div>
-                  <Badge variant={drawing.status} className="shrink-0 capitalize">{drawing.status.replace('_', ' ')}</Badge>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Badge variant={drawing.status} className="capitalize">{drawing.status.replace('_', ' ')}</Badge>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(event) => event.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Drawing actions</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={(event) => { event.stopPropagation(); setLocation(`/drawings/${drawing.id}`) }}>
+                          <Pencil className="mr-2 h-4 w-4" /> Edit drawing
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.drawingNumber) }}>
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete drawing
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
                 <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                   <span className="capitalize">{drawing.discipline} · Rev {drawing.revision}</span>
                   <span>{formatDateShort(drawing.updatedAt)}</span>
                 </div>
-              </button>
+              </div>
             ))
           )}
         </div>
@@ -238,7 +255,7 @@ export default function DrawingList() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-[160px]">
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/drawings/${drawing.id}`)}}>
-                            <ArrowRight className="mr-2 h-4 w-4" /> Open Details
+                            <Pencil className="mr-2 h-4 w-4" /> Edit drawing
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(drawing.id, drawing.drawingNumber)}} className="text-destructive focus:text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
