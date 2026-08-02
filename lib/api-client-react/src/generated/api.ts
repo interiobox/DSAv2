@@ -23,6 +23,8 @@ import type {
   Activity,
   DashboardSummary,
   Drawing,
+  DrawingComment,
+  DrawingCommentInput,
   DrawingInput,
   DrawingUpdate,
   DrawingUpload,
@@ -660,6 +662,155 @@ export const useRecordDrawingUpload = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getRecordDrawingUploadMutationOptions(options));
+    }
+
+export const getListDrawingCommentsUrl = (id: number,) => {
+
+
+
+
+  return `/api/drawings/${id}/comments`
+}
+
+/**
+ * @summary List review comments for a drawing
+ */
+export const listDrawingComments = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<DrawingComment[]> => {
+
+  return customFetch<DrawingComment[]>(getListDrawingCommentsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDrawingCommentsQueryKey = (id: number,) => {
+    return [
+    `/api/drawings/${id}/comments`
+    ] as const;
+    }
+
+
+export const getListDrawingCommentsQueryOptions = <TData = Awaited<ReturnType<typeof listDrawingComments>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDrawingComments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDrawingCommentsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDrawingComments>>> = ({ signal }) => listDrawingComments(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDrawingComments>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDrawingCommentsQueryResult = NonNullable<Awaited<ReturnType<typeof listDrawingComments>>>
+export type ListDrawingCommentsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List review comments for a drawing
+ */
+
+export function useListDrawingComments<TData = Awaited<ReturnType<typeof listDrawingComments>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDrawingComments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDrawingCommentsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateDrawingCommentUrl = (id: number,) => {
+
+
+
+
+  return `/api/drawings/${id}/comments`
+}
+
+/**
+ * @summary Leave a review comment on a drawing
+ */
+export const createDrawingComment = async (id: number,
+    drawingCommentInput: DrawingCommentInput, options?: Parameters<typeof customFetch>[1]): Promise<DrawingComment> => {
+
+  return customFetch<DrawingComment>(getCreateDrawingCommentUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(drawingCommentInput)
+  }
+);}
+
+
+
+
+
+export const getCreateDrawingCommentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDrawingComment>>, TError,{id: number;data: BodyType<DrawingCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createDrawingComment>>, TError,{id: number;data: BodyType<DrawingCommentInput>}, TContext> => {
+
+const mutationKey = ['createDrawingComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDrawingComment>>, {id: number;data: BodyType<DrawingCommentInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createDrawingComment(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDrawingCommentMutationResult = NonNullable<Awaited<ReturnType<typeof createDrawingComment>>>
+    export type CreateDrawingCommentMutationBody = BodyType<DrawingCommentInput>
+    export type CreateDrawingCommentMutationError = ErrorType<void>
+
+    /**
+ * @summary Leave a review comment on a drawing
+ */
+export const useCreateDrawingComment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDrawingComment>>, TError,{id: number;data: BodyType<DrawingCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createDrawingComment>>,
+        TError,
+        {id: number;data: BodyType<DrawingCommentInput>},
+        TContext
+      > => {
+      return useMutation(getCreateDrawingCommentMutationOptions(options));
     }
 
 export const getGetDashboardSummaryUrl = () => {

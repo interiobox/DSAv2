@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { asc, desc, eq } from "drizzle-orm";
-import { db, drawingActivityTable, drawingUploadsTable, drawingsTable } from "@workspace/db";
+import { db, drawingActivityTable, drawingCommentsTable, drawingUploadsTable, drawingsTable } from "@workspace/db";
 import {
   CreateDrawingBody,
   CreateDrawingResponse,
@@ -16,6 +16,9 @@ import {
   ListDrawingUploadsResponse,
   RecordDrawingUploadBody,
   RecordDrawingUploadResponse,
+  ListDrawingCommentsResponse,
+  CreateDrawingCommentBody,
+  CreateDrawingCommentResponse,
 } from "@workspace/api-zod";
 import { addActivity, getIdParam, listDrawingRows, toDateString } from "../lib/drawings";
 
@@ -178,6 +181,47 @@ router.post("/drawings/:id/uploads", async (req, res): Promise<void> => {
   }).where(eq(drawingsTable.id, drawing.id));
   await addActivity("drawing_uploaded", `${upload.fileName} uploaded by ${upload.uploadedBy}`, drawing.id);
   res.status(201).json(RecordDrawingUploadResponse.parse(upload));
+});
+
+router.get("/drawings/:id/comments", async (req, res): Promise<void> => {
+  const parsed = GetDrawingParams.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const [drawing] = await db.select({ id: drawingsTable.id }).from(drawingsTable).where(eq(drawingsTable.id, parsed.data.id));
+  if (!drawing) {
+    res.status(404).json({ error: "Drawing not found" });
+    return;
+  }
+  const comments = await db.select().from(drawingCommentsTable)
+    .where(eq(drawingCommentsTable.drawingId, parsed.data.id))
+    .orderBy(desc(drawingCommentsTable.createdAt));
+  res.json(ListDrawingCommentsResponse.parse(comments));
+});
+
+router.post("/drawings/:id/comments", async (req, res): Promise<void> => {
+  const params = GetDrawingParams.safeParse(req.params);
+  const body = CreateDrawingCommentBody.safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, params.data.id));
+  if (!drawing) {
+    res.status(404).json({ error: "Drawing not found" });
+    return;
+  }
+  const [comment] = await db.insert(drawingCommentsTable).values({
+    drawingId: drawing.id,
+    ...body.data,
+  }).returning();
+  await addActivity("comment_added", `${comment.author} commented on ${drawing.drawingNumber}`, drawing.id);
+  res.status(201).json(CreateDrawingCommentResponse.parse(comment));
 });
 
 export default router;

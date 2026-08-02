@@ -7,6 +7,8 @@ The product is centered on a searchable architectural drawing register rather th
 
 Drawing files are stored in object storage without sign-in; each drawing keeps an upload history recording the file, uploader-entered name, timestamp, size, and type.
 
+Reviewers use the register primarily on mobile and leave named comments directly under each drawing; comments are chronological review records, not private notes.
+
 **Why:** The user clarified the domain after the initial generic project-management direction, so future work should preserve the drawing-register vocabulary and workflow.
 
 **How to apply:** Extend drawing metadata and review/issue workflows before introducing unrelated project-management entities.

@@ -157,6 +157,43 @@ paths:
                 $ref: "#/components/schemas/DrawingUpload"
         "404":
           description: Drawing not found
+  /drawings/{id}/comments:
+    get:
+      operationId: listDrawingComments
+      tags: [drawings]
+      summary: List review comments for a drawing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Review comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DrawingComment"
+    post:
+      operationId: createDrawingComment
+      tags: [drawings]
+      summary: Leave a review comment on a drawing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrawingCommentInput"
+      responses:
+        "201":
+          description: Created review comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrawingComment"
+        "404":
+          description: Drawing not found
   /dashboard:
     get:
       operationId: getDashboardSummary
@@ -393,7 +430,7 @@ components:
           type: number
         type:
           type: string
-          enum: [drawing_added, drawing_updated, drawing_issued, drawing_approved, drawing_uploaded]
+          enum: [drawing_added, drawing_updated, drawing_issued, drawing_approved, drawing_uploaded, comment_added]
         message:
           type: string
         createdAt:
@@ -440,6 +477,31 @@ components:
           type: string
           minLength: 1
       required: [filePath, fileName, fileSize, contentType, uploadedBy]
+    DrawingComment:
+      type: object
+      properties:
+        id:
+          type: number
+        drawingId:
+          type: number
+        comment:
+          type: string
+        author:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, drawingId, comment, author, createdAt]
+    DrawingCommentInput:
+      type: object
+      properties:
+        comment:
+          type: string
+          minLength: 1
+        author:
+          type: string
+          minLength: 1
+      required: [comment, author]
     UploadUrlRequest:
       type: object
       properties:

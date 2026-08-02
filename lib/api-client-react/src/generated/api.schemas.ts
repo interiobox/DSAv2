@@ -163,6 +163,7 @@ export const ActivityType = {
   drawing_issued: 'drawing_issued',
   drawing_approved: 'drawing_approved',
   drawing_uploaded: 'drawing_uploaded',
+  comment_added: 'comment_added',
 } as const;
 
 export interface Activity {
@@ -194,6 +195,21 @@ export interface DrawingUploadInput {
   contentType: string;
   /** @minLength 1 */
   uploadedBy: string;
+}
+
+export interface DrawingComment {
+  id: number;
+  drawingId: number;
+  comment: string;
+  author: string;
+  createdAt: string;
+}
+
+export interface DrawingCommentInput {
+  /** @minLength 1 */
+  comment: string;
+  /** @minLength 1 */
+  author: string;
 }
 
 export interface UploadUrlRequest {

@@ -257,6 +257,54 @@ export const RecordDrawingUploadResponse = zod.object({
 
 
 /**
+ * @summary List review comments for a drawing
+ */
+
+
+
+export const ListDrawingCommentsParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const ListDrawingCommentsResponseItem = zod.object({
+  "id": zod.number(),
+  "drawingId": zod.number(),
+  "comment": zod.string(),
+  "author": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListDrawingCommentsResponse = zod.array(ListDrawingCommentsResponseItem)
+
+
+/**
+ * @summary Leave a review comment on a drawing
+ */
+
+
+
+export const CreateDrawingCommentParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+
+export const CreateDrawingCommentBody = zod.object({
+  "comment": zod.string().min(1),
+  "author": zod.string().min(1)
+})
+
+export const CreateDrawingCommentResponse = zod.object({
+  "id": zod.number(),
+  "drawingId": zod.number(),
+  "comment": zod.string(),
+  "author": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Get drawing dashboard summary
  */
 export const GetDashboardSummaryResponse = zod.object({
@@ -274,7 +322,7 @@ export const GetDashboardSummaryResponse = zod.object({
  */
 export const ListActivityResponseItem = zod.object({
   "id": zod.number(),
-  "type": zod.enum(['drawing_added', 'drawing_updated', 'drawing_issued', 'drawing_approved', 'drawing_uploaded']),
+  "type": zod.enum(['drawing_added', 'drawing_updated', 'drawing_issued', 'drawing_approved', 'drawing_uploaded', 'comment_added']),
   "message": zod.string(),
   "createdAt": zod.coerce.date()
 })

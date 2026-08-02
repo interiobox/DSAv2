@@ -97,7 +97,7 @@ export default function DrawingList() {
 
       {/* Toolbar */}
       <div className="flex-none p-4 border-b bg-background flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative flex-1 sm:max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Search numbers or titles..." 
@@ -108,7 +108,7 @@ export default function DrawingList() {
         </div>
         <div className="flex items-center gap-2">
           <Select value={disciplineFilter} onValueChange={(v: any) => setDisciplineFilter(v)}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full sm:w-[160px]">
               <SelectValue placeholder="Discipline" />
             </SelectTrigger>
             <SelectContent>
@@ -119,7 +119,7 @@ export default function DrawingList() {
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -138,8 +138,47 @@ export default function DrawingList() {
       </div>
 
       {/* Table Area */}
-      <div className="flex-1 overflow-auto p-4 bg-background/50">
-        <div className="border rounded-md bg-card shadow-sm">
+      <div className="flex-1 overflow-auto p-3 sm:p-4 bg-background/50">
+        <div className="space-y-3 md:hidden">
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-lg border bg-card p-4 shadow-sm">
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="mt-3 h-5 w-3/4" />
+                <Skeleton className="mt-4 h-4 w-1/2" />
+              </div>
+            ))
+          ) : drawings?.length === 0 ? (
+            <div className="rounded-lg border bg-card px-5 py-12 text-center text-muted-foreground">
+              <FileText className="mx-auto mb-2 h-8 w-8 opacity-50" />
+              <p>No drawings found.</p>
+              <p className="mt-1 text-xs">Try changing your search or filters.</p>
+            </div>
+          ) : (
+            drawings?.map((drawing) => (
+              <button
+                type="button"
+                key={drawing.id}
+                className="w-full rounded-lg border bg-card p-4 text-left shadow-sm transition-colors active:bg-muted/50"
+                onClick={() => setLocation(`/drawings/${drawing.id}`)}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-sm font-semibold text-primary">{drawing.drawingNumber}</p>
+                    <h2 className="mt-1 truncate font-medium text-foreground">{drawing.title}</h2>
+                  </div>
+                  <Badge variant={drawing.status} className="shrink-0 capitalize">{drawing.status.replace('_', ' ')}</Badge>
+                </div>
+                <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="capitalize">{drawing.discipline} · Rev {drawing.revision}</span>
+                  <span>{formatDateShort(drawing.updatedAt)}</span>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+
+        <div className="hidden border rounded-md bg-card shadow-sm md:block">
           <Table>
             <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur-md">
               <TableRow>

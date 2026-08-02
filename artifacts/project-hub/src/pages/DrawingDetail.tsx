@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useRoute, Link, useLocation } from "wouter"
 import { useQueryClient } from "@tanstack/react-query"
-import { ArrowLeft, Edit2, CheckCircle, Clock, Send, Archive, Trash2, Calendar, User, FileText, Upload, Download, Loader2, History } from "lucide-react"
+import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, User, FileText, Upload, Download, Loader2, History, MessageSquare } from "lucide-react"
 
 import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from "@workspace/api-client-react"
 import type { DrawingStatus } from "@workspace/api-client-react"
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { formatDate } from "@/lib/utils"
 
@@ -22,6 +24,14 @@ type DrawingUpload = {
   contentType: string
   uploadedBy: string
   uploadedAt: string
+}
+
+type DrawingComment = {
+  id: number
+  drawingId: number
+  comment: string
+  author: string
+  createdAt: string
 }
 
 export default function DrawingDetail() {
@@ -42,15 +52,27 @@ export default function DrawingDetail() {
   const deleteDrawing = useDeleteDrawing()
   const [isUploading, setIsUploading] = React.useState(false)
   const [uploads, setUploads] = React.useState<DrawingUpload[]>([])
+  const [comments, setComments] = React.useState<DrawingComment[]>([])
+  const [reviewerName, setReviewerName] = React.useState(() => localStorage.getItem("drawing-reviewer-name") ?? "")
+  const [commentText, setCommentText] = React.useState("")
+  const [isSavingComment, setIsSavingComment] = React.useState(false)
 
   const loadUploads = React.useCallback(async () => {
     const response = await fetch(`/api/drawings/${id}/uploads`)
     if (response.ok) setUploads(await response.json() as DrawingUpload[])
   }, [id])
 
+  const loadComments = React.useCallback(async () => {
+    const response = await fetch(`/api/drawings/${id}/comments`)
+    if (response.ok) setComments(await response.json() as DrawingComment[])
+  }, [id])
+
   React.useEffect(() => {
-    if (id > 0) void loadUploads()
-  }, [id, loadUploads])
+    if (id > 0) {
+      void loadUploads()
+      void loadComments()
+    }
+  }, [id, loadUploads, loadComments])
 
   if (isError) {
     return (
@@ -163,6 +185,38 @@ export default function DrawingDetail() {
     }
   }
 
+  const handleCommentSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const author = reviewerName.trim()
+    const comment = commentText.trim()
+    if (!author || !comment) return
+
+    setIsSavingComment(true)
+    try {
+      const response = await fetch(`/api/drawings/${id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author, comment }),
+      })
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}))
+        throw new Error(errorBody.error || "Unable to save the comment")
+      }
+      localStorage.setItem("drawing-reviewer-name", author)
+      setCommentText("")
+      await loadComments()
+      queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      toast({ title: "Comment added", description: "Your review note is now under this drawing." })
+    } catch (error) {
+      toast({
+        title: "Comment failed",
+        description: error instanceof Error ? error.message : "The comment could not be saved.",
+      })
+    } finally {
+      setIsSavingComment(false)
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col bg-background/50 h-full overflow-hidden">
       {/* Header */}
@@ -213,7 +267,7 @@ export default function DrawingDetail() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-4 sm:p-6">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Main Info */}
@@ -325,6 +379,55 @@ export default function DrawingDetail() {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                  <MessageSquare className="h-4 w-4" />
+                  Review comments
+                  {comments.length > 0 && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">{comments.length}</span>}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6">
+                <form onSubmit={handleCommentSubmit} className="space-y-3">
+                  <Input
+                    value={reviewerName}
+                    onChange={(event) => setReviewerName(event.target.value)}
+                    placeholder="Your name"
+                    aria-label="Your name"
+                    required
+                  />
+                  <Textarea
+                    value={commentText}
+                    onChange={(event) => setCommentText(event.target.value)}
+                    placeholder="Leave a review comment about this drawing..."
+                    aria-label="Review comment"
+                    rows={3}
+                    required
+                  />
+                  <Button type="submit" disabled={isSavingComment || !reviewerName.trim() || !commentText.trim()}>
+                    {isSavingComment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquare className="mr-2 h-4 w-4" />}
+                    {isSavingComment ? "Saving..." : "Add comment"}
+                  </Button>
+                </form>
+
+                <div className="mt-6 space-y-4">
+                  {comments.length === 0 ? (
+                    <p className="border-t pt-4 text-sm text-muted-foreground">No comments yet. Add the first review note.</p>
+                  ) : (
+                    comments.map((item) => (
+                      <div key={item.id} className="border-t pt-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="font-medium text-foreground">{item.author}</span>
+                          <span className="text-xs text-muted-foreground">{formatDate(item.createdAt)}</span>
+                        </div>
+                        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">{item.comment}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>

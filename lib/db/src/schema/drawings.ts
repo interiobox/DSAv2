@@ -57,6 +57,21 @@ export const insertDrawingUploadSchema = createInsertSchema(drawingUploadsTable)
 export type InsertDrawingUpload = z.infer<typeof insertDrawingUploadSchema>;
 export type DrawingUpload = typeof drawingUploadsTable.$inferSelect;
 
+export const drawingCommentsTable = pgTable("drawing_comments", {
+  id: serial("id").primaryKey(),
+  drawingId: integer("drawing_id").notNull(),
+  comment: text("comment").notNull(),
+  author: text("author").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const insertDrawingCommentSchema = createInsertSchema(drawingCommentsTable).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertDrawingComment = z.infer<typeof insertDrawingCommentSchema>;
+export type DrawingComment = typeof drawingCommentsTable.$inferSelect;
+
 export const insertDrawingActivitySchema = createInsertSchema(drawingActivityTable).omit({
   id: true,
   createdAt: true,
