@@ -8,6 +8,7 @@ import { AppLayout } from '@/layouts/AppLayout';
 import DrawingList from '@/pages/DrawingList';
 import DrawingDetail from '@/pages/DrawingDetail';
 import Assignments from '@/pages/Assignments';
+import UsersPage from '@/pages/Users';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +29,7 @@ function Router() {
             <Route path="/drawings" component={DrawingList} />
             <Route path="/drawings/:id" component={DrawingDetail} />
             <Route path="/assignments" component={Assignments} />
+            <Route path="/users" component={UsersPage} />
             <Route component={NotFound} />
           </Switch>
         </AppLayout>

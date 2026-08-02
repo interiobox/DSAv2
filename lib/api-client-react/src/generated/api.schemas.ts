@@ -20,6 +20,17 @@ export interface ProjectInput {
   name: string;
 }
 
+export interface User {
+  id: number;
+  name: string;
+  createdAt: string;
+}
+
+export interface UserInput {
+  /** @minLength 1 */
+  name: string;
+}
+
 export type DrawingStatus = typeof DrawingStatus[keyof typeof DrawingStatus];
 
 

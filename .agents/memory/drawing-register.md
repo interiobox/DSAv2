@@ -19,8 +19,8 @@ Projects are persisted as their own selectable records, and drawing creation/edi
 
 **How to apply:** Extend drawing metadata and review/issue workflows before introducing unrelated project-management entities.
 
-Assignments are shared, anonymous named records rather than account-based permissions: anyone can claim a drawing for their entered name or assign it to another entered name. The Assignments view groups drawings by assignee and derives visible progress from the existing drawing status workflow.
+Assignments are shared directory-based records rather than account-based permissions: users are added to a persisted team directory, then selected when claiming or assigning drawings. The Assignments view groups drawings by assignee and derives visible progress from the existing drawing status workflow.
 
-**Why:** The app intentionally removed authentication, but the team still needs shared ownership and progress visibility without introducing accounts.
+**Why:** The app intentionally removed authentication, but the team still needs a consistent shared roster, ownership, and progress visibility without introducing accounts.
 
-**How to apply:** Preserve the self-entered name flow unless authentication is explicitly requested; keep status as the single source of truth for assignment-board progress.
+**How to apply:** Preserve the directory picker flow unless authentication is explicitly requested; keep status as the single source of truth for assignment-board progress.

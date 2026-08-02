@@ -125,6 +125,34 @@ export const CreateProjectResponse = zod.object({
 
 
 /**
+ * @summary List team users
+ */
+export const ListUsersResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListUsersResponse = zod.array(ListUsersResponseItem)
+
+
+/**
+ * @summary Add a team user
+ */
+
+
+
+export const CreateUserBody = zod.object({
+  "name": zod.string().min(1)
+})
+
+export const CreateUserResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Get a drawing
  */
 

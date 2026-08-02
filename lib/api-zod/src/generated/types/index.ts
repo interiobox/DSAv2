@@ -32,3 +32,5 @@ export * from './project';
 export * from './projectInput';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';
+export * from './user';
+export * from './userInput';
