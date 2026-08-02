@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
+import { useUser } from "@clerk/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { CheckCircle2, Circle, Clock3, FileText, Loader2, UserRound, UserRoundPlus, Users, X } from "lucide-react"
 
@@ -40,7 +41,8 @@ export default function Assignments() {
   const { data: drawings, isLoading } = useListDrawings()
   const { data: users, isLoading: usersLoading } = useListUsers()
   const updateAssignment = useUpdateDrawingAssignment()
-  const [yourName, setYourName] = React.useState(() => localStorage.getItem("drawing-assignee-name") ?? "")
+  const { user } = useUser()
+  const yourName = user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress || ""
   const [assigneeDrafts, setAssigneeDrafts] = React.useState<Record<number, string>>({})
   const [personFilter, setPersonFilter] = React.useState("all")
   const [projectFilter, setProjectFilter] = React.useState("all")
@@ -58,8 +60,8 @@ export default function Assignments() {
     const existingAssignmentNames = (drawings ?? [])
       .map((drawing) => drawing.assignedTo)
       .filter((name): name is string => Boolean(name))
-    return Array.from(new Set([...userNames, ...existingAssignmentNames])).sort((a, b) => a.localeCompare(b))
-  }, [drawings, userNames])
+    return Array.from(new Set([yourName, ...userNames, ...existingAssignmentNames].filter(Boolean))).sort((a, b) => a.localeCompare(b))
+  }, [drawings, userNames, yourName])
   const visibleDrawings = React.useMemo(
     () => (drawings ?? []).filter((drawing) => {
       const matchesPerson = personFilter === "all"
@@ -85,18 +87,6 @@ export default function Assignments() {
   const assignedCount = (drawings ?? []).filter((drawing) => drawing.assignedTo).length
   const completeCount = (drawings ?? []).filter((drawing) => drawing.status === "issued" || drawing.status === "superseded").length
   const overallProgress = drawings?.length ? Math.round((drawings.reduce((total, drawing) => total + progressForStatus(drawing.status), 0) / drawings.length)) : 0
-
-  React.useEffect(() => {
-    if (users && yourName && !userNames.includes(yourName)) {
-      setYourName("")
-      localStorage.removeItem("drawing-assignee-name")
-    }
-  }, [users, userNames, yourName])
-
-  function saveYourName(value: string) {
-    setYourName(value)
-    if (value.trim()) localStorage.setItem("drawing-assignee-name", value.trim())
-  }
 
   function assignDrawing(id: number, assigneeName: string | null) {
     const assignedBy = yourName.trim()
@@ -133,24 +123,10 @@ export default function Assignments() {
           </div>
           <div className="w-full max-w-sm">
             <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Your name</label>
-            {usersLoading ? (
-              <Skeleton className="h-10 w-full" />
-            ) : users?.length ? (
-              <Select value={yourName || undefined} onValueChange={saveYourName}>
-                <SelectTrigger aria-label="Your name">
-                  <UserRound className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <SelectValue placeholder="Select your name" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => <SelectItem key={user.id} value={user.name}>{user.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            ) : (
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground">Add users before assigning drawings.</p>
-                <Button asChild size="sm" variant="outline"><Link href="/users">Add users</Link></Button>
-              </div>
-            )}
+            <div className="flex h-10 items-center gap-2 rounded-md border bg-muted/30 px-3 text-sm text-foreground">
+              <UserRound className="h-4 w-4 text-muted-foreground" />
+              <span className="truncate">{yourName || "Loading your profile..."}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -278,15 +254,15 @@ export default function Assignments() {
                                       {assignmentOptions.map((name) => <SelectItem key={name} value={name}>{name}</SelectItem>)}
                                     </SelectContent>
                                   </Select>
-                                  <Button size="sm" variant="outline" disabled={isSaving || !yourName.trim() || !draftAssignee.trim()} onClick={() => assignDrawing(drawing.id, draftAssignee)}>
+                                  <Button size="sm" variant="outline" disabled={isSaving || !yourName || !draftAssignee.trim()} onClick={() => assignDrawing(drawing.id, draftAssignee)}>
                                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserRoundPlus className="mr-2 h-4 w-4" />}
                                     Assign
                                   </Button>
-                                  <Button size="sm" variant="outline" disabled={isSaving || !yourName.trim()} onClick={() => assignDrawing(drawing.id, yourName)}>
+                                  <Button size="sm" variant="outline" disabled={isSaving || !yourName} onClick={() => assignDrawing(drawing.id, yourName)}>
                                     <UserRound className="mr-2 h-4 w-4" /> Claim
                                   </Button>
                                   {drawing.assignedTo && (
-                                    <Button size="icon" variant="ghost" disabled={isSaving || !yourName.trim()} onClick={() => assignDrawing(drawing.id, null)} title="Unassign drawing">
+                                    <Button size="icon" variant="ghost" disabled={isSaving || !yourName} onClick={() => assignDrawing(drawing.id, null)} title="Unassign drawing">
                                       <X className="h-4 w-4" />
                                     </Button>
                                   )}

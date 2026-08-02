@@ -11,5 +11,9 @@ export interface Activity {
   id: number;
   type: ActivityType;
   message: string;
+  /** @nullable */
+  drawingId: number | null;
+  /** @nullable */
+  actor: string | null;
   createdAt: Date;
 }

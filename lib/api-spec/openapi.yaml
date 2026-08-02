@@ -653,13 +653,17 @@ components:
           type: number
         type:
           type: string
-          enum: [drawing_added, drawing_updated, drawing_issued, drawing_approved, drawing_uploaded, comment_added]
+          enum: [drawing_added, drawing_updated, drawing_issued, drawing_approved, drawing_uploaded, drawing_assigned, comment_added]
         message:
           type: string
+        drawingId:
+          type: ["number", "null"]
+        actor:
+          type: ["string", "null"]
         createdAt:
           type: string
           format: date-time
-      required: [id, type, message, createdAt]
+      required: [id, type, message, drawingId, actor, createdAt]
     DrawingUpload:
       type: object
       properties:

@@ -194,6 +194,7 @@ export const ActivityType = {
   drawing_issued: 'drawing_issued',
   drawing_approved: 'drawing_approved',
   drawing_uploaded: 'drawing_uploaded',
+  drawing_assigned: 'drawing_assigned',
   comment_added: 'comment_added',
 } as const;
 
@@ -201,6 +202,10 @@ export interface Activity {
   id: number;
   type: ActivityType;
   message: string;
+  /** @nullable */
+  drawingId: number | null;
+  /** @nullable */
+  actor: string | null;
   createdAt: string;
 }
 

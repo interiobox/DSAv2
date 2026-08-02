@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useRoute, Link, useLocation } from "wouter"
+import { useUser } from "@clerk/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, FileText, Upload, Download, Loader2, History, MessageSquare, Pencil, MoreHorizontal, FolderKanban } from "lucide-react"
 
@@ -73,7 +74,6 @@ export default function DrawingDetail() {
   const [isUploading, setIsUploading] = React.useState(false)
   const [uploads, setUploads] = React.useState<DrawingUpload[]>([])
   const [comments, setComments] = React.useState<DrawingComment[]>([])
-  const [reviewerName, setReviewerName] = React.useState(() => localStorage.getItem("drawing-reviewer-name") ?? "")
   const [commentText, setCommentText] = React.useState("")
   const [isSavingComment, setIsSavingComment] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
@@ -81,6 +81,8 @@ export default function DrawingDetail() {
   const [drawingForm, setDrawingForm] = React.useState<DrawingForm | null>(null)
   const [editingUpload, setEditingUpload] = React.useState<DrawingUpload | null>(null)
   const [uploadForm, setUploadForm] = React.useState<UploadForm>({ fileName: "", fileSize: "", contentType: "", uploadedBy: "" })
+  const { user } = useUser()
+  const currentUserName = user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress || ""
 
   const loadUploads = React.useCallback(async () => {
     const response = await fetch(`/api/drawings/${id}/uploads`)
@@ -189,8 +191,7 @@ export default function DrawingDetail() {
     const file = event.target.files?.[0]
     event.target.value = ""
     if (!file) return
-    const uploadedBy = window.prompt("Who is uploading this file?")
-    if (!uploadedBy?.trim()) return
+    if (!currentUserName) return
 
     setIsUploading(true)
     try {
@@ -227,7 +228,7 @@ export default function DrawingDetail() {
           fileName: file.name,
           fileSize: file.size,
           contentType: file.type || "application/octet-stream",
-          uploadedBy: uploadedBy.trim(),
+           uploadedBy: currentUserName,
         }),
       })
       if (!recordResponse.ok) throw new Error("The file uploaded but its history could not be recorded")
@@ -236,7 +237,7 @@ export default function DrawingDetail() {
       queryClient.invalidateQueries({ queryKey: getGetDrawingQueryKey(id) })
       queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
       queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
-      toast({ title: "Drawing file uploaded", description: `${file.name} recorded under ${uploadedBy.trim()}.` })
+       toast({ title: "Drawing file uploaded", description: `${file.name} recorded under ${currentUserName}.` })
     } catch (error) {
       toast({
         title: "Upload failed",
@@ -249,7 +250,7 @@ export default function DrawingDetail() {
 
   const handleCommentSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const author = reviewerName.trim()
+    const author = currentUserName
     const comment = commentText.trim()
     if (!author || !comment) return
 
@@ -264,7 +265,6 @@ export default function DrawingDetail() {
         const errorBody = await response.json().catch(() => ({}))
         throw new Error(errorBody.error || "Unable to save the comment")
       }
-      localStorage.setItem("drawing-reviewer-name", author)
       setCommentText("")
       await loadComments()
       queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
@@ -546,13 +546,8 @@ export default function DrawingDetail() {
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
                 <form onSubmit={handleCommentSubmit} className="space-y-3">
-                  <Input
-                    value={reviewerName}
-                    onChange={(event) => setReviewerName(event.target.value)}
-                    placeholder="Your name"
-                    aria-label="Your name"
-                    required
-                  />
+                   <Input value={currentUserName} placeholder="Your name" aria-label="Your name" readOnly required />
+                   <p className="text-xs text-muted-foreground">Commenting as <span className="font-medium text-foreground">{currentUserName}</span></p>
                   <Textarea
                     value={commentText}
                     onChange={(event) => setCommentText(event.target.value)}
@@ -561,7 +556,7 @@ export default function DrawingDetail() {
                     rows={3}
                     required
                   />
-                  <Button type="submit" disabled={isSavingComment || !reviewerName.trim() || !commentText.trim()}>
+                  <Button type="submit" disabled={isSavingComment || !currentUserName || !commentText.trim()}>
                     {isSavingComment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquare className="mr-2 h-4 w-4" />}
                     {isSavingComment ? "Saving..." : "Add comment"}
                   </Button>

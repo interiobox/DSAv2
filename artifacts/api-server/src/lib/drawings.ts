@@ -20,8 +20,9 @@ export async function addActivity(
   type: string,
   message: string,
   drawingId?: number,
+  actor?: string,
 ): Promise<void> {
-  await db.insert(drawingActivityTable).values({ type, message, drawingId });
+  await db.insert(drawingActivityTable).values({ type, message, drawingId, actor: actor ?? null });
 }
 
 export async function getDashboard() {

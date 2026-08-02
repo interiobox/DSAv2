@@ -50,6 +50,7 @@ export const drawingActivityTable = pgTable("drawing_activity", {
   type: text("type").notNull(),
   message: text("message").notNull(),
   drawingId: integer("drawing_id"),
+  actor: text("actor"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
