@@ -16,7 +16,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div>
             <h1 className="font-semibold text-sm tracking-tight text-sidebar-foreground">
-              Drawing Register
+               Drawing Library
             </h1>
              <p className="text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
                Drawing reviews
@@ -29,7 +29,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             location.startsWith("/drawings") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
           )}>
             <FileText className="w-4 h-4" />
-            <span>Register</span>
+             <span>Library</span>
           </Link>
         </nav>
       </aside>

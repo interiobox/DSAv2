@@ -27,6 +27,7 @@ import { formatDateShort } from "@/lib/utils"
 
 const disciplineOptions = ["architectural", "structural", "mechanical", "electrical", "plumbing", "landscape", "interiors"] as const
 const statusOptions = ["draft", "in_review", "approved", "issued", "superseded"] as const
+const statusLabel = (status: string) => status === "superseded" ? "Archived" : status.replace("_", " ")
 export default function DrawingList() {
   const [, setLocation] = useLocation()
   const { toast } = useToast()
@@ -134,8 +135,8 @@ export default function DrawingList() {
       {/* Header */}
       <div className="flex-none px-6 py-5 border-b bg-card z-10 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Drawing Register</h1>
-          <p className="text-sm text-muted-foreground mt-1">Master index of all project drawings and sheets.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Drawing Library</h1>
+          <p className="text-sm text-muted-foreground mt-1">All project drawings in one place.</p>
         </div>
           <div className="flex flex-wrap items-center gap-2">
            <Button variant="outline" onClick={() => setIsProjectOpen(true)}>
@@ -189,9 +190,9 @@ export default function DrawingList() {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
+                 <SelectItem value="all">All Statuses</SelectItem>
                  {statusOptions.map(s => (
-                <SelectItem key={s} value={s} className="capitalize">{s.replace('_', ' ')}</SelectItem>
+                  <SelectItem key={s} value={s} className="capitalize">{statusLabel(s)}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -239,7 +240,7 @@ export default function DrawingList() {
                         <h3 className="truncate font-medium text-foreground">{drawing.title}</h3>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
-                        <Badge variant={drawing.status} className="capitalize">{drawing.status.replace('_', ' ')}</Badge>
+                        <Badge variant={drawing.status} className="capitalize">{statusLabel(drawing.status)}</Badge>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(event) => event.stopPropagation()}>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -317,7 +318,7 @@ export default function DrawingList() {
                     <TableCell className="font-medium">{drawing.title}</TableCell>
                     <TableCell className="capitalize text-muted-foreground text-sm">{drawing.discipline}</TableCell>
                     <TableCell>
-                      <Badge variant={drawing.status}>{drawing.status.replace('_', ' ')}</Badge>
+                      <Badge variant={drawing.status}>{statusLabel(drawing.status)}</Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                       {formatDateShort(drawing.updatedAt)}

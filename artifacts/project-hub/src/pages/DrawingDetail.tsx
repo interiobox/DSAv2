@@ -51,6 +51,8 @@ type UploadForm = {
   uploadedBy: string
 }
 
+const statusLabel = (status: string) => status === "superseded" ? "Archived" : status.replace("_", " ")
+
 export default function DrawingDetail() {
   const [, params] = useRoute("/drawings/:id")
   const id = params?.id ? parseInt(params.id, 10) : 0
@@ -102,7 +104,7 @@ export default function DrawingDetail() {
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <p className="text-destructive font-medium">Failed to load drawing.</p>
-          <Button variant="outline" onClick={() => setLocation("/drawings")}>Back to Register</Button>
+          <Button variant="outline" onClick={() => setLocation("/drawings")}>Back to Library</Button>
         </div>
       </div>
     )
@@ -130,7 +132,7 @@ export default function DrawingDetail() {
         queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
         queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() })
         queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
-        toast({ title: "Status updated", description: `Drawing is now ${status.replace('_', ' ')}` })
+        toast({ title: "Status updated", description: `Drawing is now ${statusLabel(status)}` })
       }
     })
   }
@@ -366,7 +368,7 @@ export default function DrawingDetail() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <Link href="/drawings" className="hover:text-foreground flex items-center gap-1 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Register
+              <ArrowLeft className="w-4 h-4" /> Library
             </Link>
             <span>/</span>
             <span>{drawing.title}</span>
@@ -375,7 +377,7 @@ export default function DrawingDetail() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {drawing.title}
             </h1>
-            <Badge variant={drawing.status} className="capitalize text-sm h-6 px-3">{drawing.status.replace('_', ' ')}</Badge>
+            <Badge variant={drawing.status} className="capitalize text-sm h-6 px-3">{statusLabel(drawing.status)}</Badge>
           </div>
           <p className="text-lg text-muted-foreground font-medium">{drawing.title}</p>
         </div>
@@ -401,7 +403,7 @@ export default function DrawingDetail() {
           )}
           {(drawing.status === 'issued' || drawing.status === 'approved') && (
             <Button variant="outline" size="sm" onClick={() => handleStatusChange('superseded')}>
-              <Archive className="w-4 h-4 mr-2" /> Supersede
+              <Archive className="w-4 h-4 mr-2" /> Archive
             </Button>
           )}
           <div className="w-px h-8 bg-border mx-1" />
@@ -440,7 +442,7 @@ export default function DrawingDetail() {
                   </div>
                   <div className="px-6 py-4">
                     <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Status</dt>
-                    <dd className="font-medium text-foreground capitalize">{drawing.status.replace("_", " ")}</dd>
+                    <dd className="font-medium text-foreground capitalize">{statusLabel(drawing.status)}</dd>
                   </div>
                 </dl>
               </CardContent>
@@ -654,7 +656,7 @@ export default function DrawingDetail() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Select value={drawingForm.status} onValueChange={(status) => setDrawingForm({ ...drawingForm, status })}>
                   <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-                  <SelectContent>{["draft", "in_review", "approved", "issued", "superseded"].map((status) => <SelectItem key={status} value={status} className="capitalize">{status.replace("_", " ")}</SelectItem>)}</SelectContent>
+                  <SelectContent>{["draft", "in_review", "approved", "issued", "superseded"].map((status) => <SelectItem key={status} value={status} className="capitalize">{statusLabel(status)}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={drawingForm.discipline} onValueChange={(discipline) => setDrawingForm({ ...drawingForm, discipline })}>
                   <SelectTrigger><SelectValue placeholder="Discipline" /></SelectTrigger>

@@ -11,7 +11,7 @@ tags:
   - name: health
     description: Health operations
   - name: drawings
-    description: Drawing register operations
+    description: Drawing library operations
   - name: projects
     description: Drawing project operations
   - name: dashboard
@@ -54,7 +54,7 @@ paths:
             $ref: "#/components/schemas/DrawingDiscipline"
       responses:
         "200":
-          description: Drawing register
+          description: Drawing library
           content:
             application/json:
               schema:

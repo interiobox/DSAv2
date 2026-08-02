@@ -64,7 +64,7 @@ router.post("/drawings", async (req, res): Promise<void> => {
     dueDate: toDateString(data.dueDate),
     issuedDate: toDateString(data.issuedDate),
   }).returning();
-  await addActivity("drawing_added", `${drawing.title} was added to the register`, drawing.id);
+  await addActivity("drawing_added", `${drawing.title} was added to the drawing library`, drawing.id);
   res.status(201).json(CreateDrawingResponse.parse(drawing));
 });
 
