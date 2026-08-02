@@ -1,7 +1,7 @@
 import * as React from "react"
 import {
   FileText, Plus, Search, Filter, MoreHorizontal, ArrowRight,
-  Pencil, Trash2, X
+  Pencil, Trash2, X, FolderKanban
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
 import { useQueryClient } from "@tanstack/react-query"
@@ -34,6 +34,7 @@ export default function DrawingList() {
   const [searchQuery, setSearchQuery] = React.useState("")
   const [disciplineFilter, setDisciplineFilter] = React.useState<DrawingDiscipline | "all">("all")
   const [statusFilter, setStatusFilter] = React.useState<DrawingStatus | "all">("all")
+  const [projectFilter, setProjectFilter] = React.useState("all")
   const { data: drawings, isLoading } = useListDrawings({
     search: searchQuery || undefined,
     discipline: disciplineFilter !== "all" ? disciplineFilter : undefined,
@@ -42,6 +43,23 @@ export default function DrawingList() {
 
   const createDrawing = useCreateDrawing()
   const deleteDrawing = useDeleteDrawing()
+  const projectOptions = React.useMemo(
+    () => Array.from(new Set((drawings ?? []).map((drawing) => drawing.projectName))).sort((a, b) => a.localeCompare(b)),
+    [drawings],
+  )
+  const visibleDrawings = React.useMemo(
+    () => (drawings ?? []).filter((drawing) => projectFilter === "all" || drawing.projectName === projectFilter),
+    [drawings, projectFilter],
+  )
+  const groupedDrawings = React.useMemo(() => {
+    const groups = new Map<string, NonNullable<typeof drawings>[number][]>()
+    for (const drawing of visibleDrawings) {
+      const projectDrawings = groups.get(drawing.projectName) ?? []
+      projectDrawings.push(drawing)
+      groups.set(drawing.projectName, projectDrawings)
+    }
+    return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b))
+  }, [visibleDrawings])
 
   function createBlankDrawing() {
     createDrawing.mutate(
@@ -106,7 +124,19 @@ export default function DrawingList() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Select value={projectFilter} onValueChange={setProjectFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <FolderKanban className="mr-2 h-4 w-4 text-muted-foreground" />
+              <SelectValue placeholder="Project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Projects</SelectItem>
+              {projectOptions.map((project) => (
+                <SelectItem key={project} value={project}>{project}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={disciplineFilter} onValueChange={(v: any) => setDisciplineFilter(v)}>
             <SelectTrigger className="w-full sm:w-[160px]">
               <SelectValue placeholder="Discipline" />
@@ -129,8 +159,8 @@ export default function DrawingList() {
               ))}
             </SelectContent>
           </Select>
-          {(searchQuery || disciplineFilter !== "all" || statusFilter !== "all") && (
-            <Button variant="ghost" size="icon" onClick={() => { setSearchQuery(""); setDisciplineFilter("all"); setStatusFilter("all"); }} title="Clear filters">
+          {(searchQuery || disciplineFilter !== "all" || statusFilter !== "all" || projectFilter !== "all") && (
+            <Button variant="ghost" size="icon" onClick={() => { setSearchQuery(""); setDisciplineFilter("all"); setStatusFilter("all"); setProjectFilter("all"); }} title="Clear filters">
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -139,7 +169,7 @@ export default function DrawingList() {
 
       {/* Table Area */}
       <div className="flex-1 overflow-auto p-3 sm:p-4 bg-background/50">
-        <div className="space-y-3 md:hidden">
+        <div className="space-y-4 md:hidden">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="rounded-lg border bg-card p-4 shadow-sm">
@@ -148,49 +178,58 @@ export default function DrawingList() {
                 <Skeleton className="mt-4 h-4 w-1/2" />
               </div>
             ))
-          ) : drawings?.length === 0 ? (
+          ) : visibleDrawings.length === 0 ? (
             <div className="rounded-lg border bg-card px-5 py-12 text-center text-muted-foreground">
               <FileText className="mx-auto mb-2 h-8 w-8 opacity-50" />
               <p>No drawings found.</p>
               <p className="mt-1 text-xs">Try changing your search or filters.</p>
             </div>
           ) : (
-            drawings?.map((drawing) => (
-              <div
-                key={drawing.id}
-                className="rounded-lg border bg-card p-4 text-left shadow-sm transition-colors active:bg-muted/50"
-                onClick={() => setLocation(`/drawings/${drawing.id}`)}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-mono text-sm font-semibold text-primary">{drawing.drawingNumber}</p>
-                    <h2 className="mt-1 truncate font-medium text-foreground">{drawing.title}</h2>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <Badge variant={drawing.status} className="capitalize">{drawing.status.replace('_', ' ')}</Badge>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(event) => event.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Drawing actions</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={(event) => { event.stopPropagation(); setLocation(`/drawings/${drawing.id}`) }}>
-                          <Pencil className="mr-2 h-4 w-4" /> Edit drawing
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.drawingNumber) }}>
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete drawing
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+            groupedDrawings.map(([project, projectDrawings]) => (
+              <section key={project} className="space-y-2">
+                <div className="flex items-center gap-2 px-1">
+                  <FolderKanban className="h-4 w-4 text-primary" />
+                  <h2 className="font-semibold text-foreground">{project}</h2>
+                  <span className="text-xs text-muted-foreground">{projectDrawings.length} drawing{projectDrawings.length === 1 ? "" : "s"}</span>
                 </div>
-                <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="capitalize">{drawing.discipline} · Rev {drawing.revision}</span>
-                  <span>{formatDateShort(drawing.updatedAt)}</span>
-                </div>
-              </div>
+                {projectDrawings.map((drawing) => (
+                  <div
+                    key={drawing.id}
+                    className="rounded-lg border bg-card p-4 text-left shadow-sm transition-colors active:bg-muted/50"
+                    onClick={() => setLocation(`/drawings/${drawing.id}`)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-mono text-sm font-semibold text-primary">{drawing.drawingNumber}</p>
+                        <h3 className="mt-1 truncate font-medium text-foreground">{drawing.title}</h3>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Badge variant={drawing.status} className="capitalize">{drawing.status.replace('_', ' ')}</Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(event) => event.stopPropagation()}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Drawing actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(event) => { event.stopPropagation(); setLocation(`/drawings/${drawing.id}`) }}>
+                              <Pencil className="mr-2 h-4 w-4" /> Edit drawing
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.drawingNumber) }}>
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete drawing
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="capitalize">{drawing.discipline} · Rev {drawing.revision}</span>
+                      <span>{formatDateShort(drawing.updatedAt)}</span>
+                    </div>
+                  </div>
+                ))}
+              </section>
             ))
           )}
         </div>
@@ -221,7 +260,7 @@ export default function DrawingList() {
                     <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                   </TableRow>
                 ))
-              ) : drawings?.length === 0 ? (
+              ) : visibleDrawings.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                     <div className="flex flex-col items-center justify-center">
@@ -232,7 +271,17 @@ export default function DrawingList() {
                   </TableCell>
                 </TableRow>
               ) : (
-                drawings?.map((drawing) => (
+                groupedDrawings.flatMap(([project, projectDrawings]) => [
+                  <TableRow key={`project-${project}`} className="bg-muted/30 hover:bg-muted/30">
+                    <TableCell colSpan={7} className="py-3">
+                      <div className="flex items-center gap-2 font-semibold text-foreground">
+                        <FolderKanban className="h-4 w-4 text-primary" />
+                        <span>{project}</span>
+                        <span className="text-xs font-normal text-muted-foreground">{projectDrawings.length} drawing{projectDrawings.length === 1 ? "" : "s"}</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>,
+                  ...projectDrawings.map((drawing) => (
                   <TableRow key={drawing.id} className="group cursor-pointer" onClick={() => setLocation(`/drawings/${drawing.id}`)}>
                     <TableCell className="font-mono font-medium text-foreground">{drawing.drawingNumber}</TableCell>
                     <TableCell className="font-medium">{drawing.title}</TableCell>
@@ -264,7 +313,8 @@ export default function DrawingList() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))
+                  )),
+                ])
               )}
             </TableBody>
           </Table>

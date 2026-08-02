@@ -11,6 +11,8 @@ Reviewers use the register primarily on mobile and leave named comments directly
 
 The product is intentionally single-purpose: the drawing register is the home screen, with drawing detail/review pages only; do not reintroduce dashboard or settings navigation unless explicitly requested.
 
+Drawings are organized by project in the register, with project headings, drawing counts, and a project filter; unassigned drawings remain grouped under “Unassigned.”
+
 **Why:** The user clarified the domain after the initial generic project-management direction, so future work should preserve the drawing-register vocabulary and workflow.
 
 **How to apply:** Extend drawing metadata and review/issue workflows before introducing unrelated project-management entities.
