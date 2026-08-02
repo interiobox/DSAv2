@@ -9,6 +9,8 @@ Drawing files are stored in object storage without sign-in; each drawing keeps a
 
 Reviewers use the register primarily on mobile and leave named comments directly under each drawing; comments are chronological review records, not private notes.
 
+The product is intentionally single-purpose: the drawing register is the home screen, with drawing detail/review pages only; do not reintroduce dashboard or settings navigation unless explicitly requested.
+
 **Why:** The user clarified the domain after the initial generic project-management direction, so future work should preserve the drawing-register vocabulary and workflow.
 
 **How to apply:** Extend drawing metadata and review/issue workflows before introducing unrelated project-management entities.

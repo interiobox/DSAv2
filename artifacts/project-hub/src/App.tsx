@@ -5,7 +5,6 @@ import NotFound from '@/pages/not-found';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 
 import { AppLayout } from '@/layouts/AppLayout';
-import Dashboard from '@/pages/Dashboard';
 import DrawingList from '@/pages/DrawingList';
 import DrawingDetail from '@/pages/DrawingDetail';
 
@@ -24,7 +23,7 @@ function Router() {
       <Route>
         <AppLayout>
           <Switch>
-            <Route path="/" component={Dashboard} />
+            <Route path="/" component={DrawingList} />
             <Route path="/drawings" component={DrawingList} />
             <Route path="/drawings/:id" component={DrawingDetail} />
             <Route component={NotFound} />

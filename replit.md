@@ -25,7 +25,7 @@ An architectural drawing management app for maintaining a searchable sheet regis
 - `lib/api-spec/openapi.yaml` — source of truth for the drawing register API
 - `lib/db/src/schema/drawings.ts` — PostgreSQL schema for drawings and activity
 - `artifacts/api-server/src/routes/drawings.ts` — drawing CRUD and activity routes
-- `artifacts/project-hub/src/pages/` — dashboard, register, and drawing detail screens
+- `artifacts/project-hub/src/pages/` — drawing register and drawing detail/review screens
 - `artifacts/project-hub/src/index.css` — blueprint-inspired visual theme
 
 ## Architecture decisions
@@ -36,9 +36,9 @@ An architectural drawing management app for maintaining a searchable sheet regis
 
 ## Product
 
-- Dashboard summary by drawing status and discipline
 - Searchable and filterable drawing register
 - Drawing detail view with revision metadata and review/issue workflow
+- Mobile-friendly review comments, uploads, and full edit/delete controls
 - Persistent PostgreSQL storage with recent activity feed
 
 ## User preferences
