@@ -14,4 +14,5 @@ export const ActivityType = {
   drawing_updated: 'drawing_updated',
   drawing_issued: 'drawing_issued',
   drawing_approved: 'drawing_approved',
+  drawing_uploaded: 'drawing_uploaded',
 } as const;

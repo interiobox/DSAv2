@@ -120,6 +120,43 @@ paths:
       responses:
         "204":
           description: Deleted
+  /drawings/{id}/uploads:
+    get:
+      operationId: listDrawingUploads
+      tags: [drawings]
+      summary: List upload history for a drawing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Upload history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DrawingUpload"
+    post:
+      operationId: recordDrawingUpload
+      tags: [drawings]
+      summary: Record a completed drawing file upload
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrawingUploadInput"
+      responses:
+        "201":
+          description: Recorded upload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrawingUpload"
+        "404":
+          description: Drawing not found
   /dashboard:
     get:
       operationId: getDashboardSummary
@@ -166,12 +203,6 @@ paths:
                 $ref: "#/components/schemas/UploadUrlResponse"
         "400":
           description: Invalid metadata
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorEnvelope"
-        "401":
-          description: Authentication required
           content:
             application/json:
               schema:
@@ -296,7 +327,6 @@ components:
         issuedDate:
           type: string
           format: date
-      required: [drawingNumber, title, discipline, revision, projectName, sheetSize, author]
     DrawingUpdate:
       type: object
       properties:
@@ -363,13 +393,53 @@ components:
           type: number
         type:
           type: string
-          enum: [drawing_added, drawing_updated, drawing_issued, drawing_approved]
+          enum: [drawing_added, drawing_updated, drawing_issued, drawing_approved, drawing_uploaded]
         message:
           type: string
         createdAt:
           type: string
           format: date-time
       required: [id, type, message, createdAt]
+    DrawingUpload:
+      type: object
+      properties:
+        id:
+          type: number
+        drawingId:
+          type: number
+        filePath:
+          type: string
+        fileName:
+          type: string
+        fileSize:
+          type: number
+        contentType:
+          type: string
+        uploadedBy:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
+      required: [id, drawingId, filePath, fileName, fileSize, contentType, uploadedBy, uploadedAt]
+    DrawingUploadInput:
+      type: object
+      properties:
+        filePath:
+          type: string
+          minLength: 1
+        fileName:
+          type: string
+          minLength: 1
+        fileSize:
+          type: number
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+        uploadedBy:
+          type: string
+          minLength: 1
+      required: [filePath, fileName, fileSize, contentType, uploadedBy]
     UploadUrlRequest:
       type: object
       properties:

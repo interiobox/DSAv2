@@ -1,12 +1,10 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { FileText, LayoutDashboard, Settings, Layers, LogIn, LogOut } from "lucide-react"
-import { Show, SignInButton, useClerk } from "@clerk/react"
+import { FileText, LayoutDashboard, Settings, Layers } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()
-  const { signOut } = useClerk()
 
   return (
     <div className="min-h-[100dvh] flex flex-col md:flex-row bg-background w-full">
@@ -46,20 +44,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Settings className="w-4 h-4" />
             <span>Settings</span>
           </div>
-          <Show when="signed-out">
-            <SignInButton mode="modal">
-              <button type="button" className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
-                <LogIn className="w-4 h-4" />
-                <span>Sign in to upload</span>
-              </button>
-            </SignInButton>
-          </Show>
-          <Show when="signed-in">
-            <button type="button" onClick={() => signOut({ redirectUrl: basePathOrRoot() })} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
-              <LogOut className="w-4 h-4" />
-              <span>Sign out</span>
-            </button>
-          </Show>
         </div>
       </aside>
 
@@ -71,6 +55,3 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   )
 }
 
-function basePathOrRoot() {
-  return import.meta.env.BASE_URL || "/"
-}

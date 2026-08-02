@@ -11,18 +11,18 @@ import type { DrawingStatus } from './drawingStatus';
 
 export interface DrawingInput {
   /** @minLength 1 */
-  drawingNumber: string;
+  drawingNumber?: string;
   /** @minLength 1 */
-  title: string;
-  discipline: DrawingDiscipline;
+  title?: string;
+  discipline?: DrawingDiscipline;
   status?: DrawingStatus;
   /** @minLength 1 */
-  revision: string;
+  revision?: string;
   /** @minLength 1 */
-  projectName: string;
-  sheetSize: DrawingInputSheetSize;
+  projectName?: string;
+  sheetSize?: DrawingInputSheetSize;
   /** @minLength 1 */
-  author: string;
+  author?: string;
   description?: string;
   dueDate?: Date;
   issuedDate?: Date;

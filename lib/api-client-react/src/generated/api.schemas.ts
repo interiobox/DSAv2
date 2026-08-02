@@ -85,18 +85,18 @@ export const DrawingInputSheetSize = {
 
 export interface DrawingInput {
   /** @minLength 1 */
-  drawingNumber: string;
+  drawingNumber?: string;
   /** @minLength 1 */
-  title: string;
-  discipline: DrawingDiscipline;
+  title?: string;
+  discipline?: DrawingDiscipline;
   status?: DrawingStatus;
   /** @minLength 1 */
-  revision: string;
+  revision?: string;
   /** @minLength 1 */
-  projectName: string;
-  sheetSize: DrawingInputSheetSize;
+  projectName?: string;
+  sheetSize?: DrawingInputSheetSize;
   /** @minLength 1 */
-  author: string;
+  author?: string;
   description?: string;
   dueDate?: string;
   issuedDate?: string;
@@ -162,6 +162,7 @@ export const ActivityType = {
   drawing_updated: 'drawing_updated',
   drawing_issued: 'drawing_issued',
   drawing_approved: 'drawing_approved',
+  drawing_uploaded: 'drawing_uploaded',
 } as const;
 
 export interface Activity {
@@ -169,6 +170,30 @@ export interface Activity {
   type: ActivityType;
   message: string;
   createdAt: string;
+}
+
+export interface DrawingUpload {
+  id: number;
+  drawingId: number;
+  filePath: string;
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
+export interface DrawingUploadInput {
+  /** @minLength 1 */
+  filePath: string;
+  /** @minLength 1 */
+  fileName: string;
+  /** @minimum 1 */
+  fileSize: number;
+  /** @minLength 1 */
+  contentType: string;
+  /** @minLength 1 */
+  uploadedBy: string;
 }
 
 export interface UploadUrlRequest {

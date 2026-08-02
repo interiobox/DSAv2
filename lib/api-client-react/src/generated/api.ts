@@ -25,6 +25,8 @@ import type {
   Drawing,
   DrawingInput,
   DrawingUpdate,
+  DrawingUpload,
+  DrawingUploadInput,
   ErrorEnvelope,
   HealthStatus,
   ListDrawingsParams,
@@ -509,6 +511,155 @@ export const useDeleteDrawing = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteDrawingMutationOptions(options));
+    }
+
+export const getListDrawingUploadsUrl = (id: number,) => {
+
+
+
+
+  return `/api/drawings/${id}/uploads`
+}
+
+/**
+ * @summary List upload history for a drawing
+ */
+export const listDrawingUploads = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<DrawingUpload[]> => {
+
+  return customFetch<DrawingUpload[]>(getListDrawingUploadsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDrawingUploadsQueryKey = (id: number,) => {
+    return [
+    `/api/drawings/${id}/uploads`
+    ] as const;
+    }
+
+
+export const getListDrawingUploadsQueryOptions = <TData = Awaited<ReturnType<typeof listDrawingUploads>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDrawingUploads>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDrawingUploadsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDrawingUploads>>> = ({ signal }) => listDrawingUploads(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDrawingUploads>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDrawingUploadsQueryResult = NonNullable<Awaited<ReturnType<typeof listDrawingUploads>>>
+export type ListDrawingUploadsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List upload history for a drawing
+ */
+
+export function useListDrawingUploads<TData = Awaited<ReturnType<typeof listDrawingUploads>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDrawingUploads>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDrawingUploadsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRecordDrawingUploadUrl = (id: number,) => {
+
+
+
+
+  return `/api/drawings/${id}/uploads`
+}
+
+/**
+ * @summary Record a completed drawing file upload
+ */
+export const recordDrawingUpload = async (id: number,
+    drawingUploadInput: DrawingUploadInput, options?: Parameters<typeof customFetch>[1]): Promise<DrawingUpload> => {
+
+  return customFetch<DrawingUpload>(getRecordDrawingUploadUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(drawingUploadInput)
+  }
+);}
+
+
+
+
+
+export const getRecordDrawingUploadMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordDrawingUpload>>, TError,{id: number;data: BodyType<DrawingUploadInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof recordDrawingUpload>>, TError,{id: number;data: BodyType<DrawingUploadInput>}, TContext> => {
+
+const mutationKey = ['recordDrawingUpload'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordDrawingUpload>>, {id: number;data: BodyType<DrawingUploadInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  recordDrawingUpload(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecordDrawingUploadMutationResult = NonNullable<Awaited<ReturnType<typeof recordDrawingUpload>>>
+    export type RecordDrawingUploadMutationBody = BodyType<DrawingUploadInput>
+    export type RecordDrawingUploadMutationError = ErrorType<void>
+
+    /**
+ * @summary Record a completed drawing file upload
+ */
+export const useRecordDrawingUpload = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordDrawingUpload>>, TError,{id: number;data: BodyType<DrawingUploadInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof recordDrawingUpload>>,
+        TError,
+        {id: number;data: BodyType<DrawingUploadInput>},
+        TContext
+      > => {
+      return useMutation(getRecordDrawingUploadMutationOptions(options));
     }
 
 export const getGetDashboardSummaryUrl = () => {

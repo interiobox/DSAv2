@@ -59,14 +59,14 @@ export const ListDrawingsResponse = zod.array(ListDrawingsResponseItem)
 
 
 export const CreateDrawingBody = zod.object({
-  "drawingNumber": zod.string().min(1),
-  "title": zod.string().min(1),
-  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
+  "drawingNumber": zod.string().min(1).optional(),
+  "title": zod.string().min(1).optional(),
+  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']).optional(),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']).optional(),
-  "revision": zod.string().min(1),
-  "projectName": zod.string().min(1),
-  "sheetSize": zod.enum(['A0', 'A1', 'A2', 'A3', 'A4']),
-  "author": zod.string().min(1),
+  "revision": zod.string().min(1).optional(),
+  "projectName": zod.string().min(1).optional(),
+  "sheetSize": zod.enum(['A0', 'A1', 'A2', 'A3', 'A4']).optional(),
+  "author": zod.string().min(1).optional(),
   "description": zod.string().optional(),
   "dueDate": zod.coerce.date().optional(),
   "issuedDate": zod.coerce.date().optional()
@@ -197,6 +197,66 @@ export const DeleteDrawingResponse = zod.void()
 
 
 /**
+ * @summary List upload history for a drawing
+ */
+
+
+
+export const ListDrawingUploadsParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const ListDrawingUploadsResponseItem = zod.object({
+  "id": zod.number(),
+  "drawingId": zod.number(),
+  "filePath": zod.string(),
+  "fileName": zod.string(),
+  "fileSize": zod.number(),
+  "contentType": zod.string(),
+  "uploadedBy": zod.string(),
+  "uploadedAt": zod.coerce.date()
+})
+export const ListDrawingUploadsResponse = zod.array(ListDrawingUploadsResponseItem)
+
+
+/**
+ * @summary Record a completed drawing file upload
+ */
+
+
+
+export const RecordDrawingUploadParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+
+
+
+
+export const RecordDrawingUploadBody = zod.object({
+  "filePath": zod.string().min(1),
+  "fileName": zod.string().min(1),
+  "fileSize": zod.number().min(1),
+  "contentType": zod.string().min(1),
+  "uploadedBy": zod.string().min(1)
+})
+
+export const RecordDrawingUploadResponse = zod.object({
+  "id": zod.number(),
+  "drawingId": zod.number(),
+  "filePath": zod.string(),
+  "fileName": zod.string(),
+  "fileSize": zod.number(),
+  "contentType": zod.string(),
+  "uploadedBy": zod.string(),
+  "uploadedAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Get drawing dashboard summary
  */
 export const GetDashboardSummaryResponse = zod.object({
@@ -214,7 +274,7 @@ export const GetDashboardSummaryResponse = zod.object({
  */
 export const ListActivityResponseItem = zod.object({
   "id": zod.number(),
-  "type": zod.enum(['drawing_added', 'drawing_updated', 'drawing_issued', 'drawing_approved']),
+  "type": zod.enum(['drawing_added', 'drawing_updated', 'drawing_issued', 'drawing_approved', 'drawing_uploaded']),
   "message": zod.string(),
   "createdAt": zod.coerce.date()
 })

@@ -18,6 +18,8 @@ export * from './drawingSheetSize';
 export * from './drawingStatus';
 export * from './drawingUpdate';
 export * from './drawingUpdateSheetSize';
+export * from './drawingUpload';
+export * from './drawingUploadInput';
 export * from './errorEnvelope';
 export * from './healthStatus';
 export * from './listDrawingsParams';

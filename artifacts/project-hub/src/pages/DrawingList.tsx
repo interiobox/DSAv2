@@ -4,23 +4,18 @@ import {
   Pencil, Trash2, X
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { useQueryClient } from "@tanstack/react-query"
 
 import {
   useListDrawings, useCreateDrawing, useDeleteDrawing,
   getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey
 } from "@workspace/api-client-react"
-import type { DrawingDiscipline, DrawingStatus, DrawingInputSheetSize, DrawingInput } from "@workspace/api-client-react"
+import type { DrawingDiscipline, DrawingStatus } from "@workspace/api-client-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -31,17 +26,6 @@ const disciplineOptions = ["architectural", "structural", "mechanical", "electri
 const statusOptions = ["draft", "in_review", "approved", "issued", "superseded"] as const
 const sheetSizeOptions = ["A0", "A1", "A2", "A3", "A4"] as const
 
-const drawingSchema = z.object({
-  drawingNumber: z.string().min(1, "Drawing number is required"),
-  title: z.string().min(1, "Title is required"),
-  discipline: z.enum(disciplineOptions),
-  revision: z.string().min(1, "Revision is required"),
-  projectName: z.string().min(1, "Project name is required"),
-  sheetSize: z.enum(sheetSizeOptions),
-  author: z.string().min(1, "Author is required"),
-  description: z.string().optional(),
-})
-
 export default function DrawingList() {
   const [, setLocation] = useLocation()
   const { toast } = useToast()
@@ -50,16 +34,6 @@ export default function DrawingList() {
   const [searchQuery, setSearchQuery] = React.useState("")
   const [disciplineFilter, setDisciplineFilter] = React.useState<DrawingDiscipline | "all">("all")
   const [statusFilter, setStatusFilter] = React.useState<DrawingStatus | "all">("all")
-  const [isCreateOpen, setIsCreateOpen] = React.useState(false)
-
-  // Use location search to initialize create modal if asked
-  React.useEffect(() => {
-    if (window.location.search.includes('create=true')) {
-      setIsCreateOpen(true)
-      window.history.replaceState({}, '', '/drawings')
-    }
-  }, [])
-
   const { data: drawings, isLoading } = useListDrawings({
     search: searchQuery || undefined,
     discipline: disciplineFilter !== "all" ? disciplineFilter : undefined,
@@ -69,34 +43,16 @@ export default function DrawingList() {
   const createDrawing = useCreateDrawing()
   const deleteDrawing = useDeleteDrawing()
 
-  const form = useForm<z.infer<typeof drawingSchema>>({
-    resolver: zodResolver(drawingSchema),
-    defaultValues: {
-      drawingNumber: "",
-      title: "",
-      discipline: "architectural",
-      revision: "00",
-      projectName: "Main Project",
-      sheetSize: "A1",
-      author: "",
-      description: "",
-    },
-  })
-
-  function onSubmit(values: z.infer<typeof drawingSchema>) {
+  function createBlankDrawing() {
     createDrawing.mutate(
-      { data: values satisfies DrawingInput },
+      { data: {} },
       {
         onSuccess: (newDrawing) => {
-          setIsCreateOpen(false)
-          form.reset()
           queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
           queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() })
           queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
-          toast({
-            title: "Drawing created",
-            description: `${newDrawing.drawingNumber} has been added to the register.`,
-          })
+          toast({ title: "Drawing created", description: "Add a file to start tracking this drawing." })
+          setLocation(`/drawings/${newDrawing.id}`)
         },
         onError: () => {
           toast({
@@ -131,10 +87,10 @@ export default function DrawingList() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Drawing Register</h1>
           <p className="text-sm text-muted-foreground mt-1">Master index of all project drawings and sheets.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button onClick={() => setIsCreateOpen(true)}>
+         <div className="flex items-center gap-3">
+          <Button onClick={createBlankDrawing} disabled={createDrawing.isPending}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Drawing
+            {createDrawing.isPending ? "Creating..." : "Create Drawing"}
           </Button>
         </div>
       </div>
@@ -259,148 +215,6 @@ export default function DrawingList() {
         </div>
       </div>
 
-      {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-2xl border-t-4 border-t-primary">
-          <DialogHeader>
-            <DialogTitle>Add New Drawing</DialogTitle>
-            <DialogDescription>
-              Create a new record in the drawing register.
-            </DialogDescription>
-          </DialogHeader>
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="drawingNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Drawing Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. A-101" className="font-mono uppercase" {...field} onChange={e => field.onChange(e.target.value.toUpperCase())} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="revision"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Initial Revision</FormLabel>
-                      <FormControl>
-                        <Input placeholder="00" className="font-mono" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sheet Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ground Floor Plan" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="discipline"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Discipline</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select discipline" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                           {disciplineOptions.map(d => (
-                            <SelectItem key={d} value={d} className="capitalize">{d}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="sheetSize"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sheet Size</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select size" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                           {sheetSizeOptions.map(s => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="author"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Author / Drafter</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Initials or Name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="projectName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project Context</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Main Project" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <DialogFooter className="pt-4 border-t">
-                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={createDrawing.isPending}>
-                  {createDrawing.isPending ? "Creating..." : "Create Drawing"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

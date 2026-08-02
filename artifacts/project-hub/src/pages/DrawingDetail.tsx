@@ -1,8 +1,7 @@
 import * as React from "react"
 import { useRoute, Link, useLocation } from "wouter"
 import { useQueryClient } from "@tanstack/react-query"
-import { Show, SignInButton } from "@clerk/react"
-import { ArrowLeft, Edit2, CheckCircle, Clock, Send, Archive, Trash2, Calendar, User, FileText, Upload, Download, Loader2 } from "lucide-react"
+import { ArrowLeft, Edit2, CheckCircle, Clock, Send, Archive, Trash2, Calendar, User, FileText, Upload, Download, Loader2, History } from "lucide-react"
 
 import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from "@workspace/api-client-react"
 import type { DrawingStatus } from "@workspace/api-client-react"
@@ -13,6 +12,17 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { formatDate } from "@/lib/utils"
+
+type DrawingUpload = {
+  id: number
+  drawingId: number
+  filePath: string
+  fileName: string
+  fileSize: number
+  contentType: string
+  uploadedBy: string
+  uploadedAt: string
+}
 
 export default function DrawingDetail() {
   const [, params] = useRoute("/drawings/:id")
@@ -31,6 +41,16 @@ export default function DrawingDetail() {
   const updateDrawing = useUpdateDrawing()
   const deleteDrawing = useDeleteDrawing()
   const [isUploading, setIsUploading] = React.useState(false)
+  const [uploads, setUploads] = React.useState<DrawingUpload[]>([])
+
+  const loadUploads = React.useCallback(async () => {
+    const response = await fetch(`/api/drawings/${id}/uploads`)
+    if (response.ok) setUploads(await response.json() as DrawingUpload[])
+  }, [id])
+
+  React.useEffect(() => {
+    if (id > 0) void loadUploads()
+  }, [id, loadUploads])
 
   if (isError) {
     return (
@@ -85,6 +105,8 @@ export default function DrawingDetail() {
     const file = event.target.files?.[0]
     event.target.value = ""
     if (!file) return
+    const uploadedBy = window.prompt("Who is uploading this file?")
+    if (!uploadedBy?.trim()) return
 
     setIsUploading(true)
     try {
@@ -113,23 +135,24 @@ export default function DrawingDetail() {
       })
       if (!uploadResponse.ok) throw new Error("The drawing file could not be uploaded")
 
-      updateDrawing.mutate({
-        id,
-        data: {
-          attachmentPath: upload.objectPath,
-          attachmentName: file.name,
-          attachmentSize: file.size,
-          attachmentContentType: file.type || "application/octet-stream",
-        },
-      }, {
-        onSuccess: (updated) => {
-          queryClient.setQueryData(getGetDrawingQueryKey(id), updated)
-          queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
-          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
-          toast({ title: "Drawing file uploaded", description: `${file.name} is attached to ${drawing.drawingNumber}.` })
-        },
-        onError: () => toast({ title: "Attachment record failed", description: "The file uploaded but could not be attached to this drawing." }),
+      const recordResponse = await fetch(`/api/drawings/${id}/uploads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filePath: upload.objectPath,
+          fileName: file.name,
+          fileSize: file.size,
+          contentType: file.type || "application/octet-stream",
+          uploadedBy: uploadedBy.trim(),
+        }),
       })
+      if (!recordResponse.ok) throw new Error("The file uploaded but its history could not be recorded")
+
+      await loadUploads()
+      queryClient.invalidateQueries({ queryKey: getGetDrawingQueryKey(id) })
+      queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
+      queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      toast({ title: "Drawing file uploaded", description: `${file.name} recorded under ${uploadedBy.trim()}.` })
     } catch (error) {
       toast({
         title: "Upload failed",
@@ -260,27 +283,48 @@ export default function DrawingDetail() {
                 ) : (
                   <p className="mb-4 text-sm text-muted-foreground">No drawing file attached yet. Upload a PDF or source file for this sheet.</p>
                 )}
-                <Show when="signed-in">
-                  <label className="mt-4 inline-flex cursor-pointer items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
-                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                    {isUploading ? "Uploading..." : drawing.attachmentPath ? "Replace file" : "Upload drawing file"}
-                    <input
-                      type="file"
-                      className="sr-only"
-                      accept=".pdf,.dwg,.dxf,.rvt,.ifc,image/*"
-                      onChange={handleUpload}
-                      disabled={isUploading}
-                    />
-                  </label>
-                </Show>
-                <Show when="signed-out">
-                  <SignInButton mode="modal">
-                    <button type="button" className="mt-4 inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground">
-                      <Upload className="mr-2 h-4 w-4" /> Sign in to upload
-                    </button>
-                  </SignInButton>
-                </Show>
-                <p className="mt-2 text-xs text-muted-foreground">Maximum file size: 25 MB. PDF and common CAD/BIM files are supported.</p>
+                <label className="mt-4 inline-flex cursor-pointer items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
+                  {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                  {isUploading ? "Uploading..." : "Upload drawing file"}
+                  <input
+                    type="file"
+                    className="sr-only"
+                    accept=".pdf,.dwg,.dxf,.rvt,.ifc,image/*"
+                    onChange={handleUpload}
+                    disabled={isUploading}
+                  />
+                </label>
+                <p className="mt-2 text-xs text-muted-foreground">Maximum file size: 25 MB. You will be asked for the uploader name.</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <History className="w-4 h-4" />
+                  Upload History
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {uploads.length === 0 ? (
+                  <p className="p-6 text-sm text-muted-foreground">No uploads recorded yet.</p>
+                ) : (
+                  <div className="divide-y">
+                    {uploads.map((upload) => (
+                      <div key={upload.id} className="flex flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <a className="truncate font-medium text-primary hover:underline" href={`/api/storage${upload.filePath}`} target="_blank" rel="noreferrer">
+                            {upload.fileName}
+                          </a>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Uploaded by <span className="font-medium text-foreground">{upload.uploadedBy}</span> · {formatDate(upload.uploadedAt)} · {(upload.fileSize / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                        <span className="shrink-0 font-mono text-xs text-muted-foreground">{upload.contentType}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

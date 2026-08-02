@@ -39,6 +39,24 @@ export const drawingActivityTable = pgTable("drawing_activity", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const drawingUploadsTable = pgTable("drawing_uploads", {
+  id: serial("id").primaryKey(),
+  drawingId: integer("drawing_id").notNull(),
+  filePath: text("file_path").notNull(),
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  contentType: text("content_type").notNull(),
+  uploadedBy: text("uploaded_by").notNull(),
+  uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const insertDrawingUploadSchema = createInsertSchema(drawingUploadsTable).omit({
+  id: true,
+  uploadedAt: true,
+});
+export type InsertDrawingUpload = z.infer<typeof insertDrawingUploadSchema>;
+export type DrawingUpload = typeof drawingUploadsTable.$inferSelect;
+
 export const insertDrawingActivitySchema = createInsertSchema(drawingActivityTable).omit({
   id: true,
   createdAt: true,

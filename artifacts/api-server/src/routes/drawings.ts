@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { asc, desc, eq } from "drizzle-orm";
-import { db, drawingActivityTable, drawingsTable } from "@workspace/db";
+import { db, drawingActivityTable, drawingUploadsTable, drawingsTable } from "@workspace/db";
 import {
   CreateDrawingBody,
   CreateDrawingResponse,
@@ -13,6 +13,9 @@ import {
   UpdateDrawingBody,
   UpdateDrawingParams,
   UpdateDrawingResponse,
+  ListDrawingUploadsResponse,
+  RecordDrawingUploadBody,
+  RecordDrawingUploadResponse,
 } from "@workspace/api-zod";
 import { addActivity, getIdParam, listDrawingRows, toDateString } from "../lib/drawings";
 
@@ -36,14 +39,14 @@ router.post("/drawings", async (req, res): Promise<void> => {
   }
   const data = parsed.data;
   const [drawing] = await db.insert(drawingsTable).values({
-    drawingNumber: data.drawingNumber,
-    title: data.title,
-    discipline: data.discipline,
+    drawingNumber: data.drawingNumber ?? `DR-${Date.now().toString().slice(-6)}`,
+    title: data.title ?? "Untitled drawing",
+    discipline: data.discipline ?? "architectural",
     status: data.status ?? "draft",
-    revision: data.revision,
-    projectName: data.projectName,
-    sheetSize: data.sheetSize,
-    author: data.author,
+    revision: data.revision ?? "—",
+    projectName: data.projectName ?? "Unassigned",
+    sheetSize: data.sheetSize ?? "A1",
+    author: data.author ?? "—",
     description: data.description,
     dueDate: toDateString(data.dueDate),
     issuedDate: toDateString(data.issuedDate),
@@ -127,6 +130,54 @@ router.delete("/drawings/:id", async (req, res): Promise<void> => {
 router.get("/activity", async (_req, res): Promise<void> => {
   const activity = await db.select().from(drawingActivityTable).orderBy(desc(drawingActivityTable.createdAt)).limit(12);
   res.json(ListActivityResponse.parse(activity));
+});
+
+router.get("/drawings/:id/uploads", async (req, res): Promise<void> => {
+  const parsed = GetDrawingParams.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const [drawing] = await db.select({ id: drawingsTable.id }).from(drawingsTable).where(eq(drawingsTable.id, parsed.data.id));
+  if (!drawing) {
+    res.status(404).json({ error: "Drawing not found" });
+    return;
+  }
+  const uploads = await db.select().from(drawingUploadsTable)
+    .where(eq(drawingUploadsTable.drawingId, parsed.data.id))
+    .orderBy(desc(drawingUploadsTable.uploadedAt));
+  res.json(ListDrawingUploadsResponse.parse(uploads));
+});
+
+router.post("/drawings/:id/uploads", async (req, res): Promise<void> => {
+  const params = GetDrawingParams.safeParse(req.params);
+  const body = RecordDrawingUploadBody.safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, params.data.id));
+  if (!drawing) {
+    res.status(404).json({ error: "Drawing not found" });
+    return;
+  }
+  const [upload] = await db.insert(drawingUploadsTable).values({
+    drawingId: drawing.id,
+    ...body.data,
+  }).returning();
+  await db.update(drawingsTable).set({
+    attachmentPath: upload.filePath,
+    attachmentName: upload.fileName,
+    attachmentSize: upload.fileSize,
+    attachmentContentType: upload.contentType,
+    updatedAt: new Date(),
+  }).where(eq(drawingsTable.id, drawing.id));
+  await addActivity("drawing_uploaded", `${upload.fileName} uploaded by ${upload.uploadedBy}`, drawing.id);
+  res.status(201).json(RecordDrawingUploadResponse.parse(upload));
 });
 
 export default router;
