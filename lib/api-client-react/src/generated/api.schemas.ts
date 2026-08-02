@@ -20,6 +20,67 @@ export interface ProjectInput {
   name: string;
 }
 
+export interface ChecklistTemplateItem {
+  id: number;
+  title: string;
+  position: number;
+}
+
+export interface ChecklistTemplate {
+  id: number;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  createdBy: number;
+  createdAt: string;
+  updatedAt: string;
+  items: ChecklistTemplateItem[];
+}
+
+export interface ChecklistTemplateInput {
+  /** @minLength 1 */
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  /**
+     * @minItems 1
+     * @items.minLength 1
+     */
+  items: string[];
+}
+
+export interface ProjectChecklistItem {
+  id: number;
+  title: string;
+  position: number;
+  completed: boolean;
+  /** @nullable */
+  completedBy: number | null;
+  /** @nullable */
+  completedAt: string | null;
+}
+
+export interface ProjectChecklist {
+  id: number;
+  projectName: string;
+  templateId: number;
+  name: string;
+  createdBy: number;
+  createdAt: string;
+  items: ProjectChecklistItem[];
+}
+
+export interface ProjectChecklistInput {
+  /** @minLength 1 */
+  projectName: string;
+  /** @minimum 1 */
+  templateId: number;
+}
+
+export interface ChecklistItemUpdate {
+  completed: boolean;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -346,5 +407,9 @@ export type ListDrawingsParams = {
 search?: string;
 status?: DrawingStatus;
 discipline?: DrawingDiscipline;
+};
+
+export type ListProjectChecklistsParams = {
+projectName?: string;
 };
 

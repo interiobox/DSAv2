@@ -24,6 +24,8 @@ tags:
     description: Dashboard and activity operations
   - name: storage
     description: Drawing file upload and serving operations
+  - name: checklists
+    description: Reusable project checklist operations
 paths:
   /auth/login:
     post:
@@ -155,8 +157,151 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Project"
+  /checklist-templates:
+    get:
+      operationId: listChecklistTemplates
+      tags: [checklists]
+      summary: List reusable checklist templates
+      responses:
+        "200":
+          description: Checklist templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChecklistTemplate"
+    post:
+      operationId: createChecklistTemplate
+      tags: [checklists]
+      summary: Create a reusable checklist template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChecklistTemplateInput"
+      responses:
+        "201":
+          description: Created checklist template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistTemplate"
         "409":
-          description: Project already exists
+          description: A template with this name already exists
+  /checklist-templates/{id}:
+    patch:
+      operationId: updateChecklistTemplate
+      tags: [checklists]
+      summary: Update a reusable checklist template
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChecklistTemplateInput"
+      responses:
+        "200":
+          description: Updated checklist template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistTemplate"
+        "404":
+          description: Checklist template not found
+    delete:
+      operationId: deleteChecklistTemplate
+      tags: [checklists]
+      summary: Delete a reusable checklist template
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted checklist template
+        "404":
+          description: Checklist template not found
+  /project-checklists:
+    get:
+      operationId: listProjectChecklists
+      tags: [checklists]
+      summary: List checklists applied to projects
+      parameters:
+        - name: projectName
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Project checklists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectChecklist"
+    post:
+      operationId: applyChecklistTemplate
+      tags: [checklists]
+      summary: Apply a checklist template to a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectChecklistInput"
+      responses:
+        "201":
+          description: Applied project checklist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectChecklist"
+        "404":
+          description: Checklist template not found
+  /project-checklists/{id}:
+    delete:
+      operationId: deleteProjectChecklist
+      tags: [checklists]
+      summary: Remove a checklist from a project
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted project checklist
+        "404":
+          description: Project checklist not found
+  /project-checklists/{id}/items/{itemId}:
+    patch:
+      operationId: toggleProjectChecklistItem
+      tags: [checklists]
+      summary: Complete or reopen a project checklist item
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: number
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChecklistItemUpdate"
+      responses:
+        "200":
+          description: Updated project checklist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectChecklist"
+        "404":
+          description: Checklist item not found
   /users:
     get:
       operationId: listUsers
@@ -629,6 +774,107 @@ components:
           type: string
           minLength: 1
       required: [name]
+    ChecklistTemplateItem:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        position:
+          type: number
+      required: [id, title, position]
+    ChecklistTemplate:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        createdBy:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChecklistTemplateItem"
+      required: [id, name, description, createdBy, createdAt, updatedAt, items]
+    ChecklistTemplateInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: ["string", "null"]
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            minLength: 1
+      required: [name, items]
+    ProjectChecklistItem:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        position:
+          type: number
+        completed:
+          type: boolean
+        completedBy:
+          type: ["number", "null"]
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+      required: [id, title, position, completed, completedBy, completedAt]
+    ProjectChecklist:
+      type: object
+      properties:
+        id:
+          type: number
+        projectName:
+          type: string
+        templateId:
+          type: number
+        name:
+          type: string
+        createdBy:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectChecklistItem"
+      required: [id, projectName, templateId, name, createdBy, createdAt, items]
+    ProjectChecklistInput:
+      type: object
+      properties:
+        projectName:
+          type: string
+          minLength: 1
+        templateId:
+          type: number
+          minimum: 1
+      required: [projectName, templateId]
+    ChecklistItemUpdate:
+      type: object
+      properties:
+        completed:
+          type: boolean
+      required: [completed]
     User:
       type: object
       properties:

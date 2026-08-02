@@ -36,3 +36,9 @@ Destructive drawing and account-management actions are administrator-only; regul
 **Why:** The portal needs collaborative editing without allowing regular users to remove shared records or browse the full directory page.
 
 **How to apply:** Keep delete controls and delete APIs role-gated, redirect non-admins away from `/users`, and preserve only the minimum roster access needed by Assignments.
+
+Reusable checklist templates are separate from project checklist instances; applying a template snapshots its items so later template edits do not rewrite active project work.
+
+**Why:** Project teams need stable, auditable checklist progress even when the organization improves its standard template.
+
+**How to apply:** Treat templates as reusable definitions and project checklists as independent working records with their own item completion and attribution.

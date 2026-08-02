@@ -20,3 +20,4 @@
 export * from "./drawings";
 export * from "./users";
 export * from "./disciplines";
+export * from "./checklists";

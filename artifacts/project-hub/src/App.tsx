@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/layouts/AppLayout";
 import AdminPage from "@/pages/Admin";
 import Assignments from "@/pages/Assignments";
+import ChecklistsPage from "@/pages/Checklists";
 import DrawingDetail from "@/pages/DrawingDetail";
 import DrawingList from "@/pages/DrawingList";
 import MyFeed from "@/pages/MyFeed";
@@ -196,6 +197,7 @@ function ProtectedRoutes() {
         <Route path="/drawings" component={DrawingList} />
         <Route path="/drawings/:id" component={DrawingDetail} />
         <Route path="/assignments" component={Assignments} />
+        <Route path="/checklists" component={ChecklistsPage} />
         <Route path="/users" component={AdminUsersRoute} />
         <Route path="/feed" component={MyFeed} />
         <Route path="/admin" component={AdminPage} />

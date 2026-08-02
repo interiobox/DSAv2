@@ -162,6 +162,206 @@ export const CreateProjectResponse = zod.object({
 
 
 /**
+ * @summary List reusable checklist templates
+ */
+export const ListChecklistTemplatesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "createdBy": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "position": zod.number()
+}))
+})
+export const ListChecklistTemplatesResponse = zod.array(ListChecklistTemplatesResponseItem)
+
+
+/**
+ * @summary Create a reusable checklist template
+ */
+
+
+
+
+
+export const CreateChecklistTemplateBody = zod.object({
+  "name": zod.string().min(1),
+  "description": zod.string().nullish(),
+  "items": zod.array(zod.string().min(1)).min(1)
+})
+
+export const CreateChecklistTemplateResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "createdBy": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "position": zod.number()
+}))
+})
+
+
+/**
+ * @summary Update a reusable checklist template
+ */
+
+
+
+export const UpdateChecklistTemplateParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+
+
+export const UpdateChecklistTemplateBody = zod.object({
+  "name": zod.string().min(1),
+  "description": zod.string().nullish(),
+  "items": zod.array(zod.string().min(1)).min(1)
+})
+
+export const UpdateChecklistTemplateResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "createdBy": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "position": zod.number()
+}))
+})
+
+
+/**
+ * @summary Delete a reusable checklist template
+ */
+
+
+
+export const DeleteChecklistTemplateParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const DeleteChecklistTemplateResponse = zod.void()
+
+
+/**
+ * @summary List checklists applied to projects
+ */
+export const ListProjectChecklistsQueryParams = zod.object({
+  "projectName": zod.coerce.string().optional()
+})
+
+export const ListProjectChecklistsResponseItem = zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "templateId": zod.number(),
+  "name": zod.string(),
+  "createdBy": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "position": zod.number(),
+  "completed": zod.boolean(),
+  "completedBy": zod.number().nullable(),
+  "completedAt": zod.coerce.date().nullable()
+}))
+})
+export const ListProjectChecklistsResponse = zod.array(ListProjectChecklistsResponseItem)
+
+
+/**
+ * @summary Apply a checklist template to a project
+ */
+
+
+
+
+export const ApplyChecklistTemplateBody = zod.object({
+  "projectName": zod.string().min(1),
+  "templateId": zod.number().min(1)
+})
+
+export const ApplyChecklistTemplateResponse = zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "templateId": zod.number(),
+  "name": zod.string(),
+  "createdBy": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "position": zod.number(),
+  "completed": zod.boolean(),
+  "completedBy": zod.number().nullable(),
+  "completedAt": zod.coerce.date().nullable()
+}))
+})
+
+
+/**
+ * @summary Remove a checklist from a project
+ */
+
+
+
+export const DeleteProjectChecklistParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const DeleteProjectChecklistResponse = zod.void()
+
+
+/**
+ * @summary Complete or reopen a project checklist item
+ */
+
+
+
+
+export const ToggleProjectChecklistItemParams = zod.object({
+  "id": zod.coerce.number().min(1),
+  "itemId": zod.coerce.number().min(1)
+})
+
+export const ToggleProjectChecklistItemBody = zod.object({
+  "completed": zod.boolean()
+})
+
+export const ToggleProjectChecklistItemResponse = zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "templateId": zod.number(),
+  "name": zod.string(),
+  "createdBy": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "position": zod.number(),
+  "completed": zod.boolean(),
+  "completedBy": zod.number().nullable(),
+  "completedAt": zod.coerce.date().nullable()
+}))
+})
+
+
+/**
  * @summary List team users
  */
 export const ListUsersResponseItem = zod.object({
