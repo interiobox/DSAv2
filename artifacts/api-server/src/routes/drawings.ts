@@ -64,7 +64,7 @@ router.post("/drawings", async (req, res): Promise<void> => {
     dueDate: toDateString(data.dueDate),
     issuedDate: toDateString(data.issuedDate),
   }).returning();
-  await addActivity("drawing_added", `${drawing.drawingNumber} was added to the register`, drawing.id);
+  await addActivity("drawing_added", `${drawing.title} was added to the register`, drawing.id);
   res.status(201).json(CreateDrawingResponse.parse(drawing));
 });
 
@@ -122,7 +122,7 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
     return;
   }
   const activityType = data.status === "issued" ? "drawing_issued" : data.status === "approved" ? "drawing_approved" : "drawing_updated";
-  await addActivity(activityType, `${drawing.drawingNumber} was updated to revision ${drawing.revision}`, drawing.id);
+  await addActivity(activityType, `${drawing.title} was updated`, drawing.id);
   res.json(UpdateDrawingResponse.parse(drawing));
 });
 
@@ -299,7 +299,7 @@ router.post("/drawings/:id/comments", async (req, res): Promise<void> => {
     drawingId: drawing.id,
     ...body.data,
   }).returning();
-  await addActivity("comment_added", `${comment.author} commented on ${drawing.drawingNumber}`, drawing.id);
+  await addActivity("comment_added", `${comment.author} commented on ${drawing.title}`, drawing.id);
   res.status(201).json(CreateDrawingCommentResponse.parse(comment));
 });
 

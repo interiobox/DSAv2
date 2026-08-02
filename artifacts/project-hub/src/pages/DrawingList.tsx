@@ -65,17 +65,21 @@ export default function DrawingList() {
     return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b))
   }, [visibleDrawings])
 
+  const [newDrawingName, setNewDrawingName] = React.useState("")
+
   function createBlankDrawing(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!selectedProject) return
+    const title = newDrawingName.trim()
+    if (!selectedProject || !title) return
     createDrawing.mutate(
-      { data: { projectName: selectedProject } },
+      { data: { projectName: selectedProject, title } },
       {
         onSuccess: (newDrawing) => {
           queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
           queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() })
           queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
           toast({ title: "Drawing created", description: "Add a file to start tracking this drawing." })
+          setNewDrawingName("")
           setIsCreateOpen(false)
           setLocation(`/drawings/${newDrawing.id}`)
         },
@@ -110,8 +114,8 @@ export default function DrawingList() {
     )
   }
 
-  function handleDelete(id: number, drawingNumber: string) {
-    if (!confirm(`Are you sure you want to delete ${drawingNumber}?`)) return
+  function handleDelete(id: number, title: string) {
+    if (!confirm(`Are you sure you want to delete “${title}”?`)) return
     
     deleteDrawing.mutate(
       { id },
@@ -150,8 +154,8 @@ export default function DrawingList() {
         <div className="relative flex-1 sm:max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search numbers or titles..." 
-            className="pl-9 font-mono text-sm"
+             placeholder="Search drawing names..."
+             className="pl-9 text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -232,8 +236,7 @@ export default function DrawingList() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="font-mono text-sm font-semibold text-primary">{drawing.drawingNumber}</p>
-                        <h3 className="mt-1 truncate font-medium text-foreground">{drawing.title}</h3>
+                        <h3 className="truncate font-medium text-foreground">{drawing.title}</h3>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         <Badge variant={drawing.status} className="capitalize">{drawing.status.replace('_', ' ')}</Badge>
@@ -248,7 +251,7 @@ export default function DrawingList() {
                             <DropdownMenuItem onClick={(event) => { event.stopPropagation(); setLocation(`/drawings/${drawing.id}`) }}>
                               <Pencil className="mr-2 h-4 w-4" /> Edit drawing
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.drawingNumber) }}>
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}>
                               <Trash2 className="mr-2 h-4 w-4" /> Delete drawing
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -270,7 +273,6 @@ export default function DrawingList() {
           <Table>
             <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur-md">
               <TableRow>
-                <TableHead className="w-[140px]">Drawing No.</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead className="w-[120px]">Discipline</TableHead>
                 <TableHead className="w-[120px]">Status</TableHead>
@@ -282,7 +284,6 @@ export default function DrawingList() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-64" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
@@ -292,7 +293,7 @@ export default function DrawingList() {
                 ))
               ) : visibleDrawings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                     <div className="flex flex-col items-center justify-center">
                       <FileText className="h-8 w-8 text-muted-foreground/50 mb-2" />
                       <p>No drawings found.</p>
@@ -303,7 +304,7 @@ export default function DrawingList() {
               ) : (
                 groupedDrawings.flatMap(([project, projectDrawings]) => [
                   <TableRow key={`project-${project}`} className="bg-muted/30 hover:bg-muted/30">
-                    <TableCell colSpan={6} className="py-3">
+                    <TableCell colSpan={5} className="py-3">
                       <div className="flex items-center gap-2 font-semibold text-foreground">
                         <FolderKanban className="h-4 w-4 text-primary" />
                         <span>{project}</span>
@@ -313,7 +314,6 @@ export default function DrawingList() {
                   </TableRow>,
                   ...projectDrawings.map((drawing) => (
                   <TableRow key={drawing.id} className="group cursor-pointer" onClick={() => setLocation(`/drawings/${drawing.id}`)}>
-                    <TableCell className="font-mono font-medium text-foreground">{drawing.drawingNumber}</TableCell>
                     <TableCell className="font-medium">{drawing.title}</TableCell>
                     <TableCell className="capitalize text-muted-foreground text-sm">{drawing.discipline}</TableCell>
                     <TableCell>
@@ -333,7 +333,7 @@ export default function DrawingList() {
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/drawings/${drawing.id}`)}}>
                             <Pencil className="mr-2 h-4 w-4" /> Edit drawing
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(drawing.id, drawing.drawingNumber)}} className="text-destructive focus:text-destructive">
+                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(drawing.id, drawing.title)}} className="text-destructive focus:text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -355,6 +355,14 @@ export default function DrawingList() {
             <DialogDescription>Choose a project to start a new drawing record.</DialogDescription>
           </DialogHeader>
           <form onSubmit={createBlankDrawing} className="space-y-4">
+            <Input
+              value={newDrawingName}
+              onChange={(event) => setNewDrawingName(event.target.value)}
+              placeholder="Drawing name"
+              aria-label="Drawing name"
+              autoFocus
+              required
+            />
             <Select value={selectedProject} onValueChange={setSelectedProject} required>
               <SelectTrigger>
                 <FolderKanban className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -369,7 +377,7 @@ export default function DrawingList() {
             )}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={!selectedProject || createDrawing.isPending}>
+              <Button type="submit" disabled={!selectedProject || !newDrawingName.trim() || createDrawing.isPending}>
                 {createDrawing.isPending ? "Creating..." : "Create drawing"}
               </Button>
             </DialogFooter>

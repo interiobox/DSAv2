@@ -13,7 +13,7 @@ The product is intentionally single-purpose: the drawing register is the home sc
 
 Drawings are organized by project in the register, with project headings, drawing counts, and a project filter; unassigned drawings remain grouped under “Unassigned.”
 
-Projects are persisted as their own selectable records, and drawing creation/editing uses a project dropdown rather than free-text project names. User-facing drawing metadata is intentionally minimal: drawing number, title, discipline, status, and project; revision, sheet size, author, due date, and notes are not part of the visible drawing workflow.
+Projects are persisted as their own selectable records, and drawing creation/editing uses a project dropdown rather than free-text project names. User-facing drawing metadata is intentionally minimal: drawing name, discipline, status, and project; drawing numbers, revision, sheet size, author, due date, and notes are not part of the visible drawing workflow.
 
 **Why:** The user clarified the domain after the initial generic project-management direction, so future work should preserve the drawing-register vocabulary and workflow.
 

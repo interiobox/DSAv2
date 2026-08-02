@@ -38,7 +38,6 @@ type DrawingComment = {
 }
 
 type DrawingForm = {
-  drawingNumber: string
   title: string
   discipline: string
   status: string
@@ -137,7 +136,7 @@ export default function DrawingDetail() {
   }
 
   const handleDelete = () => {
-    if (!confirm(`Permanently delete drawing ${drawing.drawingNumber}?`)) return
+    if (!confirm(`Permanently delete “${drawing.title}”?`)) return
     deleteDrawing.mutate({ id }, {
       onSuccess: () => {
         toast({ title: "Drawing deleted" })
@@ -149,7 +148,6 @@ export default function DrawingDetail() {
 
   const openDrawingEdit = () => {
     setDrawingForm({
-      drawingNumber: drawing.drawingNumber,
       title: drawing.title,
       discipline: drawing.discipline,
       status: drawing.status,
@@ -371,11 +369,11 @@ export default function DrawingDetail() {
               <ArrowLeft className="w-4 h-4" /> Register
             </Link>
             <span>/</span>
-            <span className="font-mono uppercase">{drawing.drawingNumber}</span>
+            <span>{drawing.title}</span>
           </div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground font-mono uppercase">
-              {drawing.drawingNumber}
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {drawing.title}
             </h1>
             <Badge variant={drawing.status} className="capitalize text-sm h-6 px-3">{drawing.status.replace('_', ' ')}</Badge>
           </div>
@@ -652,8 +650,7 @@ export default function DrawingDetail() {
           </DialogHeader>
           {drawingForm && (
             <form onSubmit={handleDrawingSave} className="space-y-4">
-              <Input value={drawingForm.drawingNumber} onChange={(e) => setDrawingForm({ ...drawingForm, drawingNumber: e.target.value })} placeholder="Drawing number" aria-label="Drawing number" required />
-              <Input value={drawingForm.title} onChange={(e) => setDrawingForm({ ...drawingForm, title: e.target.value })} placeholder="Title" aria-label="Title" required />
+              <Input value={drawingForm.title} onChange={(e) => setDrawingForm({ ...drawingForm, title: e.target.value })} placeholder="Drawing name" aria-label="Drawing name" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Select value={drawingForm.status} onValueChange={(status) => setDrawingForm({ ...drawingForm, status })}>
                   <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
