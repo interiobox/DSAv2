@@ -80,9 +80,12 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       return payload as PortalUser;
     },
     async logout() {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-      setUser(null);
-      queryClient.clear();
+      try {
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      } finally {
+        setUser(null);
+        queryClient.clear();
+      }
     },
   }), [isLoading, user]);
 

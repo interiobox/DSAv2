@@ -45,13 +45,6 @@ type DrawingForm = {
   projectName: string
 }
 
-type UploadForm = {
-  fileName: string
-  fileSize: string
-  contentType: string
-  uploadedBy: string
-}
-
 const statusLabel = (status: string) => status === "superseded" ? "Archived" : status.replace("_", " ")
 
 export default function DrawingDetail() {
@@ -79,8 +72,6 @@ export default function DrawingDetail() {
   const [isEditOpen, setIsEditOpen] = React.useState(false)
   const [isSavingDrawing, setIsSavingDrawing] = React.useState(false)
   const [drawingForm, setDrawingForm] = React.useState<DrawingForm | null>(null)
-  const [editingUpload, setEditingUpload] = React.useState<DrawingUpload | null>(null)
-  const [uploadForm, setUploadForm] = React.useState<UploadForm>({ fileName: "", fileSize: "", contentType: "", uploadedBy: "" })
   const { user } = usePortalAuth()
   const currentUserName = user?.name || user?.username || ""
   const { data: disciplines } = useListDisciplines()
@@ -280,41 +271,6 @@ export default function DrawingDetail() {
     }
   }
 
-  const openUploadEdit = (upload: DrawingUpload) => {
-    setEditingUpload(upload)
-    setUploadForm({
-      fileName: upload.fileName,
-      fileSize: String(upload.fileSize),
-      contentType: upload.contentType,
-      uploadedBy: upload.uploadedBy,
-    })
-  }
-
-  const handleUploadSave = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!editingUpload) return
-    try {
-      const response = await fetch(`/api/drawings/${id}/uploads/${editingUpload.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: uploadForm.fileName.trim(),
-          fileSize: Number(uploadForm.fileSize),
-          contentType: uploadForm.contentType.trim(),
-          uploadedBy: uploadForm.uploadedBy.trim(),
-        }),
-      })
-      if (!response.ok) throw new Error("The upload could not be updated")
-      await loadUploads()
-      queryClient.invalidateQueries({ queryKey: getGetDrawingQueryKey(id) })
-      queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
-      setEditingUpload(null)
-      toast({ title: "Upload updated" })
-    } catch (error) {
-      toast({ title: "Update failed", description: error instanceof Error ? error.message : "The upload could not be updated." })
-    }
-  }
-
   const handleUploadDelete = async (upload: DrawingUpload) => {
     if (!confirm(`Delete ${upload.fileName}? This also removes the stored file.`)) return
     try {
@@ -485,7 +441,7 @@ export default function DrawingDetail() {
                     disabled={isUploading}
                   />
                 </label>
-                <p className="mt-2 text-xs text-muted-foreground">Maximum file size: 25 MB. You will be asked for the uploader name.</p>
+                <p className="mt-2 text-xs text-muted-foreground">Maximum file size: 25 MB. Uploads are automatically attributed to your account.</p>
               </CardContent>
             </Card>
 
@@ -513,22 +469,10 @@ export default function DrawingDetail() {
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
                           <span className="font-mono text-xs text-muted-foreground">{upload.contentType}</span>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Upload actions</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openUploadEdit(upload)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Edit details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => void handleUploadDelete(upload)}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete upload
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => void handleUploadDelete(upload)} title={`Delete ${upload.fileName}`}>
+                             <Trash2 className="h-4 w-4" />
+                             <span className="sr-only">Delete upload</span>
+                           </Button>
                         </div>
                       </div>
                     ))}
@@ -677,26 +621,6 @@ export default function DrawingDetail() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={editingUpload !== null} onOpenChange={(open) => !open && setEditingUpload(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit upload details</DialogTitle>
-            <DialogDescription>Change the label and uploader information without replacing the file.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleUploadSave} className="space-y-4">
-            <Input value={uploadForm.fileName} onChange={(e) => setUploadForm({ ...uploadForm, fileName: e.target.value })} placeholder="File name" aria-label="File name" required />
-            <Input value={uploadForm.uploadedBy} onChange={(e) => setUploadForm({ ...uploadForm, uploadedBy: e.target.value })} placeholder="Uploaded by" aria-label="Uploaded by" required />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input type="number" min="1" value={uploadForm.fileSize} onChange={(e) => setUploadForm({ ...uploadForm, fileSize: e.target.value })} placeholder="Size in bytes" aria-label="File size" required />
-              <Input value={uploadForm.contentType} onChange={(e) => setUploadForm({ ...uploadForm, contentType: e.target.value })} placeholder="Content type" aria-label="Content type" required />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditingUpload(null)}>Cancel</Button>
-              <Button type="submit">Save changes</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

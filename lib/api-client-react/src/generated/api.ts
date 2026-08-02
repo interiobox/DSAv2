@@ -35,7 +35,6 @@ import type {
   DrawingUpdate,
   DrawingUpload,
   DrawingUploadInput,
-  DrawingUploadUpdate,
   ErrorEnvelope,
   HealthStatus,
   ListDrawingsParams,
@@ -1926,80 +1925,6 @@ export const useRecordDrawingUpload = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getRecordDrawingUploadMutationOptions(options));
-    }
-
-export const getUpdateDrawingUploadUrl = (id: number,
-    uploadId: number,) => {
-
-
-
-
-  return `/api/drawings/${id}/uploads/${uploadId}`
-}
-
-/**
- * @summary Edit drawing upload metadata
- */
-export const updateDrawingUpload = async (id: number,
-    uploadId: number,
-    drawingUploadUpdate: DrawingUploadUpdate, options?: Parameters<typeof customFetch>[1]): Promise<DrawingUpload> => {
-
-  return customFetch<DrawingUpload>(getUpdateDrawingUploadUrl(id,uploadId),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(drawingUploadUpdate)
-  }
-);}
-
-
-
-
-
-export const getUpdateDrawingUploadMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDrawingUpload>>, TError,{id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateDrawingUpload>>, TError,{id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>}, TContext> => {
-
-const mutationKey = ['updateDrawingUpload'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDrawingUpload>>, {id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>}> = (props) => {
-          const {id,uploadId,data} = props ?? {};
-
-          return  updateDrawingUpload(id,uploadId,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateDrawingUploadMutationResult = NonNullable<Awaited<ReturnType<typeof updateDrawingUpload>>>
-    export type UpdateDrawingUploadMutationBody = BodyType<DrawingUploadUpdate>
-    export type UpdateDrawingUploadMutationError = ErrorType<void>
-
-    /**
- * @summary Edit drawing upload metadata
- */
-export const useUpdateDrawingUpload = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDrawingUpload>>, TError,{id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateDrawingUpload>>,
-        TError,
-        {id: number;uploadId: number;data: BodyType<DrawingUploadUpdate>},
-        TContext
-      > => {
-      return useMutation(getUpdateDrawingUploadMutationOptions(options));
     }
 
 export const getDeleteDrawingUploadUrl = (id: number,

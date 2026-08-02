@@ -19,9 +19,6 @@ import {
   ListDrawingCommentsResponse,
   CreateDrawingCommentBody,
   CreateDrawingCommentResponse,
-  UpdateDrawingUploadParams,
-  UpdateDrawingUploadBody,
-  UpdateDrawingUploadResponse,
   DeleteDrawingUploadParams,
   UpdateDrawingCommentParams,
   UpdateDrawingCommentBody,
@@ -237,37 +234,6 @@ router.post("/drawings/:id/uploads", async (req, res): Promise<void> => {
   }).where(eq(drawingsTable.id, drawing.id));
   await addActivity("drawing_uploaded", `${upload.fileName} uploaded by ${upload.uploadedBy}`, drawing.id, currentUserId(req));
   res.status(201).json(RecordDrawingUploadResponse.parse(upload));
-});
-
-router.patch("/drawings/:id/uploads/:uploadId", async (req, res): Promise<void> => {
-  const params = UpdateDrawingUploadParams.safeParse(req.params);
-  const body = UpdateDrawingUploadBody.safeParse(req.body);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  if (!body.success) {
-    res.status(400).json({ error: body.error.message });
-    return;
-  }
-  const [upload] = await db.select().from(drawingUploadsTable).where(eq(drawingUploadsTable.id, params.data.uploadId));
-  if (!upload || upload.drawingId !== params.data.id) {
-    res.status(404).json({ error: "Upload not found" });
-    return;
-  }
-  const [updated] = await db.update(drawingUploadsTable).set(body.data)
-    .where(eq(drawingUploadsTable.id, upload.id)).returning();
-  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, upload.drawingId));
-  if (drawing?.attachmentPath === upload.filePath) {
-    await db.update(drawingsTable).set({
-      attachmentName: updated.fileName,
-      attachmentSize: updated.fileSize,
-      attachmentContentType: updated.contentType,
-      updatedAt: new Date(),
-    }).where(eq(drawingsTable.id, upload.drawingId));
-  }
-  await addActivity("drawing_updated", `${updated.fileName} upload metadata was edited`, upload.drawingId, currentUserId(req));
-  res.json(UpdateDrawingUploadResponse.parse(updated));
 });
 
 router.delete("/drawings/:id/uploads/:uploadId", async (req, res): Promise<void> => {

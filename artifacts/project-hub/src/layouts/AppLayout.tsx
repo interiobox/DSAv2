@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { FileText, Layers, ShieldCheck, UserRoundCog, Users } from "lucide-react"
+import { FileText, Layers, LogOut, ShieldCheck, UserRoundCog, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
 
@@ -67,8 +67,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           )}
         </nav>
         <div className="border-t border-sidebar-border/50 p-3">
-          <button type="button" onClick={() => void logout()} className="w-full rounded-md px-3 py-2 text-left text-xs text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
-            Sign out
+          <button type="button" onClick={() => void logout()} className="flex w-full items-center gap-2 rounded-md border border-sidebar-border/70 px-3 py-2 text-left text-xs font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
+            <LogOut className="h-4 w-4" />
+            <span>Log out</span>
           </button>
         </div>
       </aside>

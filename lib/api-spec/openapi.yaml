@@ -423,28 +423,6 @@ paths:
         "404":
           description: Drawing not found
   /drawings/{id}/uploads/{uploadId}:
-    patch:
-      operationId: updateDrawingUpload
-      tags: [drawings]
-      summary: Edit drawing upload metadata
-      parameters:
-        - $ref: "#/components/parameters/Id"
-        - $ref: "#/components/parameters/UploadId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DrawingUploadUpdate"
-      responses:
-        "200":
-          description: Updated upload
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DrawingUpload"
-        "404":
-          description: Upload not found
     delete:
       operationId: deleteDrawingUpload
       tags: [drawings]
