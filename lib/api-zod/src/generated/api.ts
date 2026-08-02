@@ -31,6 +31,7 @@ export const ListDrawingsResponseItem = zod.object({
   "title": zod.string(),
   "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
+  "assignedTo": zod.string().nullable(),
   "revision": zod.string(),
   "projectName": zod.string(),
   "sheetSize": zod.enum(['A0', 'A1', 'A2', 'A3', 'A4']),
@@ -78,6 +79,7 @@ export const CreateDrawingResponse = zod.object({
   "title": zod.string(),
   "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
+  "assignedTo": zod.string().nullable(),
   "revision": zod.string(),
   "projectName": zod.string(),
   "sheetSize": zod.enum(['A0', 'A1', 'A2', 'A3', 'A4']),
@@ -138,6 +140,7 @@ export const GetDrawingResponse = zod.object({
   "title": zod.string(),
   "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
+  "assignedTo": zod.string().nullable(),
   "revision": zod.string(),
   "projectName": zod.string(),
   "sheetSize": zod.enum(['A0', 'A1', 'A2', 'A3', 'A4']),
@@ -195,6 +198,48 @@ export const UpdateDrawingResponse = zod.object({
   "title": zod.string(),
   "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
+  "assignedTo": zod.string().nullable(),
+  "revision": zod.string(),
+  "projectName": zod.string(),
+  "sheetSize": zod.enum(['A0', 'A1', 'A2', 'A3', 'A4']),
+  "author": zod.string(),
+  "description": zod.string().nullish(),
+  "dueDate": zod.coerce.date().nullish(),
+  "issuedDate": zod.coerce.date().nullish(),
+  "updatedAt": zod.coerce.date(),
+  "createdAt": zod.coerce.date(),
+  "attachmentPath": zod.string().nullish(),
+  "attachmentName": zod.string().nullish(),
+  "attachmentSize": zod.number().nullish(),
+  "attachmentContentType": zod.string().nullish()
+})
+
+
+/**
+ * @summary Assign or unassign a drawing
+ */
+
+
+
+export const UpdateDrawingAssignmentParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+export const UpdateDrawingAssignmentBody = zod.object({
+  "assigneeName": zod.string().nullish(),
+  "assignedBy": zod.string().min(1)
+})
+
+export const UpdateDrawingAssignmentResponse = zod.object({
+  "id": zod.number(),
+  "drawingNumber": zod.string(),
+  "title": zod.string(),
+  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
+  "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
+  "assignedTo": zod.string().nullable(),
   "revision": zod.string(),
   "projectName": zod.string(),
   "sheetSize": zod.enum(['A0', 'A1', 'A2', 'A3', 'A4']),

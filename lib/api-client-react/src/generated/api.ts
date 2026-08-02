@@ -23,6 +23,7 @@ import type {
   Activity,
   DashboardSummary,
   Drawing,
+  DrawingAssignmentUpdate,
   DrawingComment,
   DrawingCommentInput,
   DrawingCommentUpdate,
@@ -596,12 +597,84 @@ export const useUpdateDrawing = <TError = ErrorType<unknown>,
       return useMutation(getUpdateDrawingMutationOptions(options));
     }
 
+export const getUpdateDrawingAssignmentUrl = (id: number,) => {
+
+
+
+
+  return `/api/drawings/${id}/assignment`
+}
+
+/**
+ * @summary Assign or unassign a drawing
+ */
+export const updateDrawingAssignment = async (id: number,
+    drawingAssignmentUpdate: DrawingAssignmentUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Drawing> => {
+
+  return customFetch<Drawing>(getUpdateDrawingAssignmentUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(drawingAssignmentUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateDrawingAssignmentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDrawingAssignment>>, TError,{id: number;data: BodyType<DrawingAssignmentUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDrawingAssignment>>, TError,{id: number;data: BodyType<DrawingAssignmentUpdate>}, TContext> => {
+
+const mutationKey = ['updateDrawingAssignment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDrawingAssignment>>, {id: number;data: BodyType<DrawingAssignmentUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDrawingAssignment(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDrawingAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof updateDrawingAssignment>>>
+    export type UpdateDrawingAssignmentMutationBody = BodyType<DrawingAssignmentUpdate>
+    export type UpdateDrawingAssignmentMutationError = ErrorType<void>
+
+    /**
+ * @summary Assign or unassign a drawing
+ */
+export const useUpdateDrawingAssignment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDrawingAssignment>>, TError,{id: number;data: BodyType<DrawingAssignmentUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDrawingAssignment>>,
+        TError,
+        {id: number;data: BodyType<DrawingAssignmentUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateDrawingAssignmentMutationOptions(options));
+    }
+
 export const getDeleteDrawingUrl = (id: number,) => {
 
 
 
 
-  return `/api/drawings/${id}`
+  return `/api/drawings/${id}/assignment`
 }
 
 /**

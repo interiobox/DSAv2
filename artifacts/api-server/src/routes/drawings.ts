@@ -27,6 +27,8 @@ import {
   UpdateDrawingCommentBody,
   UpdateDrawingCommentResponse,
   DeleteDrawingCommentParams,
+  UpdateDrawingAssignmentBody,
+  UpdateDrawingAssignmentResponse,
 } from "@workspace/api-zod";
 import { addActivity, getIdParam, listDrawingRows, toDateString } from "../lib/drawings";
 import { ObjectStorageService } from "../lib/objectStorage";
@@ -124,6 +126,33 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
   const activityType = data.status === "issued" ? "drawing_issued" : data.status === "approved" ? "drawing_approved" : "drawing_updated";
   await addActivity(activityType, `${drawing.title} was updated`, drawing.id);
   res.json(UpdateDrawingResponse.parse(drawing));
+});
+
+router.patch("/drawings/:id/assignment", async (req, res): Promise<void> => {
+  const params = UpdateDrawingParams.safeParse(req.params);
+  const body = UpdateDrawingAssignmentBody.safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+  const assigneeName = body.data.assigneeName?.trim() || null;
+  const [drawing] = await db.update(drawingsTable).set({
+    assignedTo: assigneeName,
+    updatedAt: new Date(),
+  }).where(eq(drawingsTable.id, params.data.id)).returning();
+  if (!drawing) {
+    res.status(404).json({ error: "Drawing not found" });
+    return;
+  }
+  const message = assigneeName
+    ? `${body.data.assignedBy.trim()} assigned ${drawing.title} to ${assigneeName}`
+    : `${body.data.assignedBy.trim()} unassigned ${drawing.title}`;
+  await addActivity("drawing_assigned", message, drawing.id);
+  res.json(UpdateDrawingAssignmentResponse.parse(drawing));
 });
 
 router.delete("/drawings/:id", async (req, res): Promise<void> => {

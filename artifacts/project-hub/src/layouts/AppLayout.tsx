@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { FileText, Layers } from "lucide-react"
+import { FileText, Layers, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +30,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           )}>
             <FileText className="w-4 h-4" />
              <span>Library</span>
+          </Link>
+          <Link href="/assignments" className={cn(
+            "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+            location.startsWith("/assignments") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+          )}>
+            <Users className="w-4 h-4" />
+            <span>Assignments</span>
           </Link>
         </nav>
       </aside>

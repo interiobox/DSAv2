@@ -146,6 +146,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Drawing"
+  /drawings/{id}/assignment:
+    patch:
+      operationId: updateDrawingAssignment
+      tags: [drawings]
+      summary: Assign or unassign a drawing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrawingAssignmentUpdate"
+      responses:
+        "200":
+          description: Updated drawing assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Drawing"
+        "404":
+          description: Drawing not found
     delete:
       operationId: deleteDrawing
       tags: [drawings]
@@ -436,6 +458,8 @@ components:
           $ref: "#/components/schemas/DrawingDiscipline"
         status:
           $ref: "#/components/schemas/DrawingStatus"
+        assignedTo:
+          type: ["string", "null"]
         revision:
           type: string
         projectName:
@@ -467,7 +491,16 @@ components:
           type: ["number", "null"]
         attachmentContentType:
           type: ["string", "null"]
-      required: [id, drawingNumber, title, discipline, status, revision, projectName, sheetSize, author, updatedAt, createdAt]
+      required: [id, drawingNumber, title, discipline, status, assignedTo, revision, projectName, sheetSize, author, updatedAt, createdAt]
+    DrawingAssignmentUpdate:
+      type: object
+      properties:
+        assigneeName:
+          type: ["string", "null"]
+        assignedBy:
+          type: string
+          minLength: 1
+      required: [assignedBy]
     DrawingInput:
       type: object
       properties:

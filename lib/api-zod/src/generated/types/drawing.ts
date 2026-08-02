@@ -15,6 +15,8 @@ export interface Drawing {
   title: string;
   discipline: DrawingDiscipline;
   status: DrawingStatus;
+  /** @nullable */
+  assignedTo: string | null;
   revision: string;
   projectName: string;
   sheetSize: DrawingSheetSize;

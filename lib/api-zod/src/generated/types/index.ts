@@ -11,6 +11,7 @@ export * from './activityType';
 export * from './dashboardSummary';
 export * from './dashboardSummaryByDiscipline';
 export * from './drawing';
+export * from './drawingAssignmentUpdate';
 export * from './drawingComment';
 export * from './drawingCommentInput';
 export * from './drawingCommentUpdate';

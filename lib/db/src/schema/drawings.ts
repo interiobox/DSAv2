@@ -21,6 +21,7 @@ export const drawingsTable = pgTable("drawings", {
   title: text("title").notNull(),
   discipline: text("discipline").notNull(),
   status: text("status").notNull().default("draft"),
+  assignedTo: text("assigned_to"),
   revision: text("revision").notNull().default("A"),
   projectName: text("project_name").notNull(),
   sheetSize: text("sheet_size").notNull().default("A1"),

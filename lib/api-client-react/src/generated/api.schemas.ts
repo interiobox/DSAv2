@@ -61,6 +61,8 @@ export interface Drawing {
   title: string;
   discipline: DrawingDiscipline;
   status: DrawingStatus;
+  /** @nullable */
+  assignedTo: string | null;
   revision: string;
   projectName: string;
   sheetSize: DrawingSheetSize;
@@ -81,6 +83,13 @@ export interface Drawing {
   attachmentSize?: number | null;
   /** @nullable */
   attachmentContentType?: string | null;
+}
+
+export interface DrawingAssignmentUpdate {
+  /** @nullable */
+  assigneeName?: string | null;
+  /** @minLength 1 */
+  assignedBy: string;
 }
 
 export type DrawingInputSheetSize = typeof DrawingInputSheetSize[keyof typeof DrawingInputSheetSize];
