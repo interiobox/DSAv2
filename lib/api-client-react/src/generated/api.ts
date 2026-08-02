@@ -1073,7 +1073,7 @@ export const adminDeleteUser = async (id: number, options?: Parameters<typeof cu
 
 
 
-export const getAdminDeleteUserMutationOptions = <TError = ErrorType<unknown>,
+export const getAdminDeleteUserMutationOptions = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminDeleteUser>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof adminDeleteUser>>, TError,{id: number}, TContext> => {
 
@@ -1102,12 +1102,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AdminDeleteUserMutationResult = NonNullable<Awaited<ReturnType<typeof adminDeleteUser>>>
 
-    export type AdminDeleteUserMutationError = ErrorType<unknown>
+    export type AdminDeleteUserMutationError = ErrorType<void>
 
     /**
  * @summary Delete a portal user
  */
-export const useAdminDeleteUser = <TError = ErrorType<unknown>,
+export const useAdminDeleteUser = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminDeleteUser>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof adminDeleteUser>>,
@@ -1635,6 +1635,77 @@ export const useUpdateDrawing = <TError = ErrorType<unknown>,
       return useMutation(getUpdateDrawingMutationOptions(options));
     }
 
+export const getDeleteDrawingUrl = (id: number,) => {
+
+
+
+
+  return `/api/drawings/${id}`
+}
+
+/**
+ * @summary Delete a drawing
+ */
+export const deleteDrawing = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteDrawingUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteDrawingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDrawing>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDrawing>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteDrawing'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDrawing>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteDrawing(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDrawingMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDrawing>>>
+
+    export type DeleteDrawingMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a drawing
+ */
+export const useDeleteDrawing = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDrawing>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDrawing>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteDrawingMutationOptions(options));
+    }
+
 export const getUpdateDrawingAssignmentUrl = (id: number,) => {
 
 
@@ -1705,77 +1776,6 @@ export const useUpdateDrawingAssignment = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getUpdateDrawingAssignmentMutationOptions(options));
-    }
-
-export const getDeleteDrawingUrl = (id: number,) => {
-
-
-
-
-  return `/api/drawings/${id}/assignment`
-}
-
-/**
- * @summary Delete a drawing
- */
-export const deleteDrawing = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
-
-  return customFetch<void>(getDeleteDrawingUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
-
-
-
-export const getDeleteDrawingMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDrawing>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteDrawing>>, TError,{id: number}, TContext> => {
-
-const mutationKey = ['deleteDrawing'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDrawing>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteDrawing(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteDrawingMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDrawing>>>
-
-    export type DeleteDrawingMutationError = ErrorType<unknown>
-
-    /**
- * @summary Delete a drawing
- */
-export const useDeleteDrawing = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDrawing>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteDrawing>>,
-        TError,
-        {id: number},
-        TContext
-      > => {
-      return useMutation(getDeleteDrawingMutationOptions(options));
     }
 
 export const getListDrawingUploadsUrl = (id: number,) => {

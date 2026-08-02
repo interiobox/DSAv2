@@ -245,6 +245,8 @@ paths:
       responses:
         "204":
           description: Deleted
+        "403":
+          description: Administrator access required
   /admin/disciplines:
     get:
       operationId: adminListDisciplines
@@ -354,6 +356,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Drawing"
+    delete:
+      operationId: deleteDrawing
+      tags: [drawings]
+      summary: Delete a drawing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+        "403":
+          description: Administrator access required
   /drawings/{id}/assignment:
     patch:
       operationId: updateDrawingAssignment
@@ -376,15 +389,6 @@ paths:
                 $ref: "#/components/schemas/Drawing"
         "404":
           description: Drawing not found
-    delete:
-      operationId: deleteDrawing
-      tags: [drawings]
-      summary: Delete a drawing
-      parameters:
-        - $ref: "#/components/parameters/Id"
-      responses:
-        "204":
-          description: Deleted
   /drawings/{id}/uploads:
     get:
       operationId: listDrawingUploads

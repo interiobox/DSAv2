@@ -74,6 +74,7 @@ export default function DrawingDetail() {
   const [drawingForm, setDrawingForm] = React.useState<DrawingForm | null>(null)
   const { user } = usePortalAuth()
   const currentUserName = user?.name || user?.username || ""
+  const isAdmin = user?.role === "admin"
   const { data: disciplines } = useListDisciplines()
 
   const loadUploads = React.useCallback(async () => {
@@ -363,10 +364,15 @@ export default function DrawingDetail() {
               <Archive className="w-4 h-4 mr-2" /> Archive
             </Button>
           )}
-          <div className="w-px h-8 bg-border mx-1" />
-          <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleDelete}>
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          {isAdmin && (
+            <>
+              <div className="w-px h-8 bg-border mx-1" />
+              <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleDelete} title="Delete drawing">
+                <Trash2 className="w-4 h-4" />
+                <span className="sr-only">Delete drawing</span>
+              </Button>
+            </>
+          )}
         </div>
       </div>
 

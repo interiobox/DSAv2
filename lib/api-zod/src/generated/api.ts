@@ -436,6 +436,19 @@ export const UpdateDrawingResponse = zod.object({
 
 
 /**
+ * @summary Delete a drawing
+ */
+
+
+
+export const DeleteDrawingParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const DeleteDrawingResponse = zod.void()
+
+
+/**
  * @summary Assign or unassign a drawing
  */
 
@@ -474,19 +487,6 @@ export const UpdateDrawingAssignmentResponse = zod.object({
   "attachmentSize": zod.number().nullish(),
   "attachmentContentType": zod.string().nullish()
 })
-
-
-/**
- * @summary Delete a drawing
- */
-
-
-
-export const DeleteDrawingParams = zod.object({
-  "id": zod.coerce.number().min(1)
-})
-
-export const DeleteDrawingResponse = zod.void()
 
 
 /**

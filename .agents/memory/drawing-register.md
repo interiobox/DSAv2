@@ -30,3 +30,9 @@ My Feed combines active and completed drawings assigned to the signed-in user's 
 **Why:** Display names are needed for the drawing UI and persisted assignment records, but stable local portal account IDs are required to reliably filter personal history.
 
 **How to apply:** Keep the profile-name fallback order consistent across upload, comment, assignment, and feed surfaces; use actor IDs for “What I did” filtering.
+
+Destructive drawing and account-management actions are administrator-only; regular users can edit drawing records, while the standalone Users directory is an administrator-only page. The shared roster endpoint remains available for assignment pickers.
+
+**Why:** The portal needs collaborative editing without allowing regular users to remove shared records or browse the full directory page.
+
+**How to apply:** Keep delete controls and delete APIs role-gated, redirect non-admins away from `/users`, and preserve only the minimum roster access needed by Assignments.

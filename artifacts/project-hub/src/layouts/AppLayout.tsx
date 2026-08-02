@@ -42,13 +42,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Users className="w-4 h-4" />
             <span>Assignments</span>
           </Link>
-          <Link href="/users" className={cn(
-            "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
-            location.startsWith("/users") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-          )}>
-            <UserRoundCog className="w-4 h-4" />
-            <span>Users</span>
-          </Link>
+          {user?.role === "admin" && (
+            <Link href="/users" className={cn(
+              "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+              location.startsWith("/users") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+            )}>
+              <UserRoundCog className="w-4 h-4" />
+              <span>Users</span>
+            </Link>
+          )}
           <Link href="/feed" className={cn(
             "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
             location.startsWith("/feed") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"

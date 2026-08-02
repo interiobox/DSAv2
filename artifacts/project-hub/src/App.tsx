@@ -181,6 +181,11 @@ function LoadingScreen() {
   return <div className="flex min-h-[100dvh] items-center justify-center bg-background text-sm text-muted-foreground">Loading your account...</div>;
 }
 
+function AdminUsersRoute() {
+  const { user } = usePortalAuth();
+  return user?.role === "admin" ? <UsersPage /> : <Redirect to="/drawings" />;
+}
+
 function ProtectedRoutes() {
   const { user, isLoading } = usePortalAuth();
   if (isLoading) return <LoadingScreen />;
@@ -191,7 +196,7 @@ function ProtectedRoutes() {
         <Route path="/drawings" component={DrawingList} />
         <Route path="/drawings/:id" component={DrawingDetail} />
         <Route path="/assignments" component={Assignments} />
-        <Route path="/users" component={UsersPage} />
+        <Route path="/users" component={AdminUsersRoute} />
         <Route path="/feed" component={MyFeed} />
         <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />

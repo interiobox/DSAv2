@@ -24,6 +24,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { formatDateShort } from "@/lib/utils"
+import { usePortalAuth } from "@/App"
 
 const statusOptions = ["draft", "in_review", "approved", "issued", "superseded"] as const
 const statusLabel = (status: string) => status === "superseded" ? "Archived" : status.replace("_", " ")
@@ -31,6 +32,8 @@ export default function DrawingList() {
   const [, setLocation] = useLocation()
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { user } = usePortalAuth()
+  const isAdmin = user?.role === "admin"
   
   const [searchQuery, setSearchQuery] = React.useState("")
   const [disciplineFilter, setDisciplineFilter] = React.useState<DrawingDiscipline | "all">("all")
@@ -252,9 +255,11 @@ export default function DrawingList() {
                             <DropdownMenuItem onClick={(event) => { event.stopPropagation(); setLocation(`/drawings/${drawing.id}`) }}>
                               <Pencil className="mr-2 h-4 w-4" /> Edit drawing
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}>
-                              <Trash2 className="mr-2 h-4 w-4" /> Delete drawing
-                            </DropdownMenuItem>
+                             {isAdmin && (
+                               <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}>
+                                 <Trash2 className="mr-2 h-4 w-4" /> Delete drawing
+                               </DropdownMenuItem>
+                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -334,9 +339,11 @@ export default function DrawingList() {
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/drawings/${drawing.id}`)}}>
                             <Pencil className="mr-2 h-4 w-4" /> Edit drawing
                           </DropdownMenuItem>
-                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(drawing.id, drawing.title)}} className="text-destructive focus:text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
+                           {isAdmin && (
+                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(drawing.id, drawing.title)}} className="text-destructive focus:text-destructive">
+                               <Trash2 className="mr-2 h-4 w-4" /> Delete
+                             </DropdownMenuItem>
+                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
