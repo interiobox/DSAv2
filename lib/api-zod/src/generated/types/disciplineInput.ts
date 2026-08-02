@@ -6,4 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type DrawingDiscipline = string;
+export interface DisciplineInput {
+  /** @minLength 1 */
+  name: string;
+}

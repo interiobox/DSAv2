@@ -16,11 +16,55 @@ tags:
     description: Drawing project operations
   - name: users
     description: Team directory operations
+  - name: auth
+    description: Portal username and password authentication
+  - name: admin
+    description: Administrator portal management
   - name: dashboard
     description: Dashboard and activity operations
   - name: storage
     description: Drawing file upload and serving operations
 paths:
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in to the drawing portal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Signed-in portal user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalUser"
+        "401":
+          description: Invalid credentials
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get the signed-in portal user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalUser"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Sign out of the drawing portal
+      responses:
+        "204":
+          description: Signed out
   /healthz:
     get:
       operationId: healthCheck
@@ -127,25 +171,154 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/User"
+  /disciplines:
+    get:
+      operationId: listDisciplines
+      tags: [drawings]
+      summary: List drawing disciplines
+      responses:
+        "200":
+          description: Drawing disciplines
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Discipline"
+  /admin/users:
+    get:
+      operationId: adminListUsers
+      tags: [admin]
+      summary: List all portal users
+      responses:
+        "200":
+          description: Portal users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortalUser"
     post:
-      operationId: createUser
-      tags: [users]
-      summary: Add a team user
+      operationId: adminCreateUser
+      tags: [admin]
+      summary: Create a portal user
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserInput"
+              $ref: "#/components/schemas/AdminUserInput"
       responses:
         "201":
-          description: Created team user
+          description: Created portal user
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-        "409":
-          description: User already exists
+                $ref: "#/components/schemas/PortalUser"
+  /admin/users/{id}:
+    patch:
+      operationId: adminUpdateUser
+      tags: [admin]
+      summary: Update a portal user
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUserUpdate"
+      responses:
+        "200":
+          description: Updated portal user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalUser"
+    delete:
+      operationId: adminDeleteUser
+      tags: [admin]
+      summary: Delete a portal user
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+  /admin/disciplines:
+    get:
+      operationId: adminListDisciplines
+      tags: [admin]
+      summary: List managed disciplines
+      responses:
+        "200":
+          description: Managed disciplines
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Discipline"
+    post:
+      operationId: adminCreateDiscipline
+      tags: [admin]
+      summary: Add a drawing discipline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DisciplineInput"
+      responses:
+        "201":
+          description: Created discipline
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Discipline"
+  /admin/disciplines/{id}:
+    patch:
+      operationId: adminUpdateDiscipline
+      tags: [admin]
+      summary: Rename a drawing discipline
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DisciplineInput"
+      responses:
+        "200":
+          description: Updated discipline
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Discipline"
+    delete:
+      operationId: adminDeleteDiscipline
+      tags: [admin]
+      summary: Delete a drawing discipline
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+  /admin/activity:
+    get:
+      operationId: adminListActivity
+      tags: [admin]
+      summary: List complete portal activity
+      responses:
+        "200":
+          description: Complete portal activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
   /drawings/{id}:
     get:
       operationId: getDrawing
@@ -492,12 +665,85 @@ components:
           type: string
           minLength: 1
       required: [name]
+    PortalUser:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        username:
+          type: ["string", "null"]
+        role:
+          type: string
+          enum: [admin, user]
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, username, role, active, createdAt]
+    LoginInput:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+    AdminUserInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        username:
+          type: string
+          minLength: 3
+        password:
+          type: string
+          minLength: 4
+        role:
+          type: string
+          enum: [admin, user]
+      required: [name, username, password]
+    AdminUserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [admin, user]
+        active:
+          type: boolean
+    Discipline:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, createdAt]
+    DisciplineInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+      required: [name]
     DrawingStatus:
       type: string
       enum: [draft, in_review, approved, issued, superseded]
     DrawingDiscipline:
       type: string
-      enum: [architectural, structural, mechanical, electrical, plumbing, landscape, interiors]
     Drawing:
       type: object
       properties:

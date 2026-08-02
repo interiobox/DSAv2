@@ -31,6 +31,74 @@ export interface UserInput {
   name: string;
 }
 
+export type PortalUserRole = typeof PortalUserRole[keyof typeof PortalUserRole];
+
+
+export const PortalUserRole = {
+  admin: 'admin',
+  user: 'user',
+} as const;
+
+export interface PortalUser {
+  id: number;
+  name: string;
+  /** @nullable */
+  username: string | null;
+  role: PortalUserRole;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface LoginInput {
+  username: string;
+  password: string;
+}
+
+export type AdminUserInputRole = typeof AdminUserInputRole[keyof typeof AdminUserInputRole];
+
+
+export const AdminUserInputRole = {
+  admin: 'admin',
+  user: 'user',
+} as const;
+
+export interface AdminUserInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 3 */
+  username: string;
+  /** @minLength 4 */
+  password: string;
+  role?: AdminUserInputRole;
+}
+
+export type AdminUserUpdateRole = typeof AdminUserUpdateRole[keyof typeof AdminUserUpdateRole];
+
+
+export const AdminUserUpdateRole = {
+  admin: 'admin',
+  user: 'user',
+} as const;
+
+export interface AdminUserUpdate {
+  name?: string;
+  username?: string;
+  password?: string;
+  role?: AdminUserUpdateRole;
+  active?: boolean;
+}
+
+export interface Discipline {
+  id: number;
+  name: string;
+  createdAt: string;
+}
+
+export interface DisciplineInput {
+  /** @minLength 1 */
+  name: string;
+}
+
 export type DrawingStatus = typeof DrawingStatus[keyof typeof DrawingStatus];
 
 
@@ -42,18 +110,7 @@ export const DrawingStatus = {
   superseded: 'superseded',
 } as const;
 
-export type DrawingDiscipline = typeof DrawingDiscipline[keyof typeof DrawingDiscipline];
-
-
-export const DrawingDiscipline = {
-  architectural: 'architectural',
-  structural: 'structural',
-  mechanical: 'mechanical',
-  electrical: 'electrical',
-  plumbing: 'plumbing',
-  landscape: 'landscape',
-  interiors: 'interiors',
-} as const;
+export type DrawingDiscipline = string;
 
 export type DrawingSheetSize = typeof DrawingSheetSize[keyof typeof DrawingSheetSize];
 

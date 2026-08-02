@@ -1,6 +1,5 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { useUser } from "@clerk/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { CheckCircle2, Circle, Clock3, FileText, Loader2, UserRound, UserRoundPlus, Users, X } from "lucide-react"
 
@@ -10,6 +9,7 @@ import {
   useListUsers,
   useUpdateDrawingAssignment,
 } from "@workspace/api-client-react"
+import { usePortalAuth } from "@/App"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -41,8 +41,8 @@ export default function Assignments() {
   const { data: drawings, isLoading } = useListDrawings()
   const { data: users, isLoading: usersLoading } = useListUsers()
   const updateAssignment = useUpdateDrawingAssignment()
-  const { user } = useUser()
-  const yourName = user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress || ""
+  const { user } = usePortalAuth()
+  const yourName = user?.name || user?.username || ""
   const [assigneeDrafts, setAssigneeDrafts] = React.useState<Record<number, string>>({})
   const [personFilter, setPersonFilter] = React.useState("all")
   const [projectFilter, setProjectFilter] = React.useState("all")

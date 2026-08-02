@@ -1,10 +1,9 @@
 import * as React from "react"
 import { useRoute, Link, useLocation } from "wouter"
-import { useUser } from "@clerk/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, FileText, Upload, Download, Loader2, History, MessageSquare, Pencil, MoreHorizontal, FolderKanban } from "lucide-react"
 
-import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, useListProjects, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from "@workspace/api-client-react"
+import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, useListProjects, useListDisciplines, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from "@workspace/api-client-react"
 import type { DrawingStatus } from "@workspace/api-client-react"
 
 import { Button } from "@/components/ui/button"
@@ -18,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { formatDate } from "@/lib/utils"
+import { usePortalAuth } from "@/App"
 
 type DrawingUpload = {
   id: number
@@ -81,8 +81,9 @@ export default function DrawingDetail() {
   const [drawingForm, setDrawingForm] = React.useState<DrawingForm | null>(null)
   const [editingUpload, setEditingUpload] = React.useState<DrawingUpload | null>(null)
   const [uploadForm, setUploadForm] = React.useState<UploadForm>({ fileName: "", fileSize: "", contentType: "", uploadedBy: "" })
-  const { user } = useUser()
-  const currentUserName = user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress || ""
+  const { user } = usePortalAuth()
+  const currentUserName = user?.name || user?.username || ""
+  const { data: disciplines } = useListDisciplines()
 
   const loadUploads = React.useCallback(async () => {
     const response = await fetch(`/api/drawings/${id}/uploads`)
@@ -655,7 +656,7 @@ export default function DrawingDetail() {
                 </Select>
                 <Select value={drawingForm.discipline} onValueChange={(discipline) => setDrawingForm({ ...drawingForm, discipline })}>
                   <SelectTrigger><SelectValue placeholder="Discipline" /></SelectTrigger>
-                  <SelectContent>{["architectural", "structural", "mechanical", "electrical", "plumbing", "landscape", "interiors"].map((discipline) => <SelectItem key={discipline} value={discipline} className="capitalize">{discipline}</SelectItem>)}</SelectContent>
+                  <SelectContent>{(disciplines ?? []).map((discipline) => <SelectItem key={discipline.id} value={discipline.name} className="capitalize">{discipline.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <Select value={drawingForm.projectName} onValueChange={(projectName) => setDrawingForm({ ...drawingForm, projectName })}>

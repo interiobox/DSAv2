@@ -1,14 +1,13 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { useClerk, useUser } from "@clerk/react"
-import { FileText, Layers, UserRoundCog, Users } from "lucide-react"
+import { FileText, Layers, ShieldCheck, UserRoundCog, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { usePortalAuth } from "@/App"
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()
-  const { user } = useUser()
-  const { signOut } = useClerk()
-  const displayName = user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress || "Signed-in user"
+  const { user, logout } = usePortalAuth()
+  const displayName = user?.name || user?.username || "Signed-in user"
 
   return (
     <div className="min-h-[100dvh] flex flex-col md:flex-row bg-background w-full">
@@ -57,9 +56,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <FileText className="w-4 h-4" />
             <span>My Feed</span>
           </Link>
+          {user?.role === "admin" && (
+            <Link href="/admin" className={cn(
+              "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+              location.startsWith("/admin") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+            )}>
+              <ShieldCheck className="w-4 h-4" />
+              <span>Admin</span>
+            </Link>
+          )}
         </nav>
         <div className="border-t border-sidebar-border/50 p-3">
-          <button type="button" onClick={() => signOut({ redirectUrl: "/" })} className="w-full rounded-md px-3 py-2 text-left text-xs text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
+          <button type="button" onClick={() => void logout()} className="w-full rounded-md px-3 py-2 text-left text-xs text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
             Sign out
           </button>
         </div>

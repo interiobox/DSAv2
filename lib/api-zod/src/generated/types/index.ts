@@ -8,8 +8,14 @@
 
 export * from './activity';
 export * from './activityType';
+export * from './adminUserInput';
+export * from './adminUserInputRole';
+export * from './adminUserUpdate';
+export * from './adminUserUpdateRole';
 export * from './dashboardSummary';
 export * from './dashboardSummaryByDiscipline';
+export * from './discipline';
+export * from './disciplineInput';
 export * from './drawing';
 export * from './drawingAssignmentUpdate';
 export * from './drawingComment';
@@ -28,6 +34,9 @@ export * from './drawingUploadUpdate';
 export * from './errorEnvelope';
 export * from './healthStatus';
 export * from './listDrawingsParams';
+export * from './loginInput';
+export * from './portalUser';
+export * from './portalUserRole';
 export * from './project';
 export * from './projectInput';
 export * from './uploadUrlRequest';

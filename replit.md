@@ -40,7 +40,8 @@ An architectural drawing management app for maintaining a searchable drawing lib
 - Drawing detail view with revision metadata and review/issue workflow
 - Mobile-friendly review comments, uploads, and full edit/delete controls
 - Persistent PostgreSQL storage with authenticated activity history and personal My Feed
-- Clerk email/password sign-in with profile-based upload, comment, and assignment attribution
+- First-party username/password sign-in with profile-based upload, comment, and assignment attribution
+- Administrator-managed portal accounts, passwords, roles, drawing disciplines, and complete activity history
 
 ## User preferences
 

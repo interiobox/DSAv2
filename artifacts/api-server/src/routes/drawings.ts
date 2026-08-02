@@ -32,14 +32,17 @@ import {
 } from "@workspace/api-zod";
 import { addActivity, getIdParam, listDrawingRows, toDateString } from "../lib/drawings";
 import { ObjectStorageService } from "../lib/objectStorage";
-import { getAuth } from "@clerk/express";
+import { requireCurrentUser } from "../lib/portalAuth";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
 
 function currentUserId(req: Request) {
-  const auth = getAuth(req);
-  return auth.userId || undefined;
+  return String(requireCurrentUser(req).id);
+}
+
+function currentUserName(req: Request) {
+  return requireCurrentUser(req).name;
 }
 
 router.get("/drawings", async (req, res): Promise<void> => {
@@ -155,8 +158,8 @@ router.patch("/drawings/:id/assignment", async (req, res): Promise<void> => {
     return;
   }
   const message = assigneeName
-    ? `${body.data.assignedBy.trim()} assigned ${drawing.title} to ${assigneeName}`
-    : `${body.data.assignedBy.trim()} unassigned ${drawing.title}`;
+    ? `${currentUserName(req)} assigned ${drawing.title} to ${assigneeName}`
+    : `${currentUserName(req)} unassigned ${drawing.title}`;
   await addActivity("drawing_assigned", message, drawing.id, currentUserId(req));
   res.json(UpdateDrawingAssignmentResponse.parse(drawing));
 });
@@ -223,6 +226,7 @@ router.post("/drawings/:id/uploads", async (req, res): Promise<void> => {
   const [upload] = await db.insert(drawingUploadsTable).values({
     drawingId: drawing.id,
     ...body.data,
+    uploadedBy: currentUserName(req),
   }).returning();
   await db.update(drawingsTable).set({
     attachmentPath: upload.filePath,
@@ -333,6 +337,7 @@ router.post("/drawings/:id/comments", async (req, res): Promise<void> => {
   const [comment] = await db.insert(drawingCommentsTable).values({
     drawingId: drawing.id,
     ...body.data,
+    author: currentUserName(req),
   }).returning();
   await addActivity("comment_added", `${comment.author} commented on ${drawing.title}`, drawing.id, currentUserId(req));
   res.status(201).json(CreateDrawingCommentResponse.parse(comment));

@@ -1,6 +1,5 @@
 import * as React from "react"
 import { Link } from "wouter"
-import { useUser } from "@clerk/react"
 import { CheckCircle2, Clock3, FileText, History, ListTodo } from "lucide-react"
 
 import { useListActivity, useListDrawings } from "@workspace/api-client-react"
@@ -10,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDate } from "@/lib/utils"
+import { usePortalAuth } from "@/App"
 
 const progressForStatus = (status: string) => {
   if (status === "in_review") return 40
@@ -21,11 +21,11 @@ const progressForStatus = (status: string) => {
 const statusLabel = (status: string) => status === "superseded" ? "Archived" : status.replace("_", " ")
 
 export default function MyFeed() {
-  const { user } = useUser()
+  const { user } = usePortalAuth()
   const { data: drawings, isLoading: drawingsLoading } = useListDrawings()
   const { data: activities, isLoading: activitiesLoading } = useListActivity()
-  const displayName = user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress || "Signed-in user"
-  const userId = user?.id
+  const displayName = user?.name || user?.username || "Signed-in user"
+  const userId = user ? String(user.id) : undefined
   const assignedDrawings = (drawings ?? []).filter((drawing) => drawing.assignedTo === displayName)
   const activeDrawings = assignedDrawings.filter((drawing) => drawing.status !== "issued" && drawing.status !== "superseded")
   const completedDrawings = assignedDrawings.filter((drawing) => drawing.status === "issued" || drawing.status === "superseded")

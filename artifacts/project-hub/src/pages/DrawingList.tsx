@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query"
 
 import {
   useListDrawings, useCreateDrawing, useDeleteDrawing,
-  useListProjects, useCreateProject,
+  useListProjects, useCreateProject, useListDisciplines,
   getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey,
   getListProjectsQueryKey
 } from "@workspace/api-client-react"
@@ -25,7 +25,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { formatDateShort } from "@/lib/utils"
 
-const disciplineOptions = ["architectural", "structural", "mechanical", "electrical", "plumbing", "landscape", "interiors"] as const
 const statusOptions = ["draft", "in_review", "approved", "issued", "superseded"] as const
 const statusLabel = (status: string) => status === "superseded" ? "Archived" : status.replace("_", " ")
 export default function DrawingList() {
@@ -50,6 +49,7 @@ export default function DrawingList() {
   const createDrawing = useCreateDrawing()
   const deleteDrawing = useDeleteDrawing()
   const { data: projects, isLoading: projectsLoading } = useListProjects()
+  const { data: disciplines } = useListDisciplines()
   const createProject = useCreateProject()
   const projectOptions = React.useMemo(() => projects?.map((project) => project.name) ?? [], [projects])
   const visibleDrawings = React.useMemo(
@@ -180,8 +180,8 @@ export default function DrawingList() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Disciplines</SelectItem>
-               {disciplineOptions.map(d => (
-                <SelectItem key={d} value={d} className="capitalize">{d}</SelectItem>
+               {(disciplines ?? []).map(discipline => (
+                 <SelectItem key={discipline.id} value={discipline.name} className="capitalize">{discipline.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>

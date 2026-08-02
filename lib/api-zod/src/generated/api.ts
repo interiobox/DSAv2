@@ -9,6 +9,43 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Sign in to the drawing portal
+ */
+export const LoginBody = zod.object({
+  "username": zod.string(),
+  "password": zod.string()
+})
+
+export const LoginResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "username": zod.string().nullable(),
+  "role": zod.enum(['admin', 'user']),
+  "active": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get the signed-in portal user
+ */
+export const GetCurrentUserResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "username": zod.string().nullable(),
+  "role": zod.enum(['admin', 'user']),
+  "active": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Sign out of the drawing portal
+ */
+export const LogoutResponse = zod.void()
+
+
+/**
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -22,14 +59,14 @@ export const HealthCheckResponse = zod.object({
 export const ListDrawingsQueryParams = zod.object({
   "search": zod.coerce.string().optional(),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']).optional(),
-  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']).optional()
+  "discipline": zod.coerce.string().optional()
 })
 
 export const ListDrawingsResponseItem = zod.object({
   "id": zod.number(),
   "drawingNumber": zod.string(),
   "title": zod.string(),
-  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
+  "discipline": zod.string(),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
   "assignedTo": zod.string().nullable(),
   "revision": zod.string(),
@@ -62,7 +99,7 @@ export const ListDrawingsResponse = zod.array(ListDrawingsResponseItem)
 export const CreateDrawingBody = zod.object({
   "drawingNumber": zod.string().min(1).optional(),
   "title": zod.string().min(1).optional(),
-  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']).optional(),
+  "discipline": zod.string().optional(),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']).optional(),
   "revision": zod.string().min(1).optional(),
   "projectName": zod.string().min(1).optional(),
@@ -77,7 +114,7 @@ export const CreateDrawingResponse = zod.object({
   "id": zod.number(),
   "drawingNumber": zod.string(),
   "title": zod.string(),
-  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
+  "discipline": zod.string(),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
   "assignedTo": zod.string().nullable(),
   "revision": zod.string(),
@@ -136,20 +173,175 @@ export const ListUsersResponse = zod.array(ListUsersResponseItem)
 
 
 /**
- * @summary Add a team user
+ * @summary List drawing disciplines
  */
-
-
-
-export const CreateUserBody = zod.object({
-  "name": zod.string().min(1)
-})
-
-export const CreateUserResponse = zod.object({
+export const ListDisciplinesResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "createdAt": zod.coerce.date()
 })
+export const ListDisciplinesResponse = zod.array(ListDisciplinesResponseItem)
+
+
+/**
+ * @summary List all portal users
+ */
+export const AdminListUsersResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "username": zod.string().nullable(),
+  "role": zod.enum(['admin', 'user']),
+  "active": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const AdminListUsersResponse = zod.array(AdminListUsersResponseItem)
+
+
+/**
+ * @summary Create a portal user
+ */
+
+export const adminCreateUserBodyUsernameMin = 3;
+
+export const adminCreateUserBodyPasswordMin = 4;
+
+
+
+export const AdminCreateUserBody = zod.object({
+  "name": zod.string().min(1),
+  "username": zod.string().min(adminCreateUserBodyUsernameMin),
+  "password": zod.string().min(adminCreateUserBodyPasswordMin),
+  "role": zod.enum(['admin', 'user']).optional()
+})
+
+export const AdminCreateUserResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "username": zod.string().nullable(),
+  "role": zod.enum(['admin', 'user']),
+  "active": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a portal user
+ */
+
+
+
+export const AdminUpdateUserParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const AdminUpdateUserBody = zod.object({
+  "name": zod.string().optional(),
+  "username": zod.string().optional(),
+  "password": zod.string().optional(),
+  "role": zod.enum(['admin', 'user']).optional(),
+  "active": zod.boolean().optional()
+})
+
+export const AdminUpdateUserResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "username": zod.string().nullable(),
+  "role": zod.enum(['admin', 'user']),
+  "active": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a portal user
+ */
+
+
+
+export const AdminDeleteUserParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const AdminDeleteUserResponse = zod.void()
+
+
+/**
+ * @summary List managed disciplines
+ */
+export const AdminListDisciplinesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const AdminListDisciplinesResponse = zod.array(AdminListDisciplinesResponseItem)
+
+
+/**
+ * @summary Add a drawing discipline
+ */
+
+
+
+export const AdminCreateDisciplineBody = zod.object({
+  "name": zod.string().min(1)
+})
+
+export const AdminCreateDisciplineResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Rename a drawing discipline
+ */
+
+
+
+export const AdminUpdateDisciplineParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+export const AdminUpdateDisciplineBody = zod.object({
+  "name": zod.string().min(1)
+})
+
+export const AdminUpdateDisciplineResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a drawing discipline
+ */
+
+
+
+export const AdminDeleteDisciplineParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const AdminDeleteDisciplineResponse = zod.void()
+
+
+/**
+ * @summary List complete portal activity
+ */
+export const AdminListActivityResponseItem = zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['drawing_added', 'drawing_updated', 'drawing_issued', 'drawing_approved', 'drawing_uploaded', 'drawing_assigned', 'comment_added']),
+  "message": zod.string(),
+  "drawingId": zod.number().nullable(),
+  "actor": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const AdminListActivityResponse = zod.array(AdminListActivityResponseItem)
 
 
 /**
@@ -166,7 +358,7 @@ export const GetDrawingResponse = zod.object({
   "id": zod.number(),
   "drawingNumber": zod.string(),
   "title": zod.string(),
-  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
+  "discipline": zod.string(),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
   "assignedTo": zod.string().nullable(),
   "revision": zod.string(),
@@ -205,7 +397,7 @@ export const UpdateDrawingParams = zod.object({
 export const UpdateDrawingBody = zod.object({
   "drawingNumber": zod.string().min(1).optional(),
   "title": zod.string().min(1).optional(),
-  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']).optional(),
+  "discipline": zod.string().optional(),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']).optional(),
   "revision": zod.string().min(1).optional(),
   "projectName": zod.string().min(1).optional(),
@@ -224,7 +416,7 @@ export const UpdateDrawingResponse = zod.object({
   "id": zod.number(),
   "drawingNumber": zod.string(),
   "title": zod.string(),
-  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
+  "discipline": zod.string(),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
   "assignedTo": zod.string().nullable(),
   "revision": zod.string(),
@@ -265,7 +457,7 @@ export const UpdateDrawingAssignmentResponse = zod.object({
   "id": zod.number(),
   "drawingNumber": zod.string(),
   "title": zod.string(),
-  "discipline": zod.enum(['architectural', 'structural', 'mechanical', 'electrical', 'plumbing', 'landscape', 'interiors']),
+  "discipline": zod.string(),
   "status": zod.enum(['draft', 'in_review', 'approved', 'issued', 'superseded']),
   "assignedTo": zod.string().nullable(),
   "revision": zod.string(),

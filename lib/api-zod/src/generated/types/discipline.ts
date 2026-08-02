@@ -6,4 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type DrawingDiscipline = string;
+export interface Discipline {
+  id: number;
+  name: string;
+  createdAt: Date;
+}
