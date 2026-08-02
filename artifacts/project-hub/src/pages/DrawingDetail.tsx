@@ -1,7 +1,8 @@
 import * as React from "react"
 import { useRoute, Link, useLocation } from "wouter"
 import { useQueryClient } from "@tanstack/react-query"
-import { ArrowLeft, Edit2, CheckCircle, Clock, Send, Archive, Trash2, Calendar, User, FileText } from "lucide-react"
+import { Show, SignInButton } from "@clerk/react"
+import { ArrowLeft, Edit2, CheckCircle, Clock, Send, Archive, Trash2, Calendar, User, FileText, Upload, Download, Loader2 } from "lucide-react"
 
 import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from "@workspace/api-client-react"
 import type { DrawingStatus } from "@workspace/api-client-react"
@@ -29,6 +30,7 @@ export default function DrawingDetail() {
 
   const updateDrawing = useUpdateDrawing()
   const deleteDrawing = useDeleteDrawing()
+  const [isUploading, setIsUploading] = React.useState(false)
 
   if (isError) {
     return (
@@ -77,6 +79,65 @@ export default function DrawingDetail() {
         setLocation("/drawings")
       }
     })
+  }
+
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ""
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      const uploadRequest = await fetch("/api/storage/uploads/request-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: file.name,
+          size: file.size,
+          contentType: file.type || "application/octet-stream",
+        }),
+      })
+      if (!uploadRequest.ok) {
+        const errorBody = await uploadRequest.json().catch(() => ({}))
+        throw new Error(errorBody.error || "Unable to prepare the upload")
+      }
+
+      const upload = await uploadRequest.json() as {
+        uploadURL: string
+        objectPath: string
+      }
+      const uploadResponse = await fetch(upload.uploadURL, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: file,
+      })
+      if (!uploadResponse.ok) throw new Error("The drawing file could not be uploaded")
+
+      updateDrawing.mutate({
+        id,
+        data: {
+          attachmentPath: upload.objectPath,
+          attachmentName: file.name,
+          attachmentSize: file.size,
+          attachmentContentType: file.type || "application/octet-stream",
+        },
+      }, {
+        onSuccess: (updated) => {
+          queryClient.setQueryData(getGetDrawingQueryKey(id), updated)
+          queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
+          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+          toast({ title: "Drawing file uploaded", description: `${file.name} is attached to ${drawing.drawingNumber}.` })
+        },
+        onError: () => toast({ title: "Attachment record failed", description: "The file uploaded but could not be attached to this drawing." }),
+      })
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "The drawing file could not be uploaded.",
+      })
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   return (
@@ -171,6 +232,55 @@ export default function DrawingDetail() {
                     {drawing.description || <span className="italic text-muted-foreground">No description provided.</span>}
                   </dd>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Upload className="w-4 h-4" />
+                  Drawing File
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {drawing.attachmentPath && drawing.attachmentName ? (
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-md border bg-muted/20 p-4">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-foreground">{drawing.attachmentName}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {drawing.attachmentSize ? `${(drawing.attachmentSize / 1024 / 1024).toFixed(2)} MB` : "File"} · {drawing.attachmentContentType || "Unknown type"}
+                      </p>
+                    </div>
+                    <Button asChild variant="outline" size="sm" className="shrink-0">
+                      <a href={`/api/storage${drawing.attachmentPath.replace("/objects", "/objects")}`} target="_blank" rel="noreferrer">
+                        <Download className="mr-2 h-4 w-4" /> Open file
+                      </a>
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="mb-4 text-sm text-muted-foreground">No drawing file attached yet. Upload a PDF or source file for this sheet.</p>
+                )}
+                <Show when="signed-in">
+                  <label className="mt-4 inline-flex cursor-pointer items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
+                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                    {isUploading ? "Uploading..." : drawing.attachmentPath ? "Replace file" : "Upload drawing file"}
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,.dwg,.dxf,.rvt,.ifc,image/*"
+                      onChange={handleUpload}
+                      disabled={isUploading}
+                    />
+                  </label>
+                </Show>
+                <Show when="signed-out">
+                  <SignInButton mode="modal">
+                    <button type="button" className="mt-4 inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground">
+                      <Upload className="mr-2 h-4 w-4" /> Sign in to upload
+                    </button>
+                  </SignInButton>
+                </Show>
+                <p className="mt-2 text-xs text-muted-foreground">Maximum file size: 25 MB. PDF and common CAD/BIM files are supported.</p>
               </CardContent>
             </Card>
           </div>

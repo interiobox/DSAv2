@@ -18,5 +18,8 @@ export * from './drawingSheetSize';
 export * from './drawingStatus';
 export * from './drawingUpdate';
 export * from './drawingUpdateSheetSize';
+export * from './errorEnvelope';
 export * from './healthStatus';
 export * from './listDrawingsParams';
+export * from './uploadUrlRequest';
+export * from './uploadUrlResponse';

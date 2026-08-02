@@ -27,4 +27,12 @@ export interface Drawing {
   issuedDate?: Date | null;
   updatedAt: Date;
   createdAt: Date;
+  /** @nullable */
+  attachmentPath?: string | null;
+  /** @nullable */
+  attachmentName?: string | null;
+  /** @nullable */
+  attachmentSize?: number | null;
+  /** @nullable */
+  attachmentContentType?: string | null;
 }

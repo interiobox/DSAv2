@@ -15,6 +15,10 @@ export const drawingsTable = pgTable("drawings", {
   description: text("description"),
   dueDate: date("due_date", { mode: "string" }),
   issuedDate: date("issued_date", { mode: "string" }),
+  attachmentPath: text("attachment_path"),
+  attachmentName: text("attachment_name"),
+  attachmentSize: integer("attachment_size"),
+  attachmentContentType: text("attachment_content_type"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -95,6 +95,10 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
     ...(data.description !== undefined ? { description: data.description } : {}),
     ...(data.dueDate !== undefined ? { dueDate: toDateString(data.dueDate) } : {}),
     ...(issuedDate !== undefined ? { issuedDate } : {}),
+    ...(data.attachmentPath !== undefined ? { attachmentPath: data.attachmentPath } : {}),
+    ...(data.attachmentName !== undefined ? { attachmentName: data.attachmentName } : {}),
+    ...(data.attachmentSize !== undefined ? { attachmentSize: data.attachmentSize } : {}),
+    ...(data.attachmentContentType !== undefined ? { attachmentContentType: data.attachmentContentType } : {}),
     updatedAt: new Date(),
   }).where(eq(drawingsTable.id, params.data.id)).returning();
   if (!drawing) {

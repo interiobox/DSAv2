@@ -14,6 +14,8 @@ tags:
     description: Drawing register operations
   - name: dashboard
     description: Dashboard and activity operations
+  - name: storage
+    description: Drawing file upload and serving operations
 paths:
   /healthz:
     get:
@@ -144,6 +146,56 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Activity"
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for a drawing file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Invalid metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /storage/objects/{objectPath}:
+    get:
+      tags: [storage]
+      operationId: getStorageObject
+      summary: Serve a drawing file
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Drawing file content
+        "404":
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
 components:
   parameters:
     Id:
@@ -202,6 +254,14 @@ components:
         createdAt:
           type: string
           format: date-time
+        attachmentPath:
+          type: ["string", "null"]
+        attachmentName:
+          type: ["string", "null"]
+        attachmentSize:
+          type: ["number", "null"]
+        attachmentContentType:
+          type: ["string", "null"]
       required: [id, drawingNumber, title, discipline, status, revision, projectName, sheetSize, author, updatedAt, createdAt]
     DrawingInput:
       type: object
@@ -270,6 +330,14 @@ components:
         issuedDate:
           type: ["string", "null"]
           format: date
+        attachmentPath:
+          type: ["string", "null"]
+        attachmentName:
+          type: ["string", "null"]
+        attachmentSize:
+          type: ["number", "null"]
+        attachmentContentType:
+          type: ["string", "null"]
     DashboardSummary:
       type: object
       properties:
@@ -302,3 +370,32 @@ components:
           type: string
           format: date-time
       required: [id, type, message, createdAt]
+    UploadUrlRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: number
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+      required: [name, size, contentType]
+    UploadUrlResponse:
+      type: object
+      properties:
+        uploadURL:
+          type: string
+        objectPath:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
+      required: [uploadURL, objectPath, metadata]
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]

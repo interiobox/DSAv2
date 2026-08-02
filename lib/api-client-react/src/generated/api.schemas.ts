@@ -62,6 +62,14 @@ export interface Drawing {
   issuedDate?: string | null;
   updatedAt: string;
   createdAt: string;
+  /** @nullable */
+  attachmentPath?: string | null;
+  /** @nullable */
+  attachmentName?: string | null;
+  /** @nullable */
+  attachmentSize?: number | null;
+  /** @nullable */
+  attachmentContentType?: string | null;
 }
 
 export type DrawingInputSheetSize = typeof DrawingInputSheetSize[keyof typeof DrawingInputSheetSize];
@@ -125,6 +133,14 @@ export interface DrawingUpdate {
   dueDate?: string | null;
   /** @nullable */
   issuedDate?: string | null;
+  /** @nullable */
+  attachmentPath?: string | null;
+  /** @nullable */
+  attachmentName?: string | null;
+  /** @nullable */
+  attachmentSize?: number | null;
+  /** @nullable */
+  attachmentContentType?: string | null;
 }
 
 export type DashboardSummaryByDiscipline = {[key: string]: number};
@@ -153,6 +169,25 @@ export interface Activity {
   type: ActivityType;
   message: string;
   createdAt: string;
+}
+
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata: UploadUrlRequest;
+}
+
+export interface ErrorEnvelope {
+  error: string;
 }
 
 export type ListDrawingsParams = {

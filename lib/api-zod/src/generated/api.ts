@@ -39,7 +39,11 @@ export const ListDrawingsResponseItem = zod.object({
   "dueDate": zod.coerce.date().nullish(),
   "issuedDate": zod.coerce.date().nullish(),
   "updatedAt": zod.coerce.date(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "attachmentPath": zod.string().nullish(),
+  "attachmentName": zod.string().nullish(),
+  "attachmentSize": zod.number().nullish(),
+  "attachmentContentType": zod.string().nullish()
 })
 export const ListDrawingsResponse = zod.array(ListDrawingsResponseItem)
 
@@ -82,7 +86,11 @@ export const CreateDrawingResponse = zod.object({
   "dueDate": zod.coerce.date().nullish(),
   "issuedDate": zod.coerce.date().nullish(),
   "updatedAt": zod.coerce.date(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "attachmentPath": zod.string().nullish(),
+  "attachmentName": zod.string().nullish(),
+  "attachmentSize": zod.number().nullish(),
+  "attachmentContentType": zod.string().nullish()
 })
 
 
@@ -110,7 +118,11 @@ export const GetDrawingResponse = zod.object({
   "dueDate": zod.coerce.date().nullish(),
   "issuedDate": zod.coerce.date().nullish(),
   "updatedAt": zod.coerce.date(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "attachmentPath": zod.string().nullish(),
+  "attachmentName": zod.string().nullish(),
+  "attachmentSize": zod.number().nullish(),
+  "attachmentContentType": zod.string().nullish()
 })
 
 
@@ -142,7 +154,11 @@ export const UpdateDrawingBody = zod.object({
   "author": zod.string().min(1).optional(),
   "description": zod.string().nullish(),
   "dueDate": zod.coerce.date().nullish(),
-  "issuedDate": zod.coerce.date().nullish()
+  "issuedDate": zod.coerce.date().nullish(),
+  "attachmentPath": zod.string().nullish(),
+  "attachmentName": zod.string().nullish(),
+  "attachmentSize": zod.number().nullish(),
+  "attachmentContentType": zod.string().nullish()
 })
 
 export const UpdateDrawingResponse = zod.object({
@@ -159,7 +175,11 @@ export const UpdateDrawingResponse = zod.object({
   "dueDate": zod.coerce.date().nullish(),
   "issuedDate": zod.coerce.date().nullish(),
   "updatedAt": zod.coerce.date(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "attachmentPath": zod.string().nullish(),
+  "attachmentName": zod.string().nullish(),
+  "attachmentSize": zod.number().nullish(),
+  "attachmentContentType": zod.string().nullish()
 })
 
 
@@ -199,5 +219,45 @@ export const ListActivityResponseItem = zod.object({
   "createdAt": zod.coerce.date()
 })
 export const ListActivityResponse = zod.array(ListActivityResponseItem)
+
+
+/**
+ * @summary Request a presigned URL for a drawing file
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+
+
+
+
+
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string(),
+  "objectPath": zod.string(),
+  "metadata": zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+})
+
+
+/**
+ * @summary Serve a drawing file
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
+})
+
+export const GetStorageObjectResponse = zod.unknown()
 
 
