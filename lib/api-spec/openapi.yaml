@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: drawings
     description: Drawing register operations
+  - name: projects
+    description: Drawing project operations
   - name: dashboard
     description: Dashboard and activity operations
   - name: storage
@@ -76,6 +78,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Drawing"
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List drawing projects
+      responses:
+        "200":
+          description: Drawing projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Add a drawing project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "409":
+          description: Project already exists
   /drawings/{id}:
     get:
       operationId: getDrawing
@@ -364,6 +399,24 @@ components:
         status:
           type: string
       required: [status]
+    Project:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, createdAt]
+    ProjectInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+      required: [name]
     DrawingStatus:
       type: string
       enum: [draft, in_review, approved, issued, superseded]

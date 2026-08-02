@@ -95,6 +95,34 @@ export const CreateDrawingResponse = zod.object({
 
 
 /**
+ * @summary List drawing projects
+ */
+export const ListProjectsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListProjectsResponse = zod.array(ListProjectsResponseItem)
+
+
+/**
+ * @summary Add a drawing project
+ */
+
+
+
+export const CreateProjectBody = zod.object({
+  "name": zod.string().min(1)
+})
+
+export const CreateProjectResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Get a drawing
  */
 

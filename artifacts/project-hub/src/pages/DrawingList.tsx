@@ -1,6 +1,6 @@
 import * as React from "react"
 import {
-  FileText, Plus, Search, Filter, MoreHorizontal, ArrowRight,
+  FileText, Plus, Search, MoreHorizontal,
   Pencil, Trash2, X, FolderKanban
 } from "lucide-react"
 import { Link, useLocation } from "wouter"
@@ -8,7 +8,9 @@ import { useQueryClient } from "@tanstack/react-query"
 
 import {
   useListDrawings, useCreateDrawing, useDeleteDrawing,
-  getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey
+  useListProjects, useCreateProject,
+  getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey,
+  getListProjectsQueryKey
 } from "@workspace/api-client-react"
 import type { DrawingDiscipline, DrawingStatus } from "@workspace/api-client-react"
 
@@ -17,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
@@ -24,8 +27,6 @@ import { formatDateShort } from "@/lib/utils"
 
 const disciplineOptions = ["architectural", "structural", "mechanical", "electrical", "plumbing", "landscape", "interiors"] as const
 const statusOptions = ["draft", "in_review", "approved", "issued", "superseded"] as const
-const sheetSizeOptions = ["A0", "A1", "A2", "A3", "A4"] as const
-
 export default function DrawingList() {
   const [, setLocation] = useLocation()
   const { toast } = useToast()
@@ -35,6 +36,10 @@ export default function DrawingList() {
   const [disciplineFilter, setDisciplineFilter] = React.useState<DrawingDiscipline | "all">("all")
   const [statusFilter, setStatusFilter] = React.useState<DrawingStatus | "all">("all")
   const [projectFilter, setProjectFilter] = React.useState("all")
+  const [isCreateOpen, setIsCreateOpen] = React.useState(false)
+  const [isProjectOpen, setIsProjectOpen] = React.useState(false)
+  const [selectedProject, setSelectedProject] = React.useState("")
+  const [newProjectName, setNewProjectName] = React.useState("")
   const { data: drawings, isLoading } = useListDrawings({
     search: searchQuery || undefined,
     discipline: disciplineFilter !== "all" ? disciplineFilter : undefined,
@@ -43,10 +48,9 @@ export default function DrawingList() {
 
   const createDrawing = useCreateDrawing()
   const deleteDrawing = useDeleteDrawing()
-  const projectOptions = React.useMemo(
-    () => Array.from(new Set((drawings ?? []).map((drawing) => drawing.projectName))).sort((a, b) => a.localeCompare(b)),
-    [drawings],
-  )
+  const { data: projects, isLoading: projectsLoading } = useListProjects()
+  const createProject = useCreateProject()
+  const projectOptions = React.useMemo(() => projects?.map((project) => project.name) ?? [], [projects])
   const visibleDrawings = React.useMemo(
     () => (drawings ?? []).filter((drawing) => projectFilter === "all" || drawing.projectName === projectFilter),
     [drawings, projectFilter],
@@ -61,15 +65,18 @@ export default function DrawingList() {
     return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b))
   }, [visibleDrawings])
 
-  function createBlankDrawing() {
+  function createBlankDrawing(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!selectedProject) return
     createDrawing.mutate(
-      { data: {} },
+      { data: { projectName: selectedProject } },
       {
         onSuccess: (newDrawing) => {
           queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
           queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() })
           queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
           toast({ title: "Drawing created", description: "Add a file to start tracking this drawing." })
+          setIsCreateOpen(false)
           setLocation(`/drawings/${newDrawing.id}`)
         },
         onError: () => {
@@ -79,6 +86,27 @@ export default function DrawingList() {
           })
         }
       }
+    )
+  }
+
+  function handleCreateProject(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const name = newProjectName.trim()
+    if (!name) return
+    createProject.mutate(
+      { data: { name } },
+      {
+        onSuccess: (project) => {
+          queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() })
+          setNewProjectName("")
+          setIsProjectOpen(false)
+          setSelectedProject(project.name)
+          toast({ title: "Project added", description: `${project.name} is ready for drawings.` })
+        },
+        onError: (error) => {
+          toast({ title: "Project could not be added", description: error instanceof Error ? error.message : "A project with this name may already exist." })
+        },
+      },
     )
   }
 
@@ -105,10 +133,14 @@ export default function DrawingList() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Drawing Register</h1>
           <p className="text-sm text-muted-foreground mt-1">Master index of all project drawings and sheets.</p>
         </div>
-         <div className="flex items-center gap-3">
-          <Button onClick={createBlankDrawing} disabled={createDrawing.isPending}>
+          <div className="flex flex-wrap items-center gap-2">
+           <Button variant="outline" onClick={() => setIsProjectOpen(true)}>
+             <FolderKanban className="mr-2 h-4 w-4" />
+             Add Project
+           </Button>
+           <Button onClick={() => setIsCreateOpen(true)} disabled={projectsLoading}>
             <Plus className="w-4 h-4 mr-2" />
-            {createDrawing.isPending ? "Creating..." : "Create Drawing"}
+             Create Drawing
           </Button>
         </div>
       </div>
@@ -224,7 +256,7 @@ export default function DrawingList() {
                       </div>
                     </div>
                     <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="capitalize">{drawing.discipline} · Rev {drawing.revision}</span>
+                      <span className="capitalize">{drawing.discipline}</span>
                       <span>{formatDateShort(drawing.updatedAt)}</span>
                     </div>
                   </div>
@@ -240,7 +272,6 @@ export default function DrawingList() {
               <TableRow>
                 <TableHead className="w-[140px]">Drawing No.</TableHead>
                 <TableHead>Title</TableHead>
-                <TableHead className="w-[80px] text-center">Rev</TableHead>
                 <TableHead className="w-[120px]">Discipline</TableHead>
                 <TableHead className="w-[120px]">Status</TableHead>
                 <TableHead className="w-[120px]">Updated</TableHead>
@@ -253,7 +284,6 @@ export default function DrawingList() {
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-64" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-8 mx-auto" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
@@ -262,7 +292,7 @@ export default function DrawingList() {
                 ))
               ) : visibleDrawings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                     <div className="flex flex-col items-center justify-center">
                       <FileText className="h-8 w-8 text-muted-foreground/50 mb-2" />
                       <p>No drawings found.</p>
@@ -273,7 +303,7 @@ export default function DrawingList() {
               ) : (
                 groupedDrawings.flatMap(([project, projectDrawings]) => [
                   <TableRow key={`project-${project}`} className="bg-muted/30 hover:bg-muted/30">
-                    <TableCell colSpan={7} className="py-3">
+                    <TableCell colSpan={6} className="py-3">
                       <div className="flex items-center gap-2 font-semibold text-foreground">
                         <FolderKanban className="h-4 w-4 text-primary" />
                         <span>{project}</span>
@@ -285,9 +315,6 @@ export default function DrawingList() {
                   <TableRow key={drawing.id} className="group cursor-pointer" onClick={() => setLocation(`/drawings/${drawing.id}`)}>
                     <TableCell className="font-mono font-medium text-foreground">{drawing.drawingNumber}</TableCell>
                     <TableCell className="font-medium">{drawing.title}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="font-mono rounded-sm px-1.5 py-0 min-w-[2ch]">{drawing.revision}</Badge>
-                    </TableCell>
                     <TableCell className="capitalize text-muted-foreground text-sm">{drawing.discipline}</TableCell>
                     <TableCell>
                       <Badge variant={drawing.status}>{drawing.status.replace('_', ' ')}</Badge>
@@ -320,6 +347,60 @@ export default function DrawingList() {
           </Table>
         </div>
       </div>
+
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create drawing</DialogTitle>
+            <DialogDescription>Choose a project to start a new drawing record.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={createBlankDrawing} className="space-y-4">
+            <Select value={selectedProject} onValueChange={setSelectedProject} required>
+              <SelectTrigger>
+                <FolderKanban className="mr-2 h-4 w-4 text-muted-foreground" />
+                <SelectValue placeholder={projectsLoading ? "Loading projects..." : "Choose a project"} />
+              </SelectTrigger>
+              <SelectContent>
+                {projectOptions.map((project) => <SelectItem key={project} value={project}>{project}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {projectOptions.length === 0 && (
+              <p className="text-sm text-muted-foreground">Add a project first before creating a drawing.</p>
+            )}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={!selectedProject || createDrawing.isPending}>
+                {createDrawing.isPending ? "Creating..." : "Create drawing"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isProjectOpen} onOpenChange={setIsProjectOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add project</DialogTitle>
+            <DialogDescription>Create a project that can be selected for drawings.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateProject} className="space-y-4">
+            <Input
+              value={newProjectName}
+              onChange={(event) => setNewProjectName(event.target.value)}
+              placeholder="Project name"
+              aria-label="Project name"
+              autoFocus
+              required
+            />
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsProjectOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={!newProjectName.trim() || createProject.isPending}>
+                {createProject.isPending ? "Adding..." : "Add project"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
     </div>
   )

@@ -27,5 +27,7 @@ export * from './drawingUploadUpdate';
 export * from './errorEnvelope';
 export * from './healthStatus';
 export * from './listDrawingsParams';
+export * from './project';
+export * from './projectInput';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';

@@ -9,6 +9,17 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface Project {
+  id: number;
+  name: string;
+  createdAt: string;
+}
+
+export interface ProjectInput {
+  /** @minLength 1 */
+  name: string;
+}
+
 export type DrawingStatus = typeof DrawingStatus[keyof typeof DrawingStatus];
 
 

@@ -1,9 +1,9 @@
 import * as React from "react"
 import { useRoute, Link, useLocation } from "wouter"
 import { useQueryClient } from "@tanstack/react-query"
-import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, User, FileText, Upload, Download, Loader2, History, MessageSquare, Pencil, MoreHorizontal } from "lucide-react"
+import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, FileText, Upload, Download, Loader2, History, MessageSquare, Pencil, MoreHorizontal, FolderKanban } from "lucide-react"
 
-import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from "@workspace/api-client-react"
+import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, useListProjects, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from "@workspace/api-client-react"
 import type { DrawingStatus } from "@workspace/api-client-react"
 
 import { Button } from "@/components/ui/button"
@@ -42,12 +42,7 @@ type DrawingForm = {
   title: string
   discipline: string
   status: string
-  revision: string
   projectName: string
-  sheetSize: string
-  author: string
-  description: string
-  dueDate: string
 }
 
 type UploadForm = {
@@ -73,6 +68,7 @@ export default function DrawingDetail() {
 
   const updateDrawing = useUpdateDrawing()
   const deleteDrawing = useDeleteDrawing()
+  const { data: projects, isLoading: projectsLoading } = useListProjects()
   const [isUploading, setIsUploading] = React.useState(false)
   const [uploads, setUploads] = React.useState<DrawingUpload[]>([])
   const [comments, setComments] = React.useState<DrawingComment[]>([])
@@ -157,12 +153,7 @@ export default function DrawingDetail() {
       title: drawing.title,
       discipline: drawing.discipline,
       status: drawing.status,
-      revision: drawing.revision,
       projectName: drawing.projectName,
-      sheetSize: drawing.sheetSize,
-      author: drawing.author,
-      description: drawing.description ?? "",
-      dueDate: drawing.dueDate ?? "",
     })
     setIsEditOpen(true)
   }
@@ -177,8 +168,6 @@ export default function DrawingDetail() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...drawingForm,
-          description: drawingForm.description || null,
-          dueDate: drawingForm.dueDate || null,
         }),
       })
       if (!response.ok) throw new Error("The drawing could not be updated")
@@ -388,7 +377,6 @@ export default function DrawingDetail() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground font-mono uppercase">
               {drawing.drawingNumber}
             </h1>
-            <Badge variant="outline" className="text-sm px-2 py-0 h-6 font-mono">Rev {drawing.revision}</Badge>
             <Badge variant={drawing.status} className="capitalize text-sm h-6 px-3">{drawing.status.replace('_', ' ')}</Badge>
           </div>
           <p className="text-lg text-muted-foreground font-medium">{drawing.title}</p>
@@ -438,35 +426,25 @@ export default function DrawingDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <dl className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x border-b">
+                <dl className="grid grid-cols-1 divide-y border-b">
                   <div className="px-6 py-4">
                     <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Project</dt>
-                    <dd className="font-medium text-foreground">{drawing.projectName}</dd>
+                    <dd className="font-medium text-foreground flex items-center gap-2">
+                      <FolderKanban className="w-4 h-4 text-muted-foreground" />
+                      {drawing.projectName}
+                    </dd>
                   </div>
+                </dl>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x">
                   <div className="px-6 py-4">
                     <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Discipline</dt>
                     <dd className="font-medium text-foreground capitalize">{drawing.discipline}</dd>
                   </div>
-                </dl>
-                <dl className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x border-b">
                   <div className="px-6 py-4">
-                    <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Sheet Size</dt>
-                    <dd className="font-medium text-foreground font-mono">{drawing.sheetSize}</dd>
-                  </div>
-                  <div className="px-6 py-4">
-                    <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Author</dt>
-                    <dd className="font-medium text-foreground flex items-center gap-2">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      {drawing.author}
-                    </dd>
+                    <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Status</dt>
+                    <dd className="font-medium text-foreground capitalize">{drawing.status.replace("_", " ")}</dd>
                   </div>
                 </dl>
-                <div className="px-6 py-4">
-                  <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Description / Notes</dt>
-                  <dd className="text-sm text-foreground/80 leading-relaxed min-h-[60px]">
-                    {drawing.description || <span className="italic text-muted-foreground">No description provided.</span>}
-                  </dd>
-                </div>
               </CardContent>
             </Card>
 
@@ -644,10 +622,6 @@ export default function DrawingDetail() {
                   <span className="text-sm text-muted-foreground">Last Updated</span>
                   <span className="text-sm font-medium">{formatDate(drawing.updatedAt)}</span>
                 </div>
-                <div className="px-6 py-3 flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Due Date</span>
-                  <span className="text-sm font-medium">{drawing.dueDate ? formatDate(drawing.dueDate) : '-'}</span>
-                </div>
                 <div className="px-6 py-3 flex justify-between items-center bg-muted/20">
                   <span className="text-sm font-medium">Issued Date</span>
                   <span className="text-sm font-bold text-primary">{drawing.issuedDate ? formatDate(drawing.issuedDate) : '-'}</span>
@@ -678,10 +652,7 @@ export default function DrawingDetail() {
           </DialogHeader>
           {drawingForm && (
             <form onSubmit={handleDrawingSave} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input value={drawingForm.drawingNumber} onChange={(e) => setDrawingForm({ ...drawingForm, drawingNumber: e.target.value })} placeholder="Drawing number" aria-label="Drawing number" required />
-                <Input value={drawingForm.revision} onChange={(e) => setDrawingForm({ ...drawingForm, revision: e.target.value })} placeholder="Revision" aria-label="Revision" required />
-              </div>
+              <Input value={drawingForm.drawingNumber} onChange={(e) => setDrawingForm({ ...drawingForm, drawingNumber: e.target.value })} placeholder="Drawing number" aria-label="Drawing number" required />
               <Input value={drawingForm.title} onChange={(e) => setDrawingForm({ ...drawingForm, title: e.target.value })} placeholder="Title" aria-label="Title" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Select value={drawingForm.status} onValueChange={(status) => setDrawingForm({ ...drawingForm, status })}>
@@ -693,18 +664,15 @@ export default function DrawingDetail() {
                   <SelectContent>{["architectural", "structural", "mechanical", "electrical", "plumbing", "landscape", "interiors"].map((discipline) => <SelectItem key={discipline} value={discipline} className="capitalize">{discipline}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input value={drawingForm.projectName} onChange={(e) => setDrawingForm({ ...drawingForm, projectName: e.target.value })} placeholder="Project" aria-label="Project" required />
-                <Input value={drawingForm.author} onChange={(e) => setDrawingForm({ ...drawingForm, author: e.target.value })} placeholder="Author" aria-label="Author" required />
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Select value={drawingForm.sheetSize} onValueChange={(sheetSize) => setDrawingForm({ ...drawingForm, sheetSize })}>
-                  <SelectTrigger><SelectValue placeholder="Sheet size" /></SelectTrigger>
-                  <SelectContent>{["A0", "A1", "A2", "A3", "A4"].map((size) => <SelectItem key={size} value={size}>{size}</SelectItem>)}</SelectContent>
-                </Select>
-                <Input type="date" value={drawingForm.dueDate} onChange={(e) => setDrawingForm({ ...drawingForm, dueDate: e.target.value })} aria-label="Due date" />
-              </div>
-              <Textarea value={drawingForm.description} onChange={(e) => setDrawingForm({ ...drawingForm, description: e.target.value })} placeholder="Description or notes" aria-label="Description or notes" rows={3} />
+              <Select value={drawingForm.projectName} onValueChange={(projectName) => setDrawingForm({ ...drawingForm, projectName })}>
+                <SelectTrigger>
+                  <FolderKanban className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <SelectValue placeholder={projectsLoading ? "Loading projects..." : "Choose a project"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(projects ?? []).map((project) => <SelectItem key={project.id} value={project.name}>{project.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
                 <Button type="submit" disabled={isSavingDrawing}>{isSavingDrawing ? "Saving..." : "Save changes"}</Button>
