@@ -1,6 +1,6 @@
-# [Project name]
+# Drawing Register
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An architectural drawing management app for maintaining a searchable sheet register, revisions, review status, issue dates, and project activity.
 
 ## Run & Operate
 
@@ -22,15 +22,24 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — source of truth for the drawing register API
+- `lib/db/src/schema/drawings.ts` — PostgreSQL schema for drawings and activity
+- `artifacts/api-server/src/routes/drawings.ts` — drawing CRUD and activity routes
+- `artifacts/project-hub/src/pages/` — dashboard, register, and drawing detail screens
+- `artifacts/project-hub/src/index.css` — blueprint-inspired visual theme
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The API contract is OpenAPI-first and generated clients are used by the React app.
+- Calendar-only due and issue dates are stored as PostgreSQL `date` values to avoid timezone shifts.
+- Status transitions are explicit actions from drawing detail, with dashboard and activity caches refreshed after mutations.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Dashboard summary by drawing status and discipline
+- Searchable and filterable drawing register
+- Drawing detail view with revision metadata and review/issue workflow
+- Persistent PostgreSQL storage with recent activity feed
 
 ## User preferences
 

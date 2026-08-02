@@ -3,20 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Architectural drawing management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: drawings
+    description: Drawing register operations
+  - name: dashboard
+    description: Dashboard and activity operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +27,278 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /drawings:
+    get:
+      operationId: listDrawings
+      tags: [drawings]
+      summary: List architectural drawings
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/DrawingStatus"
+        - name: discipline
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/DrawingDiscipline"
+      responses:
+        "200":
+          description: Drawing register
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Drawing"
+    post:
+      operationId: createDrawing
+      tags: [drawings]
+      summary: Add a drawing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrawingInput"
+      responses:
+        "201":
+          description: Created drawing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Drawing"
+  /drawings/{id}:
+    get:
+      operationId: getDrawing
+      tags: [drawings]
+      summary: Get a drawing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Drawing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Drawing"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDrawing
+      tags: [drawings]
+      summary: Update a drawing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrawingUpdate"
+      responses:
+        "200":
+          description: Updated drawing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Drawing"
+    delete:
+      operationId: deleteDrawing
+      tags: [drawings]
+      summary: Delete a drawing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+  /dashboard:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get drawing dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /activity:
+    get:
+      operationId: listActivity
+      tags: [dashboard]
+      summary: List recent drawing activity
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: number
+        minimum: 1
   schemas:
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
-
+      required: [status]
+    DrawingStatus:
+      type: string
+      enum: [draft, in_review, approved, issued, superseded]
+    DrawingDiscipline:
+      type: string
+      enum: [architectural, structural, mechanical, electrical, plumbing, landscape, interiors]
+    Drawing:
+      type: object
+      properties:
+        id:
+          type: number
+        drawingNumber:
+          type: string
+        title:
+          type: string
+        discipline:
+          $ref: "#/components/schemas/DrawingDiscipline"
+        status:
+          $ref: "#/components/schemas/DrawingStatus"
+        revision:
+          type: string
+        projectName:
+          type: string
+        sheetSize:
+          type: string
+          enum: [A0, A1, A2, A3, A4]
+        author:
+          type: string
+        description:
+          type: ["string", "null"]
+        dueDate:
+          type: ["string", "null"]
+          format: date
+        issuedDate:
+          type: ["string", "null"]
+          format: date
+        updatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, drawingNumber, title, discipline, status, revision, projectName, sheetSize, author, updatedAt, createdAt]
+    DrawingInput:
+      type: object
+      properties:
+        drawingNumber:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        discipline:
+          $ref: "#/components/schemas/DrawingDiscipline"
+        status:
+          $ref: "#/components/schemas/DrawingStatus"
+        revision:
+          type: string
+          minLength: 1
+        projectName:
+          type: string
+          minLength: 1
+        sheetSize:
+          type: string
+          enum: [A0, A1, A2, A3, A4]
+        author:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        issuedDate:
+          type: string
+          format: date
+      required: [drawingNumber, title, discipline, revision, projectName, sheetSize, author]
+    DrawingUpdate:
+      type: object
+      properties:
+        drawingNumber:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        discipline:
+          $ref: "#/components/schemas/DrawingDiscipline"
+        status:
+          $ref: "#/components/schemas/DrawingStatus"
+        revision:
+          type: string
+          minLength: 1
+        projectName:
+          type: string
+          minLength: 1
+        sheetSize:
+          type: string
+          enum: [A0, A1, A2, A3, A4]
+        author:
+          type: string
+          minLength: 1
+        description:
+          type: ["string", "null"]
+        dueDate:
+          type: ["string", "null"]
+          format: date
+        issuedDate:
+          type: ["string", "null"]
+          format: date
+    DashboardSummary:
+      type: object
+      properties:
+        totalDrawings:
+          type: number
+        inReview:
+          type: number
+        approved:
+          type: number
+        issued:
+          type: number
+        overdue:
+          type: number
+        byDiscipline:
+          type: object
+          additionalProperties:
+            type: number
+      required: [totalDrawings, inReview, approved, issued, overdue, byDiscipline]
+    Activity:
+      type: object
+      properties:
+        id:
+          type: number
+        type:
+          type: string
+          enum: [drawing_added, drawing_updated, drawing_issued, drawing_approved]
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, type, message, createdAt]
