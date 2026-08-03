@@ -33,11 +33,11 @@ export default function MyFeed() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="flex-none border-b bg-card px-6 py-5 shadow-sm">
+      <div className="flex-none border-b bg-card px-4 py-4 shadow-sm sm:px-6 sm:py-5">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">My Feed</h1>
         <p className="mt-1 text-sm text-muted-foreground">Your assigned work, completed work, and recent actions.</p>
       </div>
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto p-3 sm:p-6">
         <div className="mx-auto max-w-5xl space-y-6">
           <Card className="bg-primary text-primary-foreground">
             <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">

@@ -51,7 +51,7 @@ export default function ChecklistsPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="flex-none border-b bg-card px-6 py-5 shadow-sm">
+      <div className="flex-none border-b bg-card px-4 py-4 sm:px-6 sm:py-5 shadow-sm">
         <div className="flex items-center gap-3">
           <ListChecks className="h-6 w-6 text-primary" />
           <div>
@@ -61,7 +61,7 @@ export default function ChecklistsPage() {
         </div>
       </div>
       
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto p-3 sm:p-6">
         <div className="mx-auto max-w-6xl">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full max-w-md grid-cols-2">

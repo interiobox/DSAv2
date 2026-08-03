@@ -95,7 +95,7 @@ export default function AdminPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="flex-none border-b bg-card px-6 py-5 shadow-sm">
+      <div className="flex-none border-b bg-card px-4 py-4 shadow-sm sm:px-6 sm:py-5">
         <div className="flex items-center gap-3">
           <ShieldCheck className="h-6 w-6 text-primary" />
           <div>
@@ -104,7 +104,7 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto p-3 sm:p-6">
         <div className="mx-auto max-w-6xl space-y-6">
           <div className="grid gap-4 sm:grid-cols-3">
             <Card><CardContent className="flex items-center gap-3 p-5"><Users className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{users?.length ?? 0}</p><p className="text-xs text-muted-foreground">Portal users</p></div></CardContent></Card>

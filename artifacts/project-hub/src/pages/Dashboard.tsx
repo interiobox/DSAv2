@@ -13,7 +13,7 @@ export default function Dashboard() {
   const { data: activity, isLoading: isActivityLoading } = useListActivity();
 
   return (
-    <div className="flex-1 overflow-auto bg-background/50 p-6 md:p-10">
+    <div className="flex-1 overflow-auto bg-background/50 p-4 sm:p-6 md:p-10">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header */}

@@ -123,7 +123,7 @@ export default function Assignments() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="flex-none border-b bg-card px-6 py-5 shadow-sm">
+      <div className="flex-none border-b bg-card px-4 py-4 sm:px-6 sm:py-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Assignments</h1>
@@ -139,7 +139,7 @@ export default function Assignments() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto p-3 sm:p-6">
         <div className="mx-auto max-w-6xl space-y-6">
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Card>

@@ -72,7 +72,7 @@ export default function Settings() {
 
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden">
-      <div className="flex-none border-b bg-card px-6 py-5 shadow-sm">
+      <div className="flex-none border-b bg-card px-4 py-4 sm:px-6 sm:py-5 shadow-sm">
         <div className="flex items-center gap-3">
           <SettingsIcon className="h-6 w-6 text-primary" />
           <div>
@@ -81,7 +81,7 @@ export default function Settings() {
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto p-3 sm:p-6">
         <div className="mx-auto max-w-3xl space-y-6">
           <Card>
             <CardHeader className="border-b">

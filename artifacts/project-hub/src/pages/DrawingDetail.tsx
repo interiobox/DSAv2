@@ -323,45 +323,45 @@ export default function DrawingDetail() {
   return (
     <div className="flex-1 flex flex-col bg-background/50 h-full overflow-hidden">
       {/* Header */}
-      <div className="bg-card border-b px-6 py-4 flex-none z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4 sticky top-0 shadow-sm">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+      <div className="bg-card border-b px-4 py-4 sm:px-6 flex-none z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4 sticky top-0 shadow-sm">
+        <div className="min-w-0 space-y-1">
+          <div className="mb-2 flex min-w-0 items-center gap-2 overflow-hidden text-sm text-muted-foreground">
             <Link href="/drawings" className="hover:text-foreground flex items-center gap-1 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Library
             </Link>
             <span>/</span>
-            <span>{drawing.title}</span>
+            <span className="truncate">{drawing.title}</span>
           </div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="truncate text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               {drawing.title}
             </h1>
             <Badge variant={drawing.status} className="capitalize text-sm h-6 px-3">{statusLabel(drawing.status)}</Badge>
           </div>
-          <p className="text-lg text-muted-foreground font-medium">{drawing.title}</p>
+          <p className="truncate text-base font-medium text-muted-foreground sm:text-lg">{drawing.title}</p>
         </div>
         
-          <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={openDrawingEdit}>
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <Button className="flex-1 sm:flex-none" variant="outline" size="sm" onClick={openDrawingEdit}>
             <Pencil className="mr-2 h-4 w-4" /> Edit
           </Button>
           {drawing.status === 'draft' && (
-            <Button variant="outline" size="sm" onClick={() => handleStatusChange('in_review')}>
+            <Button className="flex-1 sm:flex-none" variant="outline" size="sm" onClick={() => handleStatusChange('in_review')}>
               <Clock className="w-4 h-4 mr-2" /> Request Review
             </Button>
           )}
           {drawing.status === 'in_review' && (
-            <Button variant="outline" size="sm" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 border-emerald-200" onClick={() => handleStatusChange('approved')}>
+            <Button className="flex-1 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 sm:flex-none" variant="outline" size="sm" onClick={() => handleStatusChange('approved')}>
               <CheckCircle className="w-4 h-4 mr-2" /> Approve
             </Button>
           )}
           {drawing.status === 'approved' && (
-            <Button size="sm" onClick={() => handleStatusChange('issued')}>
+            <Button className="flex-1 sm:flex-none" size="sm" onClick={() => handleStatusChange('issued')}>
               <Send className="w-4 h-4 mr-2" /> Issue Drawing
             </Button>
           )}
           {(drawing.status === 'issued' || drawing.status === 'approved') && (
-            <Button variant="outline" size="sm" onClick={() => handleStatusChange('superseded')}>
+            <Button className="flex-1 sm:flex-none" variant="outline" size="sm" onClick={() => handleStatusChange('superseded')}>
               <Archive className="w-4 h-4 mr-2" /> Archive
             </Button>
           )}
@@ -377,7 +377,7 @@ export default function DrawingDetail() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto p-3 sm:p-6">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Main Info */}

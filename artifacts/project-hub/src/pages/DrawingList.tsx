@@ -136,17 +136,17 @@ export default function DrawingList() {
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
       {/* Header */}
-      <div className="flex-none px-6 py-5 border-b bg-card z-10 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex-none px-4 py-4 sm:px-6 sm:py-5 border-b bg-card z-10 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Drawing Library</h1>
           <p className="text-sm text-muted-foreground mt-1">All project drawings in one place.</p>
         </div>
-          <div className="flex flex-wrap items-center gap-2">
-           <Button variant="outline" onClick={() => setIsProjectOpen(true)}>
+          <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+           <Button className="w-full sm:w-auto" variant="outline" onClick={() => setIsProjectOpen(true)}>
              <FolderKanban className="mr-2 h-4 w-4" />
              Add Project
            </Button>
-           <Button onClick={() => setIsCreateOpen(true)} disabled={projectsLoading}>
+           <Button className="w-full sm:w-auto" onClick={() => setIsCreateOpen(true)} disabled={projectsLoading}>
             <Plus className="w-4 h-4 mr-2" />
              Create Drawing
           </Button>
@@ -154,7 +154,7 @@ export default function DrawingList() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex-none p-4 border-b bg-background flex flex-col sm:flex-row gap-3">
+      <div className="flex-none p-3 sm:p-4 border-b bg-background flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 sm:max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input 

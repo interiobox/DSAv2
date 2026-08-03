@@ -140,8 +140,8 @@ export default function ChatPage() {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[#f7f8fa]">
       <div className="flex-none border-b bg-card px-4 py-4 sm:px-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="min-w-0">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <MessageSquare className="h-5 w-5" />
@@ -153,14 +153,14 @@ export default function ChatPage() {
             </div>
           </div>
           <div className="flex min-w-0 items-center gap-2">
-            <div className="relative">
+            <div className="relative min-w-0 flex-1 sm:flex-none">
               <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 aria-label="Search messages"
                 placeholder="Search messages"
                 value={messageSearch}
                 onChange={(event) => setMessageSearch(event.target.value)}
-                className="h-9 w-36 pl-9 pr-8 sm:w-52 lg:w-64"
+                className="h-9 w-full pl-9 pr-8 sm:w-52 lg:w-64"
                 data-testid="input-search-chat"
               />
               {messageSearch && (
@@ -183,7 +183,7 @@ export default function ChatPage() {
       </div>
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <aside className="flex w-[220px] shrink-0 flex-col border-r bg-[#eef0f3] sm:w-[250px]">
+        <aside className="hidden w-[220px] shrink-0 flex-col border-r bg-[#eef0f3] sm:w-[250px] lg:flex">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Workspace</p>
@@ -240,10 +240,22 @@ export default function ChatPage() {
         </aside>
 
         <main className="flex min-w-0 flex-1 flex-col bg-white">
-          <div className="flex flex-none items-center justify-between border-b px-4 py-3 sm:px-6">
+          <div className="flex flex-none flex-col gap-2 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             {activeChannel ? (
               <>
                 <div className="min-w-0">
+                  <div className="mb-2 flex gap-1 overflow-x-auto lg:hidden">
+                    {channels.map((channel) => (
+                      <button
+                        key={channel.id}
+                        type="button"
+                        onClick={() => setSelectedChannelId(channel.id)}
+                        className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium", activeChannel.id === channel.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}
+                      >
+                        #{channel.name}
+                      </button>
+                    ))}
+                  </div>
                   <div className="flex items-center gap-2">
                     <Hash className="h-5 w-5 text-primary" />
                     <h2 className="truncate text-base font-bold">{activeChannel.name}</h2>

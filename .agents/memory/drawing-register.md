@@ -108,3 +108,9 @@ The PWA service worker caches only the static application shell and same-origin 
 **Why:** Installability and offline navigation are useful for site work, but caching private drawing data could expose stale or cross-user information.
 
 **How to apply:** Expand static shell caching deliberately and keep `/api/` requests out of the cache strategy.
+
+The portal uses a compact mobile header with a slide-out navigation drawer, while the full grouped sidebar remains the desktop navigation model; dense work surfaces should wrap controls instead of requiring horizontal scrolling.
+
+**Why:** Reviewers use the drawing register on phones as well as desktops, and the full desktop sidebar consumed the entire mobile content area.
+
+**How to apply:** Preserve the mobile drawer and desktop sidebar split when adding navigation, and use responsive gutters, stacked filters, wrapped action groups, and mobile channel selection for new pages.
