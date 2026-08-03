@@ -67,6 +67,12 @@ My Feed is a distinct user-specific workspace and should remain a primary naviga
 
 **How to apply:** Preserve `/feed` and its sidebar entry during navigation simplification; remove only truly overlapping shared aggregation tabs.
 
+Primary navigation should lead with Dashboard, Drawing Library, Projects, Assignments, Review Queue, Deadlines, and My Feed, followed by grouped Coordination, Reference, and Account sections.
+
+**Why:** The daily workflow starts with overview and drawing work, then moves into review/coordination; settings and administrative tools should stay visually secondary.
+
+**How to apply:** Preserve this order when adding or restoring sidebar destinations, and keep dashboard activity compact rather than using a wide alternating timeline in a narrow card.
+
 Assignments and comments should retain stable portal user IDs alongside display names; legacy name-based records remain readable, but new notification and ownership checks should prefer IDs.
 
 **Why:** Display names can be duplicated or changed, and using them as identity caused incorrect assignment notifications and comment impersonation risks.

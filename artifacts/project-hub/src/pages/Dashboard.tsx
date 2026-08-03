@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useLocation } from "wouter"
+import { Link, useLocation } from "wouter"
 import { useGetDashboardSummary, useListActivity } from "@workspace/api-client-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { FileText, Clock, CheckCircle, Send, Plus, Activity as ActivityIcon } from "lucide-react"
@@ -97,34 +97,37 @@ export default function Dashboard() {
 
           {/* Activity Feed */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="flex flex-row items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
                 <ActivityIcon className="w-4 h-4 text-muted-foreground" />
                 Recent Activity
-              </CardTitle>
+                </CardTitle>
+                <CardDescription className="mt-1">Latest changes across the library</CardDescription>
+              </div>
+              <Link href="/activity" className="shrink-0 text-xs font-medium text-primary hover:underline">View all</Link>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {isActivityLoading ? (
-                <div className="space-y-4">
-                  {[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+                <div className="space-y-3 p-6">
+                  {[1,2,3,4].map(i => <Skeleton key={i} className="h-11 w-full" />)}
                 </div>
               ) : (
-                <div className="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
-                  {activity?.slice(0, 8).map((item) => (
-                    <div key={item.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                      <div className="flex items-center justify-center w-5 h-5 rounded-full border bg-background shrink-0 text-muted-foreground z-10">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                      </div>
-                      <div className="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] pl-3 md:pl-0 md:group-odd:pr-3 md:group-even:pl-3">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-foreground">{item.message}</span>
-                          <time className="text-[11px] text-muted-foreground font-mono">{formatDateShort(item.createdAt)}</time>
+                <div className="divide-y">
+                  {activity?.slice(0, 6).map((item) => {
+                    const content = (
+                      <div className="flex min-w-0 items-start gap-3 px-6 py-3.5 transition-colors hover:bg-muted/40">
+                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                        <div className="min-w-0">
+                          <p className="line-clamp-2 text-sm leading-5 text-foreground">{item.message}</p>
+                          <time className="mt-1 block text-[11px] text-muted-foreground">{formatDateShort(item.createdAt)}</time>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                    return item.drawingId ? <Link key={item.id} href={`/drawings/${item.drawingId}`}>{content}</Link> : <div key={item.id}>{content}</div>
+                  })}
                   {(!activity || activity.length === 0) && (
-                    <p className="text-sm text-muted-foreground py-4 text-center">No recent activity.</p>
+                    <p className="px-6 py-8 text-center text-sm text-muted-foreground">No recent activity.</p>
                   )}
                 </div>
               )}
