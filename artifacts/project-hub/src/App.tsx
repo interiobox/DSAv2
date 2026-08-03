@@ -12,6 +12,7 @@ import ChecklistsPage from "@/pages/Checklists";
 import ChatPage from "@/pages/Chat";
 import DrawingDetail from "@/pages/DrawingDetail";
 import DrawingList from "@/pages/DrawingList";
+import ProjectDetail from "@/pages/ProjectDetail";
 import MyFeed from "@/pages/MyFeed";
 import NotFound from "@/pages/not-found";
 import UsersPage from "@/pages/Users";
@@ -205,6 +206,7 @@ function ProtectedRoutes() {
         <Route path="/drawings/:id" component={DrawingDetail} />
         <Route path="/assignments" component={Assignments} />
         <Route path="/projects" component={Projects} />
+        <Route path="/projects/:projectName" component={ProjectDetail} />
         <Route path="/review-queue" component={ReviewQueue} />
         <Route path="/activity" component={Activity} />
         <Route path="/deadlines" component={Deadlines} />

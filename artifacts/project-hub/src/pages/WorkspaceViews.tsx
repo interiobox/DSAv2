@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useLocation } from "wouter"
+import { Link } from "wouter"
 import { Archive as ArchiveIcon, ArrowRight, CalendarDays, CheckCircle2, Clock3, FileText, FolderKanban, History, Search, SlidersHorizontal } from "lucide-react"
 
 import { useListActivity, useListDrawings, useListProjects } from "@workspace/api-client-react"
@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDate, formatDateShort } from "@/lib/utils"
-import { ProjectNotesPanel } from "@/components/ProjectNotesPanel"
 
 const statusLabel = (status: string) => status === "superseded" ? "Archived" : status.replace("_", " ")
 const statusTone = (status: string) => status === "approved" ? "bg-emerald-100 text-emerald-800" : status === "issued" ? "bg-blue-100 text-blue-800" : status === "in_review" ? "bg-amber-100 text-amber-800" : status === "superseded" ? "bg-slate-100 text-slate-700" : ""
@@ -35,7 +34,6 @@ function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message:
 }
 
 export function Projects() {
-  const [, setLocation] = useLocation()
   const { data: projects, isLoading: projectsLoading } = useListProjects()
   const { data: drawings, isLoading: drawingsLoading } = useListDrawings()
   const [search, setSearch] = React.useState("")
@@ -51,16 +49,15 @@ export function Projects() {
             const projectDrawings = (drawings ?? []).filter((drawing) => drawing.projectName === project.name)
             const active = projectDrawings.filter((drawing) => drawing.status !== "issued" && drawing.status !== "superseded").length
             const review = projectDrawings.filter((drawing) => drawing.status === "in_review").length
-            return <div key={project.id} role="link" tabIndex={0} onClick={() => setLocation(`/drawings?project=${encodeURIComponent(project.name)}`)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setLocation(`/drawings?project=${encodeURIComponent(project.name)}`) } }} className="group block h-full cursor-pointer rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            return <Link key={project.id} href={`/projects/${encodeURIComponent(project.name)}`} className="group block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
               <Card className="h-full transition-colors group-hover:border-primary/50 group-hover:shadow-md">
                 <CardHeader className="border-b pb-4"><CardTitle className="flex items-center justify-between gap-3 text-base"><span className="truncate">{project.name}</span><Badge variant="outline">{projectDrawings.length}</Badge></CardTitle><CardDescription>Added {formatDateShort(project.createdAt)}</CardDescription></CardHeader>
                 <CardContent className="pt-4">
                   <div className="grid grid-cols-3 gap-3 text-center text-sm"><div><p className="font-semibold">{active}</p><p className="text-xs text-muted-foreground">Active</p></div><div><p className="font-semibold">{review}</p><p className="text-xs text-muted-foreground">In review</p></div><div><p className="font-semibold">{projectDrawings.filter((drawing) => drawing.status === "issued").length}</p><p className="text-xs text-muted-foreground">Issued</p></div></div>
-                   <ProjectNotesPanel projectName={project.name} />
-                   <div className="mt-5 flex items-center justify-between border-t pt-3 text-xs font-medium"><span className="flex items-center gap-2 text-primary"><span>View project drawings</span><ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></span><Link href={`/contacts?project=${encodeURIComponent(project.name)}`} onClick={(event) => event.stopPropagation()} className="text-muted-foreground hover:text-primary hover:underline">Directory</Link></div>
+                    <div className="mt-5 flex items-center justify-between border-t pt-3 text-xs font-medium"><span className="flex items-center gap-2 text-primary"><span>Open project</span><ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></span><span onClick={(event) => event.preventDefault()} className="text-muted-foreground">Dedicated workspace</span></div>
                 </CardContent>
               </Card>
-             </div>
+            </Link>
           })}</div>
         )}
       </div></div>

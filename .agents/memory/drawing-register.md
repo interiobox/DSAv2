@@ -121,6 +121,12 @@ Project summaries are navigation cards into the filtered Drawing Library, and as
 
 **How to apply:** Give project summaries an explicit route/action and keep assignment mutations contained beside, not mixed into, the drawing and progress information.
 
+Projects have dedicated project workspaces separate from the project index; the workspace is the coordination home for project drawings, deadlines, checklists, directory contacts, and shared notes.
+
+**Why:** A project card and filtered library do not provide enough context for teams coordinating a complete project.
+
+**How to apply:** Keep `/projects` focused on finding projects, and route each project to its dedicated workspace before sending users to narrower drawing, directory, or checklist views.
+
 Mention autocomplete uses active portal usernames and inserts the exact `@username` token consumed by server-side notification matching in chat and drawing comments.
 
 **Why:** Display names are useful in the interface but mention notifications resolve against stable login handles.
