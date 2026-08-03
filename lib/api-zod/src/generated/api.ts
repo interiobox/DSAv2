@@ -162,6 +162,219 @@ export const CreateProjectResponse = zod.object({
 
 
 /**
+ * @summary List shared contacts
+ */
+export const ListContactsQueryParams = zod.object({
+  "projectName": zod.coerce.string().optional()
+})
+
+export const ListContactsResponseItem = zod.object({
+  "id": zod.number(),
+  "companyName": zod.string(),
+  "contactName": zod.string().nullable(),
+  "type": zod.enum(['client', 'consultant', 'contractor', 'vendor', 'supplier', 'authority', 'other']),
+  "service": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "website": zod.string().nullable(),
+  "address": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "projects": zod.array(zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "role": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+})
+export const ListContactsResponse = zod.array(ListContactsResponseItem)
+
+
+/**
+ * @summary Create a shared contact
+ */
+
+
+
+export const CreateContactBody = zod.object({
+  "companyName": zod.string().min(1),
+  "contactName": zod.string().optional(),
+  "type": zod.enum(['client', 'consultant', 'contractor', 'vendor', 'supplier', 'authority', 'other']),
+  "service": zod.string().optional(),
+  "email": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "website": zod.string().optional(),
+  "address": zod.string().optional(),
+  "notes": zod.string().optional(),
+  "projectName": zod.string().optional(),
+  "projectRole": zod.string().optional(),
+  "projectNotes": zod.string().optional()
+})
+
+export const CreateContactResponse = zod.object({
+  "id": zod.number(),
+  "companyName": zod.string(),
+  "contactName": zod.string().nullable(),
+  "type": zod.enum(['client', 'consultant', 'contractor', 'vendor', 'supplier', 'authority', 'other']),
+  "service": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "website": zod.string().nullable(),
+  "address": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "projects": zod.array(zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "role": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update a shared contact
+ */
+
+
+
+export const UpdateContactParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+export const UpdateContactBody = zod.object({
+  "companyName": zod.string().min(1).optional(),
+  "contactName": zod.string().nullish(),
+  "type": zod.enum(['client', 'consultant', 'contractor', 'vendor', 'supplier', 'authority', 'other']).optional(),
+  "service": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "address": zod.string().nullish(),
+  "notes": zod.string().nullish()
+})
+
+export const UpdateContactResponse = zod.object({
+  "id": zod.number(),
+  "companyName": zod.string(),
+  "contactName": zod.string().nullable(),
+  "type": zod.enum(['client', 'consultant', 'contractor', 'vendor', 'supplier', 'authority', 'other']),
+  "service": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "website": zod.string().nullable(),
+  "address": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "projects": zod.array(zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "role": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Delete a shared contact
+ */
+
+
+
+export const DeleteContactParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const DeleteContactResponse = zod.void()
+
+
+/**
+ * @summary Add a project association to a contact
+ */
+
+
+
+export const AddContactProjectParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+export const AddContactProjectBody = zod.object({
+  "projectName": zod.string().min(1),
+  "role": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const AddContactProjectResponse = zod.object({
+  "id": zod.number(),
+  "companyName": zod.string(),
+  "contactName": zod.string().nullable(),
+  "type": zod.enum(['client', 'consultant', 'contractor', 'vendor', 'supplier', 'authority', 'other']),
+  "service": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "website": zod.string().nullable(),
+  "address": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "projects": zod.array(zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "role": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Remove a project association from a contact
+ */
+
+
+
+
+export const RemoveContactProjectParams = zod.object({
+  "id": zod.coerce.number().min(1),
+  "projectId": zod.coerce.number().min(1)
+})
+
+export const RemoveContactProjectResponse = zod.object({
+  "id": zod.number(),
+  "companyName": zod.string(),
+  "contactName": zod.string().nullable(),
+  "type": zod.enum(['client', 'consultant', 'contractor', 'vendor', 'supplier', 'authority', 'other']),
+  "service": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "website": zod.string().nullable(),
+  "address": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "projects": zod.array(zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "role": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
  * @summary List reusable checklist templates
  */
 export const ListChecklistTemplatesResponseItem = zod.object({

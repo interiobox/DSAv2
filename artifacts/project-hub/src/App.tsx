@@ -19,6 +19,7 @@ import { Activity, Archive, Deadlines, Projects, ReviewQueue } from "@/pages/Wor
 import { Files, Issues, Notifications, Reports, Standards, Team } from "@/pages/ManagementViews";
 import SettingsPage from "@/pages/Settings";
 import Dashboard from "@/pages/Dashboard";
+import ContactsPage from "@/pages/Contacts";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -216,6 +217,7 @@ function ProtectedRoutes() {
         <Route path="/issues" component={Issues} />
         <Route path="/files" component={Files} />
         <Route path="/team" component={Team} />
+        <Route path="/contacts" component={ContactsPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/users" component={AdminUsersRoute} />
         <Route path="/feed" component={MyFeed} />

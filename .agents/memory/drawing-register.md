@@ -126,3 +126,9 @@ Mention autocomplete uses active portal usernames and inserts the exact `@userna
 **Why:** Display names are useful in the interface but mention notifications resolve against stable login handles.
 
 **How to apply:** Keep mention suggestions filtered to active users with usernames, and preserve the `@` plus username format when adding future mention-capable inputs.
+
+Contacts are reusable firm-wide organizations/people with separate project associations carrying project-specific roles and notes.
+
+**Why:** The same consultant, vendor, or contractor commonly supports multiple architectural projects, while their responsibility and scope can differ by project.
+
+**How to apply:** Reuse shared contact records instead of duplicating vendors per project; query project directories through associations and keep the shared directory as the source of truth.

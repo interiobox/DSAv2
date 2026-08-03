@@ -32,6 +32,10 @@ import type {
   ChecklistItemUpdate,
   ChecklistTemplate,
   ChecklistTemplateInput,
+  Contact,
+  ContactInput,
+  ContactProjectInput,
+  ContactUpdate,
   DashboardSummary,
   Discipline,
   DisciplineInput,
@@ -46,6 +50,7 @@ import type {
   DrawingUploadInput,
   ErrorEnvelope,
   HealthStatus,
+  ListContactsParams,
   ListDrawingsParams,
   ListProjectChecklistsParams,
   LoginInput,
@@ -684,6 +689,449 @@ export const useCreateProject = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateProjectMutationOptions(options));
+    }
+
+export const getListContactsUrl = (params?: ListContactsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/contacts?${stringifiedParams}` : `/api/contacts`
+}
+
+/**
+ * @summary List shared contacts
+ */
+export const listContacts = async (params?: ListContactsParams, options?: Parameters<typeof customFetch>[1]): Promise<Contact[]> => {
+
+  return customFetch<Contact[]>(getListContactsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListContactsQueryKey = (params?: ListContactsParams,) => {
+    return [
+    `/api/contacts`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListContactsQueryOptions = <TData = Awaited<ReturnType<typeof listContacts>>, TError = ErrorType<unknown>>(params?: ListContactsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListContactsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listContacts>>> = ({ signal }) => listContacts(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listContacts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListContactsQueryResult = NonNullable<Awaited<ReturnType<typeof listContacts>>>
+export type ListContactsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List shared contacts
+ */
+
+export function useListContacts<TData = Awaited<ReturnType<typeof listContacts>>, TError = ErrorType<unknown>>(
+ params?: ListContactsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListContactsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateContactUrl = () => {
+
+
+
+
+  return `/api/contacts`
+}
+
+/**
+ * @summary Create a shared contact
+ */
+export const createContact = async (contactInput: ContactInput, options?: Parameters<typeof customFetch>[1]): Promise<Contact> => {
+
+  return customFetch<Contact>(getCreateContactUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(contactInput)
+  }
+);}
+
+
+
+
+
+export const getCreateContactMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContact>>, TError,{data: BodyType<ContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createContact>>, TError,{data: BodyType<ContactInput>}, TContext> => {
+
+const mutationKey = ['createContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createContact>>, {data: BodyType<ContactInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createContact(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateContactMutationResult = NonNullable<Awaited<ReturnType<typeof createContact>>>
+    export type CreateContactMutationBody = BodyType<ContactInput>
+    export type CreateContactMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a shared contact
+ */
+export const useCreateContact = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContact>>, TError,{data: BodyType<ContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createContact>>,
+        TError,
+        {data: BodyType<ContactInput>},
+        TContext
+      > => {
+      return useMutation(getCreateContactMutationOptions(options));
+    }
+
+export const getUpdateContactUrl = (id: number,) => {
+
+
+
+
+  return `/api/contacts/${id}`
+}
+
+/**
+ * @summary Update a shared contact
+ */
+export const updateContact = async (id: number,
+    contactUpdate: ContactUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Contact> => {
+
+  return customFetch<Contact>(getUpdateContactUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(contactUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateContactMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateContact>>, TError,{id: number;data: BodyType<ContactUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateContact>>, TError,{id: number;data: BodyType<ContactUpdate>}, TContext> => {
+
+const mutationKey = ['updateContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateContact>>, {id: number;data: BodyType<ContactUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateContact(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateContactMutationResult = NonNullable<Awaited<ReturnType<typeof updateContact>>>
+    export type UpdateContactMutationBody = BodyType<ContactUpdate>
+    export type UpdateContactMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a shared contact
+ */
+export const useUpdateContact = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateContact>>, TError,{id: number;data: BodyType<ContactUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateContact>>,
+        TError,
+        {id: number;data: BodyType<ContactUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateContactMutationOptions(options));
+    }
+
+export const getDeleteContactUrl = (id: number,) => {
+
+
+
+
+  return `/api/contacts/${id}`
+}
+
+/**
+ * @summary Delete a shared contact
+ */
+export const deleteContact = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteContactUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteContactMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContact>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteContact>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteContact>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteContact(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteContactMutationResult = NonNullable<Awaited<ReturnType<typeof deleteContact>>>
+
+    export type DeleteContactMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a shared contact
+ */
+export const useDeleteContact = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContact>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteContact>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteContactMutationOptions(options));
+    }
+
+export const getAddContactProjectUrl = (id: number,) => {
+
+
+
+
+  return `/api/contacts/${id}/projects`
+}
+
+/**
+ * @summary Add a project association to a contact
+ */
+export const addContactProject = async (id: number,
+    contactProjectInput: ContactProjectInput, options?: Parameters<typeof customFetch>[1]): Promise<Contact> => {
+
+  return customFetch<Contact>(getAddContactProjectUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(contactProjectInput)
+  }
+);}
+
+
+
+
+
+export const getAddContactProjectMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addContactProject>>, TError,{id: number;data: BodyType<ContactProjectInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addContactProject>>, TError,{id: number;data: BodyType<ContactProjectInput>}, TContext> => {
+
+const mutationKey = ['addContactProject'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addContactProject>>, {id: number;data: BodyType<ContactProjectInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  addContactProject(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddContactProjectMutationResult = NonNullable<Awaited<ReturnType<typeof addContactProject>>>
+    export type AddContactProjectMutationBody = BodyType<ContactProjectInput>
+    export type AddContactProjectMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a project association to a contact
+ */
+export const useAddContactProject = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addContactProject>>, TError,{id: number;data: BodyType<ContactProjectInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addContactProject>>,
+        TError,
+        {id: number;data: BodyType<ContactProjectInput>},
+        TContext
+      > => {
+      return useMutation(getAddContactProjectMutationOptions(options));
+    }
+
+export const getRemoveContactProjectUrl = (id: number,
+    projectId: number,) => {
+
+
+
+
+  return `/api/contacts/${id}/projects/${projectId}`
+}
+
+/**
+ * @summary Remove a project association from a contact
+ */
+export const removeContactProject = async (id: number,
+    projectId: number, options?: Parameters<typeof customFetch>[1]): Promise<Contact> => {
+
+  return customFetch<Contact>(getRemoveContactProjectUrl(id,projectId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveContactProjectMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeContactProject>>, TError,{id: number;projectId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeContactProject>>, TError,{id: number;projectId: number}, TContext> => {
+
+const mutationKey = ['removeContactProject'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeContactProject>>, {id: number;projectId: number}> = (props) => {
+          const {id,projectId} = props ?? {};
+
+          return  removeContactProject(id,projectId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveContactProjectMutationResult = NonNullable<Awaited<ReturnType<typeof removeContactProject>>>
+
+    export type RemoveContactProjectMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove a project association from a contact
+ */
+export const useRemoveContactProject = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeContactProject>>, TError,{id: number;projectId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeContactProject>>,
+        TError,
+        {id: number;projectId: number},
+        TContext
+      > => {
+      return useMutation(getRemoveContactProjectMutationOptions(options));
     }
 
 export const getListChecklistTemplatesUrl = () => {

@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { Archive, Bell, BookOpen, CalendarDays, FileText, FolderKanban, FolderOpen, Layers, ListChecks, LogOut, Menu, MessageSquare, ClipboardCheck, Settings, ShieldCheck, Users, UserRoundCog, FileWarning, LayoutDashboard } from "lucide-react"
+import { Archive, Bell, BookOpen, CalendarDays, FileText, FolderKanban, FolderOpen, Layers, ListChecks, LogOut, Menu, MessageSquare, ClipboardCheck, Settings, ShieldCheck, Users, UserRoundCog, FileWarning, LayoutDashboard, UsersRound } from "lucide-react"
 import { getListNotificationsQueryKey, useListNotifications } from "@workspace/api-client-react"
 import { cn } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
@@ -70,6 +70,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </Link>
       <Link href="/files" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/files") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
         <FolderOpen className="h-4 w-4" /><span>Files</span>
+      </Link>
+      <Link href="/contacts" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/contacts") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+        <UsersRound className="w-4 h-4" /><span>Contacts & Partners</span>
       </Link>
       <Link href="/archive" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/archive") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
         <Archive className="h-4 w-4" /><span>Archive</span>

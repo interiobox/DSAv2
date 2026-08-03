@@ -14,6 +14,8 @@ tags:
     description: Drawing library operations
   - name: projects
     description: Drawing project operations
+  - name: contacts
+    description: Shared contact, vendor, consultant, and project directory operations
   - name: users
     description: Team directory operations
   - name: auth
@@ -161,6 +163,112 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Project"
+  /contacts:
+    get:
+      operationId: listContacts
+      tags: [contacts]
+      summary: List shared contacts
+      parameters:
+        - name: projectName
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Shared contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contact"
+    post:
+      operationId: createContact
+      tags: [contacts]
+      summary: Create a shared contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Created contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+  /contacts/{id}:
+    patch:
+      operationId: updateContact
+      tags: [contacts]
+      summary: Update a shared contact
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactUpdate"
+      responses:
+        "200":
+          description: Updated contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+    delete:
+      operationId: deleteContact
+      tags: [contacts]
+      summary: Delete a shared contact
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Contact deleted
+  /contacts/{id}/projects:
+    post:
+      operationId: addContactProject
+      tags: [contacts]
+      summary: Add a project association to a contact
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactProjectInput"
+      responses:
+        "200":
+          description: Contact with the new project association
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+  /contacts/{id}/projects/{projectId}:
+    delete:
+      operationId: removeContactProject
+      tags: [contacts]
+      summary: Remove a project association from a contact
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: number
+            minimum: 1
+      responses:
+        "200":
+          description: Contact without the removed project association
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
   /checklist-templates:
     get:
       operationId: listChecklistTemplates
@@ -958,6 +1066,120 @@ components:
           type: string
           minLength: 1
       required: [name]
+    ContactProject:
+      type: object
+      properties:
+        id:
+          type: number
+        projectName:
+          type: string
+        role:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, projectName, role, notes, createdAt]
+    Contact:
+      type: object
+      properties:
+        id:
+          type: number
+        companyName:
+          type: string
+        contactName:
+          type: ["string", "null"]
+        type:
+          type: string
+          enum: [client, consultant, contractor, vendor, supplier, authority, other]
+        service:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        website:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContactProject"
+      required: [id, companyName, contactName, type, service, email, phone, website, address, notes, createdAt, updatedAt, projects]
+    ContactInput:
+      type: object
+      properties:
+        companyName:
+          type: string
+          minLength: 1
+        contactName:
+          type: string
+        type:
+          type: string
+          enum: [client, consultant, contractor, vendor, supplier, authority, other]
+        service:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        website:
+          type: string
+        address:
+          type: string
+        notes:
+          type: string
+        projectName:
+          type: string
+        projectRole:
+          type: string
+        projectNotes:
+          type: string
+      required: [companyName, type]
+    ContactUpdate:
+      type: object
+      properties:
+        companyName:
+          type: string
+          minLength: 1
+        contactName:
+          type: ["string", "null"]
+        type:
+          type: string
+          enum: [client, consultant, contractor, vendor, supplier, authority, other]
+        service:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        website:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+    ContactProjectInput:
+      type: object
+      properties:
+        projectName:
+          type: string
+          minLength: 1
+        role:
+          type: string
+        notes:
+          type: string
+      required: [projectName]
     ChecklistTemplateItem:
       type: object
       properties:

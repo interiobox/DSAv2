@@ -20,6 +20,121 @@ export interface ProjectInput {
   name: string;
 }
 
+export interface ContactProject {
+  id: number;
+  projectName: string;
+  /** @nullable */
+  role: string | null;
+  /** @nullable */
+  notes: string | null;
+  createdAt: string;
+}
+
+export type ContactType = typeof ContactType[keyof typeof ContactType];
+
+
+export const ContactType = {
+  client: 'client',
+  consultant: 'consultant',
+  contractor: 'contractor',
+  vendor: 'vendor',
+  supplier: 'supplier',
+  authority: 'authority',
+  other: 'other',
+} as const;
+
+export interface Contact {
+  id: number;
+  companyName: string;
+  /** @nullable */
+  contactName: string | null;
+  type: ContactType;
+  /** @nullable */
+  service: string | null;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  phone: string | null;
+  /** @nullable */
+  website: string | null;
+  /** @nullable */
+  address: string | null;
+  /** @nullable */
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  projects: ContactProject[];
+}
+
+export type ContactInputType = typeof ContactInputType[keyof typeof ContactInputType];
+
+
+export const ContactInputType = {
+  client: 'client',
+  consultant: 'consultant',
+  contractor: 'contractor',
+  vendor: 'vendor',
+  supplier: 'supplier',
+  authority: 'authority',
+  other: 'other',
+} as const;
+
+export interface ContactInput {
+  /** @minLength 1 */
+  companyName: string;
+  contactName?: string;
+  type: ContactInputType;
+  service?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  address?: string;
+  notes?: string;
+  projectName?: string;
+  projectRole?: string;
+  projectNotes?: string;
+}
+
+export type ContactUpdateType = typeof ContactUpdateType[keyof typeof ContactUpdateType];
+
+
+export const ContactUpdateType = {
+  client: 'client',
+  consultant: 'consultant',
+  contractor: 'contractor',
+  vendor: 'vendor',
+  supplier: 'supplier',
+  authority: 'authority',
+  other: 'other',
+} as const;
+
+export interface ContactUpdate {
+  /** @minLength 1 */
+  companyName?: string;
+  /** @nullable */
+  contactName?: string | null;
+  type?: ContactUpdateType;
+  /** @nullable */
+  service?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  website?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface ContactProjectInput {
+  /** @minLength 1 */
+  projectName: string;
+  role?: string;
+  notes?: string;
+}
+
 export interface ChecklistTemplateItem {
   id: number;
   title: string;
@@ -463,6 +578,10 @@ export type ListDrawingsParams = {
 search?: string;
 status?: DrawingStatus;
 discipline?: DrawingDiscipline;
+};
+
+export type ListContactsParams = {
+projectName?: string;
 };
 
 export type ListProjectChecklistsParams = {
