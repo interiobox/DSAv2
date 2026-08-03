@@ -85,6 +85,12 @@ Drawing classifications are user-managed shared categories; any authenticated po
 
 **How to apply:** Keep category CRUD authenticated but not admin-gated, prevent deleting categories still used by drawings, and update all user-facing language from discipline to category while preserving legacy storage compatibility.
 
+Universal search is a signed-in app-shell command palette opened from the sidebar or Ctrl/Cmd+K, covering navigation and current drawings, projects, categories, people, and activity.
+
+**Why:** The portal has many workflow destinations and record types, so users need a consistent way to jump directly to work without relying on sidebar scanning.
+
+**How to apply:** Keep the palette available on every authenticated route, group results by type, respect role-aware destinations, and route record results directly to their detail or workspace page.
+
 Personal notifications are persisted per portal user and are created for username mentions, drawing assignments, and assigned-drawing status changes; chat and comment mention delivery currently uses short polling rather than a WebSocket.
 
 **Why:** The portal needs reliable unread/read state across reloads while preserving the existing simple deployment model.
