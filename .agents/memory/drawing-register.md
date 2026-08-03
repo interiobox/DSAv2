@@ -114,3 +114,9 @@ The portal uses a compact mobile header with a slide-out navigation drawer, whil
 **Why:** Reviewers use the drawing register on phones as well as desktops, and the full desktop sidebar consumed the entire mobile content area.
 
 **How to apply:** Preserve the mobile drawer and desktop sidebar split when adding navigation, and use responsive gutters, stacked filters, wrapped action groups, and mobile channel selection for new pages.
+
+Project summaries are navigation cards into the filtered Drawing Library, and assignment rows should separate drawing identity, progress/status, and ownership controls into distinct visual zones.
+
+**Why:** Project cards that only display metrics feel broken when they have no next action, while mixed assignment controls make ownership work difficult to scan.
+
+**How to apply:** Give project summaries an explicit route/action and keep assignment mutations contained beside, not mixed into, the drawing and progress information.

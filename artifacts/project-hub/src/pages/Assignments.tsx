@@ -237,19 +237,23 @@ export default function Assignments() {
                           const progress = progressForStatus(drawing.status)
                           const draftAssignee = assigneeDrafts[drawing.id] ?? drawing.assignedTo ?? ""
                           const isSaving = updateAssignment.isPending
-                          return (
-                            <div key={drawing.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                              <button type="button" className="min-w-0 text-left" onClick={() => setLocation(`/drawings/${drawing.id}`)}>
-                                <p className="truncate font-medium text-foreground hover:text-primary">{drawing.title}</p>
-                                <p className="mt-1 text-xs text-muted-foreground">{drawing.projectName} · <span className="capitalize">{drawing.discipline}</span></p>
-                              </button>
-                              <div className="flex min-w-0 flex-col gap-3 sm:w-[420px]">
-                                <div className="flex items-center gap-3">
-                                  {progress === 100 ? <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" /> : progress > 0 ? <Clock3 className="h-4 w-4 shrink-0 text-amber-600" /> : <Circle className="h-4 w-4 shrink-0 text-muted-foreground" />}
-                                  <Progress value={progress} />
-                                  <Badge variant={drawing.status} className="shrink-0 capitalize">{statusLabel(drawing.status)}</Badge>
-                                </div>
-                                <div className="flex flex-col gap-2 sm:flex-row">
+                            return (
+                             <div key={drawing.id} className="grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(180px,0.8fr)_minmax(280px,1.2fr)] sm:items-center sm:px-6">
+                               <button type="button" className="min-w-0 text-left" onClick={() => setLocation(`/drawings/${drawing.id}`)}>
+                                 <p className="truncate font-medium text-foreground hover:text-primary">{drawing.title}</p>
+                                 <p className="mt-1 truncate text-xs text-muted-foreground">{drawing.projectName} · <span className="capitalize">{drawing.discipline}</span></p>
+                                 <p className="mt-2 text-[11px] font-medium text-primary">Open drawing details →</p>
+                               </button>
+                               <div className="min-w-0">
+                                 <div className="mb-2 flex items-center justify-between gap-2">
+                                   <span className="flex min-w-0 items-center gap-2 text-xs font-medium text-muted-foreground">{progress === 100 ? <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" /> : progress > 0 ? <Clock3 className="h-4 w-4 shrink-0 text-amber-600" /> : <Circle className="h-4 w-4 shrink-0 text-muted-foreground" />}<span>Progress</span></span>
+                                   <Badge variant={drawing.status} className="shrink-0 capitalize">{statusLabel(drawing.status)}</Badge>
+                                 </div>
+                                 <Progress value={progress} />
+                               </div>
+                               <div className="rounded-lg border bg-muted/20 p-2">
+                                 <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Assignment</p>
+                                 <div className="flex flex-col gap-2 sm:flex-row">
                                   <Select
                                     value={draftAssignee || undefined}
                                     onValueChange={(value) => setAssigneeDrafts((current) => ({ ...current, [drawing.id]: value }))}

@@ -38,7 +38,7 @@ export default function DrawingList() {
   const [searchQuery, setSearchQuery] = React.useState("")
   const [categoryFilter, setCategoryFilter] = React.useState<DrawingDiscipline | "all">("all")
   const [statusFilter, setStatusFilter] = React.useState<DrawingStatus | "all">("all")
-  const [projectFilter, setProjectFilter] = React.useState("all")
+  const [projectFilter, setProjectFilter] = React.useState(() => new URLSearchParams(window.location.search).get("project") || "all")
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [isProjectOpen, setIsProjectOpen] = React.useState(false)
   const [selectedProject, setSelectedProject] = React.useState("")
