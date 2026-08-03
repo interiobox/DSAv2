@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { Archive, Bell, BookOpen, CalendarDays, FileText, FolderKanban, FolderOpen, History, Layers, ListChecks, LogOut, MessageSquare, BarChart3, ClipboardCheck, Settings, ShieldCheck, Users, UsersRound, UserRoundCog, FileWarning, LayoutDashboard } from "lucide-react"
+import { Archive, Bell, BookOpen, CalendarDays, FileText, FolderKanban, FolderOpen, Layers, ListChecks, LogOut, MessageSquare, ClipboardCheck, Settings, ShieldCheck, Users, UserRoundCog, FileWarning, LayoutDashboard } from "lucide-react"
 import { getListNotificationsQueryKey, useListNotifications } from "@workspace/api-client-react"
 import { cn } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
@@ -76,15 +76,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <MessageSquare className="w-4 h-4" />
             <span>Team Chat</span>
           </Link>
-          <Link href="/activity" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/activity") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
-            <History className="h-4 w-4" /><span>Activity</span>
-          </Link>
           <Link href="/notifications" className={cn("flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/notifications") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
             <span className="flex items-center gap-3"><Bell className="h-4 w-4" /><span>Notifications</span></span>
             {unreadNotifications > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>}
-          </Link>
-          <Link href="/reports" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/reports") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
-            <BarChart3 className="h-4 w-4" /><span>Reports</span>
           </Link>
           <Link href="/standards" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/standards") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
             <BookOpen className="h-4 w-4" /><span>Standards</span>
@@ -94,9 +88,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </Link>
           <Link href="/files" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/files") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
             <FolderOpen className="h-4 w-4" /><span>Files</span>
-          </Link>
-          <Link href="/team" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/team") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
-            <UsersRound className="h-4 w-4" /><span>Team Directory</span>
           </Link>
           <Link href="/archive" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/archive") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
             <Archive className="h-4 w-4" /><span>Archive</span>

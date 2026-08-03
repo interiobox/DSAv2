@@ -61,6 +61,12 @@ The navigation now includes operational views for projects, review queue, activi
 
 **How to apply:** Prefer live aggregations of drawings, projects, comments, uploads, checklists, users, and activity; keep settings local to the signed-in browser unless a server preference model is explicitly added.
 
+My Feed is a distinct user-specific workspace and should remain a primary navigation destination even when shared Activity, Reports, or Team Directory tabs are consolidated or hidden.
+
+**Why:** The user needs a personal view of assigned work and their own actions, which is not interchangeable with shared audit history or team-wide notifications.
+
+**How to apply:** Preserve `/feed` and its sidebar entry during navigation simplification; remove only truly overlapping shared aggregation tabs.
+
 Personal notifications are persisted per portal user and are created for username mentions, drawing assignments, and assigned-drawing status changes; chat and comment mention delivery currently uses short polling rather than a WebSocket.
 
 **Why:** The portal needs reliable unread/read state across reloads while preserving the existing simple deployment model.
