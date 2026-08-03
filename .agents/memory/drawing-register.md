@@ -9,7 +9,7 @@ Drawing files are stored in object storage behind first-party portal authenticat
 
 Reviewers use the library primarily on mobile and leave named comments directly under each drawing; comments are chronological review records, not private notes.
 
-The product is intentionally single-purpose: the drawing library is the home screen, with drawing detail/review pages only; do not reintroduce dashboard or settings navigation unless explicitly requested.
+The product is intentionally single-purpose: the drawing library remains the core workflow, while dashboard, notifications, chat, and settings are supporting navigation explicitly requested for coordination.
 
 Drawings are organized by project in the library, with project headings, drawing counts, and a project filter; unassigned drawings remain grouped under “Unassigned.”
 
@@ -60,3 +60,15 @@ The navigation now includes operational views for projects, review queue, activi
 **Why:** The portal should support the complete drawing-review workflow without turning the existing single-purpose drawing library into an unrelated project-management system.
 
 **How to apply:** Prefer live aggregations of drawings, projects, comments, uploads, checklists, users, and activity; keep settings local to the signed-in browser unless a server preference model is explicitly added.
+
+Personal notifications are persisted per portal user and are created for username mentions, drawing assignments, and assigned-drawing status changes; chat and comment mention delivery currently uses short polling rather than a WebSocket.
+
+**Why:** The portal needs reliable unread/read state across reloads while preserving the existing simple deployment model.
+
+**How to apply:** Keep notification records recipient-scoped, never cache private API responses in the service worker, and resolve mentions against active portal usernames while excluding the author.
+
+The PWA service worker caches only the static application shell and same-origin non-API assets; authenticated API data remains network-only with an offline shell fallback.
+
+**Why:** Installability and offline navigation are useful for site work, but caching private drawing data could expose stale or cross-user information.
+
+**How to apply:** Expand static shell caching deliberately and keep `/api/` requests out of the cache strategy.

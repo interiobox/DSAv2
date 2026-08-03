@@ -28,6 +28,8 @@ tags:
     description: Reusable project checklist operations
   - name: chat
     description: Team chat channels and messages
+  - name: notifications
+    description: Personal notifications and mentions
 paths:
   /auth/login:
     post:
@@ -766,6 +768,44 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Activity"
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications for the signed-in user
+      responses:
+        "200":
+          description: Personal notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark one notification as read
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Read notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+        "404":
+          description: Notification not found
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "204":
+          description: Notifications marked as read
   /storage/uploads/request-url:
     post:
       tags: [storage]
@@ -1222,6 +1262,28 @@ components:
           type: string
           format: date-time
       required: [id, type, message, drawingId, actor, createdAt]
+    Notification:
+      type: object
+      properties:
+        id:
+          type: number
+        recipientId:
+          type: number
+        type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        link:
+          type: ["string", "null"]
+        readAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, recipientId, type, title, message, link, readAt, createdAt]
     DrawingUpload:
       type: object
       properties:

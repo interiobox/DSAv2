@@ -502,7 +502,7 @@ export default function DrawingDetail() {
                   <Textarea
                     value={commentText}
                     onChange={(event) => setCommentText(event.target.value)}
-                    placeholder="Leave a review comment about this drawing..."
+                    placeholder="Leave a review comment… use @username to notify a teammate"
                     aria-label="Review comment"
                     rows={3}
                     required

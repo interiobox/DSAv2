@@ -30,6 +30,7 @@ import {
 import { addActivity, getIdParam, listDrawingRows, toDateString } from "../lib/drawings";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { requireCurrentUser } from "../lib/portalAuth";
+import { notifyDrawingAssignee, notifyMentions } from "../lib/notifications";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -131,6 +132,14 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
   }
   const activityType = data.status === "issued" ? "drawing_issued" : data.status === "approved" ? "drawing_approved" : "drawing_updated";
   await addActivity(activityType, `${drawing.title} was updated`, drawing.id, currentUserId(req), currentUserName(req));
+  if (data.status !== undefined) {
+    await notifyDrawingAssignee(drawing.id, drawing.assignedTo, {
+      type: "status_change",
+      title: "Assigned drawing status changed",
+      message: `${drawing.title} is now ${data.status.replace("_", " ")}`,
+      link: `/drawings/${drawing.id}`,
+    }, Number(currentUserId(req)));
+  }
   res.json(UpdateDrawingResponse.parse(drawing));
 });
 
@@ -158,6 +167,12 @@ router.patch("/drawings/:id/assignment", async (req, res): Promise<void> => {
     ? `${currentUserName(req)} assigned ${drawing.title} to ${assigneeName}`
     : `${currentUserName(req)} unassigned ${drawing.title}`;
   await addActivity("drawing_assigned", message, drawing.id, currentUserId(req), currentUserName(req));
+  await notifyDrawingAssignee(drawing.id, assigneeName, {
+    type: "assignment",
+    title: "Drawing assigned to you",
+    message: `${drawing.title} was assigned to you by ${currentUserName(req)}`,
+    link: `/drawings/${drawing.id}`,
+  }, Number(currentUserId(req)));
   res.json(UpdateDrawingAssignmentResponse.parse(drawing));
 });
 
@@ -311,6 +326,12 @@ router.post("/drawings/:id/comments", async (req, res): Promise<void> => {
     author: currentUserName(req),
   }).returning();
   await addActivity("comment_added", `${comment.author} commented on ${drawing.title}`, drawing.id, currentUserId(req), currentUserName(req));
+  await notifyMentions(body.data.comment, {
+    type: "mention",
+    title: `You were mentioned on ${drawing.title}`,
+    message: `{mention} was mentioned by ${comment.author}: ${body.data.comment}`,
+    link: `/drawings/${drawing.id}`,
+  }, Number(currentUserId(req)));
   res.status(201).json(CreateDrawingCommentResponse.parse(comment));
 });
 

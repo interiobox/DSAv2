@@ -291,7 +291,7 @@ export default function ChatPage() {
                   {createMessage.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>
-              <p className="mt-2 px-1 text-[10px] text-muted-foreground">Press Enter to send · Shift + Enter for a new line</p>
+              <p className="mt-2 px-1 text-[10px] text-muted-foreground">Press Enter to send · Shift + Enter for a new line · Mention teammates with @username</p>
             </div>
           </div>
         </main>

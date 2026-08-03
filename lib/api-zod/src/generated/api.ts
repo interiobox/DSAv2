@@ -966,6 +966,50 @@ export const ListActivityResponse = zod.array(ListActivityResponseItem)
 
 
 /**
+ * @summary List notifications for the signed-in user
+ */
+export const ListNotificationsResponseItem = zod.object({
+  "id": zod.number(),
+  "recipientId": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "link": zod.string().nullable(),
+  "readAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem)
+
+
+/**
+ * @summary Mark one notification as read
+ */
+
+
+
+export const MarkNotificationReadParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const MarkNotificationReadResponse = zod.object({
+  "id": zod.number(),
+  "recipientId": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "link": zod.string().nullable(),
+  "readAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const MarkAllNotificationsReadResponse = zod.void()
+
+
+/**
  * @summary Request a presigned URL for a drawing file
  */
 

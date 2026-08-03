@@ -10,6 +10,7 @@ import dashboardRouter from "./dashboard";
 import storageRouter from "./storage";
 import checklistsRouter from "./checklists";
 import chatRouter from "./chat";
+import notificationsRouter from "./notifications";
 import { authenticatePortalUser } from "../lib/portalAuth";
 
 const router: IRouter = Router();
@@ -28,5 +29,6 @@ router.use(dashboardRouter);
 router.use(storageRouter);
 router.use(checklistsRouter);
 router.use(chatRouter);
+router.use(notificationsRouter);
 
 export default router;

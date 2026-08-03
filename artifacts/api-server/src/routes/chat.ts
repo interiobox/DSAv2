@@ -11,6 +11,7 @@ import {
   ListChatMessagesParams,
 } from "@workspace/api-zod";
 import { requireCurrentUser } from "../lib/portalAuth";
+import { notifyMentions } from "../lib/notifications";
 
 const router: IRouter = Router();
 
@@ -66,7 +67,7 @@ router.get("/chat/channels/:channelId/messages", async (req, res): Promise<void>
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [channel] = await db.select({ id: chatChannelsTable.id })
+  const [channel] = await db.select({ id: chatChannelsTable.id, name: chatChannelsTable.name })
     .from(chatChannelsTable)
     .where(eq(chatChannelsTable.id, params.data.channelId))
     .limit(1);
@@ -97,7 +98,7 @@ router.post("/chat/channels/:channelId/messages", async (req, res): Promise<void
     res.status(400).json({ error: "Message content is required" });
     return;
   }
-  const [channel] = await db.select({ id: chatChannelsTable.id })
+  const [channel] = await db.select({ id: chatChannelsTable.id, name: chatChannelsTable.name })
     .from(chatChannelsTable)
     .where(eq(chatChannelsTable.id, params.data.channelId))
     .limit(1);
@@ -111,6 +112,12 @@ router.post("/chat/channels/:channelId/messages", async (req, res): Promise<void
     authorName: user.name,
     content,
   }).returning();
+  await notifyMentions(content, {
+    type: "mention",
+    title: `You were mentioned in #${channel.name}`,
+    message: `{mention} was mentioned in #${channel.name} by ${user.name}: ${content}`,
+    link: "/chat",
+  }, user.id);
   res.status(201).json(message);
 });
 

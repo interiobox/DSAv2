@@ -18,6 +18,7 @@ import UsersPage from "@/pages/Users";
 import { Activity, Archive, Deadlines, Projects, ReviewQueue } from "@/pages/WorkspaceViews";
 import { Files, Issues, Notifications, Reports, Standards, Team } from "@/pages/ManagementViews";
 import SettingsPage from "@/pages/Settings";
+import Dashboard from "@/pages/Dashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -130,7 +131,7 @@ function SignInPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  if (!isLoading && user) return <Redirect to={user.role === "admin" ? "/admin" : "/drawings"} />;
+  if (!isLoading && user) return <Redirect to="/dashboard" />;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -138,7 +139,7 @@ function SignInPage() {
     setIsSubmitting(true);
     try {
       const signedInUser = await login(username, password);
-      setLocation(signedInUser.role === "admin" ? "/admin" : "/drawings");
+      setLocation("/dashboard");
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : "Unable to sign in");
     } finally {
@@ -179,7 +180,7 @@ function SignInPage() {
 function HomeRedirect() {
   const { user, isLoading } = usePortalAuth();
   if (isLoading) return <LoadingScreen />;
-  return user ? <Redirect to={user.role === "admin" ? "/admin" : "/drawings"} /> : <AuthLanding />;
+  return user ? <Redirect to="/dashboard" /> : <AuthLanding />;
 }
 
 function LoadingScreen() {
@@ -198,6 +199,7 @@ function ProtectedRoutes() {
   return (
     <AppLayout>
       <Switch>
+        <Route path="/dashboard" component={Dashboard} />
         <Route path="/drawings" component={DrawingList} />
         <Route path="/drawings/:id" component={DrawingDetail} />
         <Route path="/assignments" component={Assignments} />

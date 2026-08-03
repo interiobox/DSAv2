@@ -44,6 +44,7 @@ export * from './healthStatus';
 export * from './listDrawingsParams';
 export * from './listProjectChecklistsParams';
 export * from './loginInput';
+export * from './notification';
 export * from './portalUser';
 export * from './portalUserRole';
 export * from './project';

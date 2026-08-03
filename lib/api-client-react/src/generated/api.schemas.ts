@@ -327,6 +327,19 @@ export interface Activity {
   createdAt: string;
 }
 
+export interface Notification {
+  id: number;
+  recipientId: number;
+  type: string;
+  title: string;
+  message: string;
+  /** @nullable */
+  link: string | null;
+  /** @nullable */
+  readAt: string | null;
+  createdAt: string;
+}
+
 export interface DrawingUpload {
   id: number;
   drawingId: number;

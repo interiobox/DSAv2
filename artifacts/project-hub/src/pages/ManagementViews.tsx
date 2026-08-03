@@ -1,7 +1,8 @@
 import * as React from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { Bell, BarChart3, BookOpen, File, FileWarning, FolderOpen, UsersRound } from "lucide-react"
 
-import { useAdminListActivity, useGetDashboardSummary, useListActivity, useListChecklistTemplates, useListDisciplines, useListDrawings, useListProjects, useListUsers } from "@workspace/api-client-react"
+import { getListNotificationsQueryKey, useGetDashboardSummary, useListActivity, useListChecklistTemplates, useListDisciplines, useListDrawings, useListNotifications, useListProjects, useListUsers, useMarkAllNotificationsRead, useMarkNotificationRead } from "@workspace/api-client-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,12 +20,31 @@ function Header({ icon: Icon, title, description }: { icon: React.ElementType; t
 function Empty({ icon: Icon, text }: { icon: React.ElementType; text: string }) { return <div className="flex flex-col items-center justify-center px-6 py-16 text-center text-muted-foreground"><Icon className="mb-3 h-9 w-9 opacity-50" /><p>{text}</p></div> }
 
 export function Notifications() {
-  const { data: activities, isLoading } = useListActivity()
+  const queryClient = useQueryClient()
+  const { data: notifications, isLoading } = useListNotifications({
+    query: {
+      queryKey: getListNotificationsQueryKey(),
+      refetchInterval: 5000,
+    },
+  })
+  const markRead = useMarkNotificationRead()
+  const markAllRead = useMarkAllNotificationsRead()
   const { data: drawings } = useListDrawings()
   const assigned = (drawings ?? []).filter((drawing) => drawing.assignedTo)
   const dueSoon = assigned.filter((drawing) => drawing.dueDate && drawing.dueDate >= new Date().toISOString().slice(0, 10)).slice(0, 5)
-  return <div className="flex h-full flex-1 flex-col overflow-hidden"><Header icon={Bell} title="Notifications" description="Recent changes and work that may need your attention." /><div className="flex-1 overflow-auto p-4 sm:p-6"><div className="mx-auto max-w-5xl space-y-6">
-    <Card><CardHeader className="border-b"><CardTitle className="text-base">Recent activity</CardTitle><CardDescription>Updates from the drawing register.</CardDescription></CardHeader><CardContent className="p-0">{isLoading ? <Skeleton className="m-6 h-32" /> : <div className="divide-y">{(activities ?? []).slice(0, 8).map((item) => <div key={item.id} className="px-6 py-4"><p className="text-sm">{item.message}</p><p className="mt-1 text-xs text-muted-foreground">{formatDate(item.createdAt)}</p></div>)}</div>}</CardContent></Card>
+  const unread = (notifications ?? []).filter((notification) => !notification.readAt)
+  return <div className="flex h-full flex-1 flex-col overflow-hidden"><Header icon={Bell} title="Notifications" description="Mentions, assignments, status changes, and drawing updates for you." /><div className="flex-1 overflow-auto p-4 sm:p-6"><div className="mx-auto max-w-5xl space-y-6">
+    <Card><CardHeader className="flex flex-row items-start justify-between gap-4 border-b"><div><CardTitle className="text-base">Your notifications <Badge variant="outline">{unread.length} unread</Badge></CardTitle><CardDescription>Updates refresh automatically while you work.</CardDescription></div><button type="button" className="text-xs font-medium text-primary hover:underline disabled:opacity-50" disabled={!unread.length || markAllRead.isPending} onClick={() => markAllRead.mutate(undefined, { onSuccess: () => { void queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() }) } })}>Mark all read</button></CardHeader><CardContent className="p-0">{isLoading ? <Skeleton className="m-6 h-32" /> : notifications?.length ? <div className="divide-y">{notifications.map((item) => {
+      const content = <div className={`px-6 py-4 transition-colors ${item.readAt ? "" : "bg-primary/[0.04]"}`}><div className="flex items-start justify-between gap-4"><div className="min-w-0"><p className="font-medium">{item.title}</p><p className="mt-1 text-sm text-muted-foreground">{item.message}</p><p className="mt-2 text-xs text-muted-foreground">{formatDate(item.createdAt)}</p></div>{!item.readAt && <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />}</div></div>
+      const markReadAndRefresh = () => {
+        if (!item.readAt) {
+          markRead.mutate({ id: item.id }, {
+            onSuccess: () => { void queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() }) },
+          })
+        }
+      }
+      return item.link ? <Link key={item.id} href={item.link} onClick={markReadAndRefresh}>{content}</Link> : <button type="button" key={item.id} className="block w-full text-left" onClick={markReadAndRefresh}>{content}</button>
+    })}</div> : <Empty icon={Bell} text="You are all caught up." />}</CardContent></Card>
     <Card><CardHeader className="border-b"><CardTitle className="text-base">Upcoming assigned deadlines</CardTitle></CardHeader><CardContent className="p-0">{dueSoon.length ? <div className="divide-y">{dueSoon.map((drawing) => <Link key={drawing.id} href={`/drawings/${drawing.id}`} className="block px-6 py-4 hover:bg-muted/40"><p className="font-medium">{drawing.title}</p><p className="mt-1 text-xs text-muted-foreground">Due {formatDateShort(drawing.dueDate)} · {drawing.assignedTo}</p></Link>)}</div> : <Empty icon={Bell} text="No upcoming assigned deadlines." />}</CardContent></Card>
   </div></div></div>
 }

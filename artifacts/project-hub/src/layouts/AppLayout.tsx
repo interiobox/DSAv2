@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { Archive, Bell, BookOpen, CalendarDays, FileText, FolderKanban, FolderOpen, History, Layers, ListChecks, LogOut, MessageSquare, BarChart3, ClipboardCheck, Settings, ShieldCheck, Users, UsersRound, UserRoundCog, FileWarning } from "lucide-react"
+import { Archive, Bell, BookOpen, CalendarDays, FileText, FolderKanban, FolderOpen, History, Layers, ListChecks, LogOut, MessageSquare, BarChart3, ClipboardCheck, Settings, ShieldCheck, Users, UsersRound, UserRoundCog, FileWarning, LayoutDashboard } from "lucide-react"
+import { getListNotificationsQueryKey, useListNotifications } from "@workspace/api-client-react"
 import { cn } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
 
@@ -8,6 +9,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()
   const { user, logout } = usePortalAuth()
   const displayName = user?.name || user?.username || "Signed-in user"
+  const notificationsQuery = useListNotifications({
+    query: {
+      queryKey: getListNotificationsQueryKey(),
+      refetchInterval: 5000,
+    },
+  })
+  const unreadNotifications = (notificationsQuery.data ?? []).filter((notification) => !notification.readAt).length
 
   return (
     <div className="min-h-[100dvh] flex flex-col md:flex-row bg-background w-full">
@@ -34,6 +42,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           )}>
             <FileText className="w-4 h-4" />
              <span>Library</span>
+          </Link>
+          <Link href="/dashboard" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/dashboard") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <LayoutDashboard className="h-4 w-4" /><span>Dashboard</span>
           </Link>
           <Link href="/assignments" className={cn(
             "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
@@ -68,8 +79,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <Link href="/activity" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/activity") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
             <History className="h-4 w-4" /><span>Activity</span>
           </Link>
-          <Link href="/notifications" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/notifications") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
-            <Bell className="h-4 w-4" /><span>Notifications</span>
+          <Link href="/notifications" className={cn("flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/notifications") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <span className="flex items-center gap-3"><Bell className="h-4 w-4" /><span>Notifications</span></span>
+            {unreadNotifications > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>}
           </Link>
           <Link href="/reports" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/reports") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
             <BarChart3 className="h-4 w-4" /><span>Reports</span>
