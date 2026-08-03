@@ -24,3 +24,4 @@ export * from "./checklists";
 export * from "./chat";
 export * from "./notifications";
 export * from "./contacts";
+export * from "./notes";

@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { asc, desc, eq, sql } from "drizzle-orm";
-import { db, disciplinesTable, drawingActivityTable, drawingsTable, sessionsTable, usersTable } from "@workspace/db";
+import { db, disciplinesTable, drawingActivityTable, drawingsTable, personalNotesTable, sessionsTable, usersTable } from "@workspace/db";
 import { hashPassword, publicUser, requireAdmin, requireCurrentUser } from "../lib/portalAuth";
 import { addActivity } from "../lib/drawings";
 
@@ -196,6 +196,10 @@ router.delete("/admin/disciplines/:id", async (req, res): Promise<void> => {
 
 router.get("/admin/activity", async (_req, res): Promise<void> => {
   res.json(await db.select().from(drawingActivityTable).orderBy(desc(drawingActivityTable.createdAt)).limit(500));
+});
+
+router.get("/admin/personal-notes", async (_req, res): Promise<void> => {
+  res.json(await db.select().from(personalNotesTable).orderBy(desc(personalNotesTable.updatedAt), desc(personalNotesTable.id)));
 });
 
 export default router;

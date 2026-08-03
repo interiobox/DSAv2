@@ -1,9 +1,10 @@
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { KeyRound, Plus, Save, ShieldCheck, Trash2, Users } from "lucide-react"
+import { Eye, KeyRound, Plus, Save, ShieldCheck, StickyNote, Trash2, Users } from "lucide-react"
 
 import {
   getAdminListActivityQueryKey,
+  useAdminListPersonalNotes,
   getAdminListUsersQueryKey,
   useAdminCreateUser,
   useAdminDeleteUser,
@@ -36,6 +37,7 @@ export default function AdminPage() {
   const queryClient = useQueryClient()
   const { data: users, isLoading: usersLoading } = useAdminListUsers()
   const { data: activity, isLoading: activityLoading } = useAdminListActivity()
+  const { data: personalNotes, isLoading: personalNotesLoading } = useAdminListPersonalNotes()
   const createUser = useAdminCreateUser()
   const updateUser = useAdminUpdateUser()
   const deleteUser = useAdminDeleteUser()
@@ -168,6 +170,20 @@ export default function AdminPage() {
               <CardContent className="p-0">{activityLoading ? <div className="space-y-3 p-6"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div> : <div className="max-h-[460px] divide-y overflow-auto">{(activity ?? []).map((item) => <div key={item.id} className="px-6 py-3"><p className="text-sm">{item.message}</p><p className="mt-1 text-xs text-muted-foreground">{formatDate(item.createdAt)}</p></div>)}</div>}</CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base"><StickyNote className="h-4 w-4 text-primary" />Everyone’s personal notes <Badge variant="outline">{personalNotes?.length ?? 0}</Badge></CardTitle>
+              <CardDescription>Administrator-only read access to every user’s private notes.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {personalNotesLoading ? <div className="space-y-3 p-6"><Skeleton className="h-14 w-full" /><Skeleton className="h-14 w-full" /></div> : personalNotes?.length ? (
+                <div className="max-h-[520px] divide-y overflow-auto">
+                  {personalNotes.map((note) => <div key={note.id} className="px-6 py-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="font-medium">{note.title}</p><p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">{note.content}</p></div><span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground"><Eye className="h-3.5 w-3.5" />Admin view</span></div><p className="mt-2 text-xs text-muted-foreground">{note.authorName} · Updated {formatDate(note.updatedAt)}</p></div>)}
+                </div>
+              ) : <p className="p-6 text-sm text-muted-foreground">No personal notes have been created.</p>}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

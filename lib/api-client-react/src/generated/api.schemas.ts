@@ -20,6 +20,50 @@ export interface ProjectInput {
   name: string;
 }
 
+export interface ProjectNote {
+  id: number;
+  projectName: string;
+  content: string;
+  authorId: number;
+  authorName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectNoteInput {
+  /** @minLength 1 */
+  projectName: string;
+  /** @minLength 1 */
+  content: string;
+}
+
+export interface ProjectNoteUpdate {
+  /** @minLength 1 */
+  content: string;
+}
+
+export interface PersonalNote {
+  id: number;
+  userId: number;
+  authorName: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PersonalNoteInput {
+  title?: string;
+  /** @minLength 1 */
+  content: string;
+}
+
+export interface PersonalNoteUpdate {
+  title?: string;
+  /** @minLength 1 */
+  content: string;
+}
+
 export interface ContactProject {
   id: number;
   projectName: string;
@@ -582,6 +626,10 @@ discipline?: DrawingDiscipline;
 
 export type ListContactsParams = {
 projectName?: string;
+};
+
+export type ListProjectNotesParams = {
+projectName: string;
 };
 
 export type ListProjectChecklistsParams = {

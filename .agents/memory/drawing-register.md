@@ -132,3 +132,9 @@ Contacts are reusable firm-wide organizations/people with separate project assoc
 **Why:** The same consultant, vendor, or contractor commonly supports multiple architectural projects, while their responsibility and scope can differ by project.
 
 **How to apply:** Reuse shared contact records instead of duplicating vendors per project; query project directories through associations and keep the shared directory as the source of truth.
+
+Project notes are shared per project, while personal notes are private to their author; administrators can view all personal notes without editing them.
+
+**Why:** Teams need a collaborative project context area without exposing or allowing changes to individual working notes.
+
+**How to apply:** Keep project-note access authenticated and author/admin-managed for edits and deletes; keep personal-note mutations owner-only and expose the admin overview as read-only.

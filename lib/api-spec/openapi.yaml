@@ -16,6 +16,8 @@ tags:
     description: Drawing project operations
   - name: contacts
     description: Shared contact, vendor, consultant, and project directory operations
+  - name: notes
+    description: Shared project notes and private personal notes
   - name: users
     description: Team directory operations
   - name: auth
@@ -269,6 +271,132 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Contact"
+  /project-notes:
+    get:
+      operationId: listProjectNotes
+      tags: [projects]
+      summary: List shared notes for a project
+      parameters:
+        - name: projectName
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Shared project notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectNote"
+    post:
+      operationId: createProjectNote
+      tags: [projects]
+      summary: Add a shared project note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectNoteInput"
+      responses:
+        "201":
+          description: Created project note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectNote"
+  /project-notes/{id}:
+    patch:
+      operationId: updateProjectNote
+      tags: [projects]
+      summary: Update a shared project note
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectNoteUpdate"
+      responses:
+        "200":
+          description: Updated project note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectNote"
+    delete:
+      operationId: deleteProjectNote
+      tags: [projects]
+      summary: Delete a shared project note
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Project note deleted
+  /personal-notes:
+    get:
+      operationId: listPersonalNotes
+      tags: [notes]
+      summary: List the signed-in user's personal notes
+      responses:
+        "200":
+          description: Personal notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PersonalNote"
+    post:
+      operationId: createPersonalNote
+      tags: [notes]
+      summary: Create a personal note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonalNoteInput"
+      responses:
+        "201":
+          description: Created personal note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonalNote"
+  /personal-notes/{id}:
+    patch:
+      operationId: updatePersonalNote
+      tags: [notes]
+      summary: Update one of the signed-in user's personal notes
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonalNoteUpdate"
+      responses:
+        "200":
+          description: Updated personal note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonalNote"
+    delete:
+      operationId: deletePersonalNote
+      tags: [notes]
+      summary: Delete one of the signed-in user's personal notes
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Personal note deleted
   /checklist-templates:
     get:
       operationId: listChecklistTemplates
@@ -720,6 +848,20 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Activity"
+  /admin/personal-notes:
+    get:
+      operationId: adminListPersonalNotes
+      tags: [admin]
+      summary: List every user's personal notes
+      responses:
+        "200":
+          description: All personal notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PersonalNote"
   /drawings/{id}:
     get:
       operationId: getDrawing
@@ -1066,6 +1208,81 @@ components:
           type: string
           minLength: 1
       required: [name]
+    ProjectNote:
+      type: object
+      properties:
+        id:
+          type: number
+        projectName:
+          type: string
+        content:
+          type: string
+        authorId:
+          type: number
+        authorName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, projectName, content, authorId, authorName, createdAt, updatedAt]
+    ProjectNoteInput:
+      type: object
+      properties:
+        projectName:
+          type: string
+          minLength: 1
+        content:
+          type: string
+          minLength: 1
+      required: [projectName, content]
+    ProjectNoteUpdate:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+      required: [content]
+    PersonalNote:
+      type: object
+      properties:
+        id:
+          type: number
+        userId:
+          type: number
+        authorName:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, userId, authorName, title, content, createdAt, updatedAt]
+    PersonalNoteInput:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+          minLength: 1
+      required: [content]
+    PersonalNoteUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+          minLength: 1
+      required: [content]
     ContactProject:
       type: object
       properties:

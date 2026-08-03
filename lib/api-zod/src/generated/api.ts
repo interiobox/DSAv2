@@ -375,6 +375,168 @@ export const RemoveContactProjectResponse = zod.object({
 
 
 /**
+ * @summary List shared notes for a project
+ */
+export const ListProjectNotesQueryParams = zod.object({
+  "projectName": zod.coerce.string()
+})
+
+export const ListProjectNotesResponseItem = zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "content": zod.string(),
+  "authorId": zod.number(),
+  "authorName": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListProjectNotesResponse = zod.array(ListProjectNotesResponseItem)
+
+
+/**
+ * @summary Add a shared project note
+ */
+
+
+
+
+export const CreateProjectNoteBody = zod.object({
+  "projectName": zod.string().min(1),
+  "content": zod.string().min(1)
+})
+
+export const CreateProjectNoteResponse = zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "content": zod.string(),
+  "authorId": zod.number(),
+  "authorName": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a shared project note
+ */
+
+
+
+export const UpdateProjectNoteParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+export const UpdateProjectNoteBody = zod.object({
+  "content": zod.string().min(1)
+})
+
+export const UpdateProjectNoteResponse = zod.object({
+  "id": zod.number(),
+  "projectName": zod.string(),
+  "content": zod.string(),
+  "authorId": zod.number(),
+  "authorName": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a shared project note
+ */
+
+
+
+export const DeleteProjectNoteParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const DeleteProjectNoteResponse = zod.void()
+
+
+/**
+ * @summary List the signed-in user's personal notes
+ */
+export const ListPersonalNotesResponseItem = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "authorName": zod.string(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListPersonalNotesResponse = zod.array(ListPersonalNotesResponseItem)
+
+
+/**
+ * @summary Create a personal note
+ */
+
+
+
+export const CreatePersonalNoteBody = zod.object({
+  "title": zod.string().optional(),
+  "content": zod.string().min(1)
+})
+
+export const CreatePersonalNoteResponse = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "authorName": zod.string(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update one of the signed-in user's personal notes
+ */
+
+
+
+export const UpdatePersonalNoteParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+export const UpdatePersonalNoteBody = zod.object({
+  "title": zod.string().optional(),
+  "content": zod.string().min(1)
+})
+
+export const UpdatePersonalNoteResponse = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "authorName": zod.string(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete one of the signed-in user's personal notes
+ */
+
+
+
+export const DeletePersonalNoteParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const DeletePersonalNoteResponse = zod.void()
+
+
+/**
  * @summary List reusable checklist templates
  */
 export const ListChecklistTemplatesResponseItem = zod.object({
@@ -903,6 +1065,21 @@ export const AdminListActivityResponseItem = zod.object({
   "createdAt": zod.coerce.date()
 })
 export const AdminListActivityResponse = zod.array(AdminListActivityResponseItem)
+
+
+/**
+ * @summary List every user's personal notes
+ */
+export const AdminListPersonalNotesResponseItem = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "authorName": zod.string(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const AdminListPersonalNotesResponse = zod.array(AdminListPersonalNotesResponseItem)
 
 
 /**

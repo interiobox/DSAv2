@@ -53,13 +53,20 @@ import type {
   ListContactsParams,
   ListDrawingsParams,
   ListProjectChecklistsParams,
+  ListProjectNotesParams,
   LoginInput,
   Notification,
+  PersonalNote,
+  PersonalNoteInput,
+  PersonalNoteUpdate,
   PortalUser,
   Project,
   ProjectChecklist,
   ProjectChecklistInput,
   ProjectInput,
+  ProjectNote,
+  ProjectNoteInput,
+  ProjectNoteUpdate,
   UploadUrlRequest,
   UploadUrlResponse,
   User
@@ -1132,6 +1139,595 @@ export const useRemoveContactProject = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getRemoveContactProjectMutationOptions(options));
+    }
+
+export const getListProjectNotesUrl = (params: ListProjectNotesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/project-notes?${stringifiedParams}` : `/api/project-notes`
+}
+
+/**
+ * @summary List shared notes for a project
+ */
+export const listProjectNotes = async (params: ListProjectNotesParams, options?: Parameters<typeof customFetch>[1]): Promise<ProjectNote[]> => {
+
+  return customFetch<ProjectNote[]>(getListProjectNotesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListProjectNotesQueryKey = (params?: ListProjectNotesParams,) => {
+    return [
+    `/api/project-notes`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListProjectNotesQueryOptions = <TData = Awaited<ReturnType<typeof listProjectNotes>>, TError = ErrorType<unknown>>(params: ListProjectNotesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProjectNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProjectNotesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProjectNotes>>> = ({ signal }) => listProjectNotes(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProjectNotes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListProjectNotesQueryResult = NonNullable<Awaited<ReturnType<typeof listProjectNotes>>>
+export type ListProjectNotesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List shared notes for a project
+ */
+
+export function useListProjectNotes<TData = Awaited<ReturnType<typeof listProjectNotes>>, TError = ErrorType<unknown>>(
+ params: ListProjectNotesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProjectNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListProjectNotesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateProjectNoteUrl = () => {
+
+
+
+
+  return `/api/project-notes`
+}
+
+/**
+ * @summary Add a shared project note
+ */
+export const createProjectNote = async (projectNoteInput: ProjectNoteInput, options?: Parameters<typeof customFetch>[1]): Promise<ProjectNote> => {
+
+  return customFetch<ProjectNote>(getCreateProjectNoteUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(projectNoteInput)
+  }
+);}
+
+
+
+
+
+export const getCreateProjectNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProjectNote>>, TError,{data: BodyType<ProjectNoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createProjectNote>>, TError,{data: BodyType<ProjectNoteInput>}, TContext> => {
+
+const mutationKey = ['createProjectNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createProjectNote>>, {data: BodyType<ProjectNoteInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createProjectNote(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateProjectNoteMutationResult = NonNullable<Awaited<ReturnType<typeof createProjectNote>>>
+    export type CreateProjectNoteMutationBody = BodyType<ProjectNoteInput>
+    export type CreateProjectNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a shared project note
+ */
+export const useCreateProjectNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProjectNote>>, TError,{data: BodyType<ProjectNoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createProjectNote>>,
+        TError,
+        {data: BodyType<ProjectNoteInput>},
+        TContext
+      > => {
+      return useMutation(getCreateProjectNoteMutationOptions(options));
+    }
+
+export const getUpdateProjectNoteUrl = (id: number,) => {
+
+
+
+
+  return `/api/project-notes/${id}`
+}
+
+/**
+ * @summary Update a shared project note
+ */
+export const updateProjectNote = async (id: number,
+    projectNoteUpdate: ProjectNoteUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ProjectNote> => {
+
+  return customFetch<ProjectNote>(getUpdateProjectNoteUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(projectNoteUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateProjectNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProjectNote>>, TError,{id: number;data: BodyType<ProjectNoteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateProjectNote>>, TError,{id: number;data: BodyType<ProjectNoteUpdate>}, TContext> => {
+
+const mutationKey = ['updateProjectNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateProjectNote>>, {id: number;data: BodyType<ProjectNoteUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateProjectNote(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateProjectNoteMutationResult = NonNullable<Awaited<ReturnType<typeof updateProjectNote>>>
+    export type UpdateProjectNoteMutationBody = BodyType<ProjectNoteUpdate>
+    export type UpdateProjectNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a shared project note
+ */
+export const useUpdateProjectNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProjectNote>>, TError,{id: number;data: BodyType<ProjectNoteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateProjectNote>>,
+        TError,
+        {id: number;data: BodyType<ProjectNoteUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateProjectNoteMutationOptions(options));
+    }
+
+export const getDeleteProjectNoteUrl = (id: number,) => {
+
+
+
+
+  return `/api/project-notes/${id}`
+}
+
+/**
+ * @summary Delete a shared project note
+ */
+export const deleteProjectNote = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteProjectNoteUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteProjectNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProjectNote>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteProjectNote>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteProjectNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProjectNote>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteProjectNote(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteProjectNoteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProjectNote>>>
+
+    export type DeleteProjectNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a shared project note
+ */
+export const useDeleteProjectNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProjectNote>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteProjectNote>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteProjectNoteMutationOptions(options));
+    }
+
+export const getListPersonalNotesUrl = () => {
+
+
+
+
+  return `/api/personal-notes`
+}
+
+/**
+ * @summary List the signed-in user's personal notes
+ */
+export const listPersonalNotes = async ( options?: Parameters<typeof customFetch>[1]): Promise<PersonalNote[]> => {
+
+  return customFetch<PersonalNote[]>(getListPersonalNotesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPersonalNotesQueryKey = () => {
+    return [
+    `/api/personal-notes`
+    ] as const;
+    }
+
+
+export const getListPersonalNotesQueryOptions = <TData = Awaited<ReturnType<typeof listPersonalNotes>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPersonalNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPersonalNotesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPersonalNotes>>> = ({ signal }) => listPersonalNotes({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPersonalNotes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPersonalNotesQueryResult = NonNullable<Awaited<ReturnType<typeof listPersonalNotes>>>
+export type ListPersonalNotesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List the signed-in user's personal notes
+ */
+
+export function useListPersonalNotes<TData = Awaited<ReturnType<typeof listPersonalNotes>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPersonalNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPersonalNotesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreatePersonalNoteUrl = () => {
+
+
+
+
+  return `/api/personal-notes`
+}
+
+/**
+ * @summary Create a personal note
+ */
+export const createPersonalNote = async (personalNoteInput: PersonalNoteInput, options?: Parameters<typeof customFetch>[1]): Promise<PersonalNote> => {
+
+  return customFetch<PersonalNote>(getCreatePersonalNoteUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(personalNoteInput)
+  }
+);}
+
+
+
+
+
+export const getCreatePersonalNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPersonalNote>>, TError,{data: BodyType<PersonalNoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPersonalNote>>, TError,{data: BodyType<PersonalNoteInput>}, TContext> => {
+
+const mutationKey = ['createPersonalNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPersonalNote>>, {data: BodyType<PersonalNoteInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createPersonalNote(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePersonalNoteMutationResult = NonNullable<Awaited<ReturnType<typeof createPersonalNote>>>
+    export type CreatePersonalNoteMutationBody = BodyType<PersonalNoteInput>
+    export type CreatePersonalNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a personal note
+ */
+export const useCreatePersonalNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPersonalNote>>, TError,{data: BodyType<PersonalNoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPersonalNote>>,
+        TError,
+        {data: BodyType<PersonalNoteInput>},
+        TContext
+      > => {
+      return useMutation(getCreatePersonalNoteMutationOptions(options));
+    }
+
+export const getUpdatePersonalNoteUrl = (id: number,) => {
+
+
+
+
+  return `/api/personal-notes/${id}`
+}
+
+/**
+ * @summary Update one of the signed-in user's personal notes
+ */
+export const updatePersonalNote = async (id: number,
+    personalNoteUpdate: PersonalNoteUpdate, options?: Parameters<typeof customFetch>[1]): Promise<PersonalNote> => {
+
+  return customFetch<PersonalNote>(getUpdatePersonalNoteUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(personalNoteUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdatePersonalNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePersonalNote>>, TError,{id: number;data: BodyType<PersonalNoteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updatePersonalNote>>, TError,{id: number;data: BodyType<PersonalNoteUpdate>}, TContext> => {
+
+const mutationKey = ['updatePersonalNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePersonalNote>>, {id: number;data: BodyType<PersonalNoteUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updatePersonalNote(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdatePersonalNoteMutationResult = NonNullable<Awaited<ReturnType<typeof updatePersonalNote>>>
+    export type UpdatePersonalNoteMutationBody = BodyType<PersonalNoteUpdate>
+    export type UpdatePersonalNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update one of the signed-in user's personal notes
+ */
+export const useUpdatePersonalNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePersonalNote>>, TError,{id: number;data: BodyType<PersonalNoteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updatePersonalNote>>,
+        TError,
+        {id: number;data: BodyType<PersonalNoteUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdatePersonalNoteMutationOptions(options));
+    }
+
+export const getDeletePersonalNoteUrl = (id: number,) => {
+
+
+
+
+  return `/api/personal-notes/${id}`
+}
+
+/**
+ * @summary Delete one of the signed-in user's personal notes
+ */
+export const deletePersonalNote = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeletePersonalNoteUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeletePersonalNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePersonalNote>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deletePersonalNote>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deletePersonalNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePersonalNote>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deletePersonalNote(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeletePersonalNoteMutationResult = NonNullable<Awaited<ReturnType<typeof deletePersonalNote>>>
+
+    export type DeletePersonalNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete one of the signed-in user's personal notes
+ */
+export const useDeletePersonalNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePersonalNote>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deletePersonalNote>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeletePersonalNoteMutationOptions(options));
     }
 
 export const getListChecklistTemplatesUrl = () => {
@@ -3114,6 +3710,83 @@ export function useAdminListActivity<TData = Awaited<ReturnType<typeof adminList
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getAdminListActivityQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAdminListPersonalNotesUrl = () => {
+
+
+
+
+  return `/api/admin/personal-notes`
+}
+
+/**
+ * @summary List every user's personal notes
+ */
+export const adminListPersonalNotes = async ( options?: Parameters<typeof customFetch>[1]): Promise<PersonalNote[]> => {
+
+  return customFetch<PersonalNote[]>(getAdminListPersonalNotesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAdminListPersonalNotesQueryKey = () => {
+    return [
+    `/api/admin/personal-notes`
+    ] as const;
+    }
+
+
+export const getAdminListPersonalNotesQueryOptions = <TData = Awaited<ReturnType<typeof adminListPersonalNotes>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminListPersonalNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminListPersonalNotesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminListPersonalNotes>>> = ({ signal }) => adminListPersonalNotes({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminListPersonalNotes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type AdminListPersonalNotesQueryResult = NonNullable<Awaited<ReturnType<typeof adminListPersonalNotes>>>
+export type AdminListPersonalNotesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List every user's personal notes
+ */
+
+export function useAdminListPersonalNotes<TData = Awaited<ReturnType<typeof adminListPersonalNotes>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminListPersonalNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getAdminListPersonalNotesQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
