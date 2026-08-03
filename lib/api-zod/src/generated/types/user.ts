@@ -9,5 +9,8 @@
 export interface User {
   id: number;
   name: string;
+  /** @nullable */
+  username: string | null;
+  active: boolean;
   createdAt: Date;
 }

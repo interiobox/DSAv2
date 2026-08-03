@@ -120,3 +120,9 @@ Project summaries are navigation cards into the filtered Drawing Library, and as
 **Why:** Project cards that only display metrics feel broken when they have no next action, while mixed assignment controls make ownership work difficult to scan.
 
 **How to apply:** Give project summaries an explicit route/action and keep assignment mutations contained beside, not mixed into, the drawing and progress information.
+
+Mention autocomplete uses active portal usernames and inserts the exact `@username` token consumed by server-side notification matching in chat and drawing comments.
+
+**Why:** Display names are useful in the interface but mention notifications resolve against stable login handles.
+
+**How to apply:** Keep mention suggestions filtered to active users with usernames, and preserve the `@` plus username format when adding future mention-capable inputs.

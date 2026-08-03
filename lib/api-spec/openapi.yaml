@@ -1066,10 +1066,14 @@ components:
           type: number
         name:
           type: string
+        username:
+          type: ["string", "null"]
+        active:
+          type: boolean
         createdAt:
           type: string
           format: date-time
-      required: [id, name, createdAt]
+      required: [id, name, username, active, createdAt]
     UserInput:
       type: object
       properties:

@@ -448,6 +448,8 @@ export const CreateChatMessageResponse = zod.object({
 export const ListUsersResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "username": zod.string().nullable(),
+  "active": zod.boolean(),
   "createdAt": zod.coerce.date()
 })
 export const ListUsersResponse = zod.array(ListUsersResponseItem)

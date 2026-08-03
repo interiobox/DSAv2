@@ -31,7 +31,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Textarea } from "@/components/ui/textarea"
+import { MentionTextarea } from "@/components/MentionTextarea"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
@@ -324,7 +324,7 @@ export default function ChatPage() {
             <div className="mx-auto max-w-4xl">
               <div className="flex items-end gap-2 rounded-xl border bg-[#f7f8fa] p-2 shadow-sm focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10">
                 <Button variant="ghost" size="icon" className="mb-0.5 h-9 w-9 shrink-0 text-muted-foreground" title="Attach a file" data-testid="button-attach-chat-file"><Paperclip className="h-4 w-4" /></Button>
-                <Textarea
+                <MentionTextarea
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   onKeyDown={(event) => {

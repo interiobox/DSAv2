@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { MentionTextarea } from "@/components/MentionTextarea"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -500,7 +500,7 @@ export default function DrawingDetail() {
                 <form onSubmit={handleCommentSubmit} className="space-y-3">
                    <Input value={currentUserName} placeholder="Your name" aria-label="Your name" readOnly required />
                    <p className="text-xs text-muted-foreground">Commenting as <span className="font-medium text-foreground">{currentUserName}</span></p>
-                  <Textarea
+                  <MentionTextarea
                     value={commentText}
                     onChange={(event) => setCommentText(event.target.value)}
                     placeholder="Leave a review comment… use @username to notify a teammate"
