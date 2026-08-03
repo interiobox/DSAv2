@@ -105,8 +105,8 @@ function AuthLanding() {
         <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded bg-primary">
           <span className="text-xl font-bold text-primary-foreground">▱</span>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">Drawing Library</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Sign in to manage drawings, assignments, reviews, and your personal feed.</p>
+        <h1 className="text-2xl font-bold tracking-tight">Design Sense Architects</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Sign in to manage the Drawing Library, assignments, reviews, and your personal feed.</p>
         <div className="mt-6">
           <ButtonLink href="/sign-in">Sign in</ButtonLink>
         </div>
@@ -155,7 +155,7 @@ function SignInPage() {
         </div>
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Sign in to access the Drawing Library.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Sign in to access the Design Sense Architects Drawing Library.</p>
         </div>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>

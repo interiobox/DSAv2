@@ -1,6 +1,6 @@
-# Drawing Library
+# Design Sense Architects — Drawing Library
 
-An architectural drawing management app for maintaining a searchable drawing library, review status, issue dates, and project activity.
+An architectural drawing management app for Design Sense Architects, maintaining a searchable drawing library, review status, issue dates, and project activity.
 
 ## Run & Operate
 

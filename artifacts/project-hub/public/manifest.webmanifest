@@ -1,7 +1,7 @@
 {
-  "name": "Drawing Library",
-  "short_name": "Drawing Library",
-  "description": "Architectural drawing reviews, assignments, chat, and project coordination.",
+  "name": "Design Sense Architects",
+  "short_name": "Design Sense",
+  "description": "Design Sense Architects drawing reviews, assignments, chat, and project coordination.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

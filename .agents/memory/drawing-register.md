@@ -91,6 +91,12 @@ Universal search is a signed-in app-shell command palette opened from the sideba
 
 **How to apply:** Keep the palette available on every authenticated route, group results by type, respect role-aware destinations, and route record results directly to their detail or workspace page.
 
+Chat message search is local to the selected channel and searches both message content and author names; the company brand is Design Sense Architects while Drawing Library remains the product/workspace name.
+
+**Why:** Teams need quick retrieval within active conversations, and the company identity should be visible without replacing the established drawing-library product vocabulary.
+
+**How to apply:** Keep chat search compatible with polling, clear it when switching channels, show author context for filtered results, and use Design Sense Architects for company-level branding and install metadata.
+
 Personal notifications are persisted per portal user and are created for username mentions, drawing assignments, and assigned-drawing status changes; chat and comment mention delivery currently uses short polling rather than a WebSocket.
 
 **Why:** The portal needs reliable unread/read state across reloads while preserving the existing simple deployment model.

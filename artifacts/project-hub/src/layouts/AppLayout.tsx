@@ -28,10 +28,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div>
             <h1 className="font-semibold text-sm tracking-tight text-sidebar-foreground">
-               Drawing Library
+               Design Sense Architects
             </h1>
              <p className="text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
-               Drawing reviews
+               Drawing Library
             </p>
              <p className="mt-1 truncate text-xs text-sidebar-foreground/70" title={displayName}>{displayName}</p>
           </div>

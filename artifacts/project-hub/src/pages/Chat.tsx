@@ -56,6 +56,7 @@ export default function ChatPage() {
   const [channelName, setChannelName] = useState("")
   const [channelDescription, setChannelDescription] = useState("")
   const [message, setMessage] = useState("")
+  const [messageSearch, setMessageSearch] = useState("")
   const messageEndRef = useRef<HTMLDivElement | null>(null)
 
   const channelsQuery = useListChatChannels({
@@ -75,6 +76,11 @@ export default function ChatPage() {
     },
   })
   const messages = messagesQuery.data ?? []
+  const filteredMessages = useMemo(() => {
+    const query = messageSearch.trim().toLocaleLowerCase()
+    if (!query) return messages
+    return messages.filter((item) => `${item.authorName} ${item.content}`.toLocaleLowerCase().includes(query))
+  }, [messageSearch, messages])
 
   const createChannel = useCreateChatChannel()
   const createMessage = useCreateChatMessage()
@@ -85,6 +91,10 @@ export default function ChatPage() {
       setSelectedChannelId(channels[0]?.id ?? null)
     }
   }, [channels, selectedChannelId])
+
+  useEffect(() => {
+    setMessageSearch("")
+  }, [activeChannelId])
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -142,12 +152,30 @@ export default function ChatPage() {
               </div>
             </div>
           </div>
-          <div className="hidden items-center gap-2 sm:flex">
+          <div className="flex min-w-0 items-center gap-2">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input aria-label="Search messages" placeholder="Search" className="h-9 w-36 pl-9 lg:w-52" data-testid="input-search-chat" />
+              <Input
+                aria-label="Search messages"
+                placeholder="Search messages"
+                value={messageSearch}
+                onChange={(event) => setMessageSearch(event.target.value)}
+                className="h-9 w-36 pl-9 pr-8 sm:w-52 lg:w-64"
+                data-testid="input-search-chat"
+              />
+              {messageSearch && (
+                <button
+                  type="button"
+                  aria-label="Clear message search"
+                  onClick={() => setMessageSearch("")}
+                  className="absolute right-2 top-2 rounded-sm text-muted-foreground hover:text-foreground"
+                  data-testid="button-clear-chat-search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
-            <Button variant="outline" size="icon" title="Notifications" data-testid="button-chat-notifications">
+            <Button variant="outline" size="icon" className="hidden sm:inline-flex" title="Notifications" data-testid="button-chat-notifications">
               <Bell className="h-4 w-4" />
             </Button>
           </div>
@@ -159,7 +187,7 @@ export default function ChatPage() {
           <div className="flex items-center justify-between border-b px-4 py-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Workspace</p>
-              <p className="mt-1 truncate text-sm font-semibold">Drawing Library</p>
+              <p className="mt-1 truncate text-sm font-semibold">Design Sense Architects</p>
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsChannelDialogOpen(true)} title="Create channel" data-testid="button-create-channel">
               <Plus className="h-4 w-4" />
@@ -243,17 +271,29 @@ export default function ChatPage() {
                   <p className="mt-1 max-w-sm text-sm text-muted-foreground">Create your first channel for a project decision, site update, or drawing review.</p>
                   <Button className="mt-5" onClick={() => setIsChannelDialogOpen(true)} data-testid="button-create-first-channel"><Plus className="mr-2 h-4 w-4" />Create channel</Button>
                 </div>
-              ) : messages.length ? (
+              ) : messages.length && filteredMessages.length ? (
                 <div className="space-y-1">
                   <div className="mb-6 border-b pb-5">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary"><Hash className="h-6 w-6" /></div>
                     <h3 className="mt-3 text-xl font-bold">Welcome to #{activeChannel.name}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">{activeChannel.description || "This is the beginning of this channel."}</p>
                   </div>
-                  {messages.map((item, index) => (
-                    <MessageRow key={item.id} message={item} previous={messages[index - 1]} />
+                  {messageSearch && (
+                    <p className="mb-3 rounded-md bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+                      Showing {filteredMessages.length} {filteredMessages.length === 1 ? "message" : "messages"} matching “{messageSearch}”
+                    </p>
+                  )}
+                  {filteredMessages.map((item, index) => (
+                    <MessageRow key={item.id} message={item} previous={messageSearch ? undefined : filteredMessages[index - 1]} />
                   ))}
                   <div ref={messageEndRef} />
+                </div>
+              ) : messageSearch ? (
+                <div className="flex min-h-[360px] flex-col items-center justify-center text-center">
+                  <Search className="mb-3 h-9 w-9 text-muted-foreground/60" />
+                  <h3 className="font-semibold">No messages found</h3>
+                  <p className="mt-1 max-w-sm text-sm text-muted-foreground">Try a different word, phrase, or teammate name.</p>
+                  <Button variant="outline" className="mt-4" onClick={() => setMessageSearch("")}>Clear search</Button>
                 </div>
               ) : (
                 <div className="flex min-h-[360px] flex-col justify-end">
