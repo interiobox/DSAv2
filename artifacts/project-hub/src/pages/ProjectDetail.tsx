@@ -3,16 +3,19 @@ import { Link, useRoute } from "wouter"
 import {
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
   CalendarDays,
   CheckCircle2,
   ClipboardList,
   FileText,
   FolderKanban,
+  History,
   Mail,
   UsersRound,
 } from "lucide-react"
 
 import {
+  useListActivity,
   useListContacts,
   useListDrawings,
   useListProjectChecklists,
@@ -45,6 +48,7 @@ export default function ProjectDetail() {
   const { data: checklists, isLoading: checklistsLoading } = useListProjectChecklists(
     projectName ? { projectName } : undefined,
   )
+  const { data: activities, isLoading: activitiesLoading } = useListActivity()
 
   const project = projects?.find((item) => item.name === projectName)
   const projectDrawings = (drawings ?? []).filter((drawing) => drawing.projectName === projectName)
@@ -55,6 +59,16 @@ export default function ProjectDetail() {
     .filter((drawing): drawing is typeof drawing & { dueDate: string } => Boolean(drawing.dueDate))
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 4)
+  const today = new Date().toISOString().slice(0, 10)
+  const overdueDrawings = projectDrawings.filter(
+    (drawing) => Boolean(drawing.dueDate) && drawing.dueDate! < today && drawing.status !== "issued" && drawing.status !== "superseded",
+  )
+  const unassignedDrawings = projectDrawings.filter((drawing) => !drawing.assignedTo)
+  const projectDrawingIds = new Set(projectDrawings.map((drawing) => drawing.id))
+  const projectActivities = (activities ?? []).filter(
+    (activity) => activity.drawingId !== null && projectDrawingIds.has(activity.drawingId),
+  )
+  const drawingById = new Map(projectDrawings.map((drawing) => [drawing.id, drawing]))
   const completedChecklistItems = (checklists ?? []).reduce(
     (total, checklist) => total + checklist.items.filter((item) => item.completed).length,
     0,
@@ -62,6 +76,7 @@ export default function ProjectDetail() {
   const checklistItems = (checklists ?? []).reduce((total, checklist) => total + checklist.items.length, 0)
   const checklistProgress = checklistItems ? Math.round((completedChecklistItems / checklistItems) * 100) : 0
   const isLoading = projectsLoading || drawingsLoading
+  const projectNeedsAttention = overdueDrawings.length > 0 || unassignedDrawings.length > 0
 
   if (isLoading) {
     return (
@@ -134,6 +149,31 @@ export default function ProjectDetail() {
             ))}
           </section>
 
+          <Card className={projectNeedsAttention ? "border-amber-200 bg-amber-50/40" : "border-emerald-200 bg-emerald-50/30"}>
+            <CardContent className="p-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className={`rounded-md p-2 ${projectNeedsAttention ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>
+                    {projectNeedsAttention ? <AlertTriangle className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Project health</p>
+                    <h2 className="mt-1 text-lg font-semibold">{projectNeedsAttention ? "Needs attention" : "On track"}</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {projectNeedsAttention ? "Resolve the items below to keep project work moving." : "No overdue or unassigned drawing work is currently flagged."}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-4">
+                  <HealthMetric label="Overdue" value={overdueDrawings.length} warning={overdueDrawings.length > 0} />
+                  <HealthMetric label="Unassigned" value={unassignedDrawings.length} warning={unassignedDrawings.length > 0} />
+                  <HealthMetric label="In review" value={reviewDrawings.length} warning={reviewDrawings.length > 0} />
+                  <HealthMetric label="Checklist" value={`${checklistProgress}%`} warning={checklistItems > 0 && checklistProgress < 100} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)]">
             <div className="space-y-5">
               <Card>
@@ -156,6 +196,29 @@ export default function ProjectDetail() {
               </Card>
 
               <ProjectNotesPanel projectName={project.name} />
+
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle className="flex items-center gap-2 text-base"><History className="h-4 w-4 text-primary" />Project activity</CardTitle>
+                  <CardDescription>Recent drawing changes recorded for this project.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {activitiesLoading ? <div className="space-y-3 p-6"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div> : projectActivities.length === 0 ? (
+                    <div className="px-6 py-10 text-center text-sm text-muted-foreground"><History className="mx-auto mb-3 h-8 w-8 opacity-40" />No project activity has been recorded yet.</div>
+                  ) : (
+                    <div className="divide-y">{projectActivities.slice(0, 8).map((activity) => {
+                      const drawing = activity.drawingId ? drawingById.get(activity.drawingId) : undefined
+                      return <div key={activity.id} className="flex gap-3 px-6 py-4">
+                        <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                        <div className="min-w-0">
+                          <p className="text-sm">{activity.message}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">{activity.actor ?? "System"} · {formatDateShort(activity.createdAt)}{drawing ? <> · <Link className="text-primary hover:underline" href={`/drawings/${drawing.id}`}>{drawing.drawingNumber}</Link></> : null}</p>
+                        </div>
+                      </div>
+                    })}</div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             <div className="space-y-5">
@@ -185,6 +248,15 @@ export default function ProjectDetail() {
           </div>
         </div>
       </main>
+    </div>
+  )
+}
+
+function HealthMetric({ label, value, warning }: { label: string; value: number | string; warning: boolean }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className={`mt-1 text-xl font-bold ${warning ? "text-amber-700" : "text-foreground"}`}>{value}</p>
     </div>
   )
 }

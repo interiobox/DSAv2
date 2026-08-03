@@ -127,6 +127,12 @@ Projects have dedicated project workspaces separate from the project index; the 
 
 **How to apply:** Keep `/projects` focused on finding projects, and route each project to its dedicated workspace before sending users to narrower drawing, directory, or checklist views.
 
+Project health is derived from existing work records: overdue and unassigned drawings are attention flags, while checklist completion and in-review counts provide context; project activity is filtered from the shared drawing activity stream.
+
+**Why:** The project page should surface coordination risk without introducing another project-status data model.
+
+**How to apply:** Prefer computed health indicators and existing activity records before adding new project-specific persistence.
+
 Mention autocomplete uses active portal usernames and inserts the exact `@username` token consumed by server-side notification matching in chat and drawing comments.
 
 **Why:** Display names are useful in the interface but mention notifications resolve against stable login handles.
