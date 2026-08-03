@@ -72,7 +72,7 @@ router.post("/drawings", async (req, res): Promise<void> => {
     dueDate: toDateString(data.dueDate),
     issuedDate: toDateString(data.issuedDate),
   }).returning();
-  await addActivity("drawing_added", `${drawing.title} was added to the drawing library`, drawing.id, currentUserId(req));
+  await addActivity("drawing_added", `${drawing.title} was added to the drawing library`, drawing.id, currentUserId(req), currentUserName(req));
   res.status(201).json(CreateDrawingResponse.parse(drawing));
 });
 
@@ -130,7 +130,7 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
     return;
   }
   const activityType = data.status === "issued" ? "drawing_issued" : data.status === "approved" ? "drawing_approved" : "drawing_updated";
-  await addActivity(activityType, `${drawing.title} was updated`, drawing.id, currentUserId(req));
+  await addActivity(activityType, `${drawing.title} was updated`, drawing.id, currentUserId(req), currentUserName(req));
   res.json(UpdateDrawingResponse.parse(drawing));
 });
 
@@ -157,7 +157,7 @@ router.patch("/drawings/:id/assignment", async (req, res): Promise<void> => {
   const message = assigneeName
     ? `${currentUserName(req)} assigned ${drawing.title} to ${assigneeName}`
     : `${currentUserName(req)} unassigned ${drawing.title}`;
-  await addActivity("drawing_assigned", message, drawing.id, currentUserId(req));
+  await addActivity("drawing_assigned", message, drawing.id, currentUserId(req), currentUserName(req));
   res.json(UpdateDrawingAssignmentResponse.parse(drawing));
 });
 
@@ -180,6 +180,7 @@ router.delete("/drawings/:id", async (req, res): Promise<void> => {
   for (const upload of uploads) {
     await objectStorageService.deleteObjectEntity(upload.filePath);
   }
+  await addActivity("drawing_deleted", `${currentUserName(req)} deleted ${drawing.title} from the drawing library`, drawing.id, currentUserId(req), currentUserName(req));
   await db.delete(drawingCommentsTable).where(eq(drawingCommentsTable.drawingId, drawing.id));
   await db.delete(drawingUploadsTable).where(eq(drawingUploadsTable.drawingId, drawing.id));
   await db.delete(drawingsTable).where(eq(drawingsTable.id, drawing.id));
@@ -236,7 +237,7 @@ router.post("/drawings/:id/uploads", async (req, res): Promise<void> => {
     attachmentContentType: upload.contentType,
     updatedAt: new Date(),
   }).where(eq(drawingsTable.id, drawing.id));
-  await addActivity("drawing_uploaded", `${upload.fileName} uploaded by ${upload.uploadedBy}`, drawing.id, currentUserId(req));
+  await addActivity("drawing_uploaded", `${upload.fileName} uploaded by ${upload.uploadedBy} to ${drawing.title}`, drawing.id, currentUserId(req), currentUserName(req));
   res.status(201).json(RecordDrawingUploadResponse.parse(upload));
 });
 
@@ -267,7 +268,7 @@ router.delete("/drawings/:id/uploads/:uploadId", async (req, res): Promise<void>
       updatedAt: new Date(),
     }).where(eq(drawingsTable.id, upload.drawingId));
   }
-  await addActivity("drawing_updated", `${upload.fileName} upload was deleted`, upload.drawingId, currentUserId(req));
+  await addActivity("drawing_updated", `${upload.fileName} upload was deleted from ${drawing?.title ?? "the drawing"}`, upload.drawingId, currentUserId(req), currentUserName(req));
   res.sendStatus(204);
 });
 
@@ -309,7 +310,7 @@ router.post("/drawings/:id/comments", async (req, res): Promise<void> => {
     ...body.data,
     author: currentUserName(req),
   }).returning();
-  await addActivity("comment_added", `${comment.author} commented on ${drawing.title}`, drawing.id, currentUserId(req));
+  await addActivity("comment_added", `${comment.author} commented on ${drawing.title}`, drawing.id, currentUserId(req), currentUserName(req));
   res.status(201).json(CreateDrawingCommentResponse.parse(comment));
 });
 
@@ -331,7 +332,7 @@ router.patch("/drawings/:id/comments/:commentId", async (req, res): Promise<void
   }
   const [updated] = await db.update(drawingCommentsTable).set(body.data)
     .where(eq(drawingCommentsTable.id, comment.id)).returning();
-  await addActivity("drawing_updated", `${updated.author} edited a review comment`, comment.drawingId, currentUserId(req));
+  await addActivity("drawing_updated", `${updated.author} edited a review comment on drawing ${comment.drawingId}`, comment.drawingId, currentUserId(req), currentUserName(req));
   res.json(UpdateDrawingCommentResponse.parse(updated));
 });
 
@@ -347,7 +348,7 @@ router.delete("/drawings/:id/comments/:commentId", async (req, res): Promise<voi
     return;
   }
   await db.delete(drawingCommentsTable).where(eq(drawingCommentsTable.id, comment.id));
-  await addActivity("drawing_updated", `${comment.author}'s review comment was deleted`, comment.drawingId, currentUserId(req));
+  await addActivity("drawing_updated", `${comment.author}'s review comment was deleted from drawing ${comment.drawingId}`, comment.drawingId, currentUserId(req), currentUserName(req));
   res.sendStatus(204);
 });
 

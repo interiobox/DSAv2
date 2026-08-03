@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
-import { db, drawingActivityTable, drawingsTable } from "@workspace/db";
+import { db, chatChannelsTable, chatMessagesTable, drawingActivityTable, drawingsTable } from "@workspace/db";
 
 export function getIdParam(value: string | string[]): number {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -21,8 +21,36 @@ export async function addActivity(
   message: string,
   drawingId?: number,
   actor?: string,
+  actorName?: string,
 ): Promise<void> {
   await db.insert(drawingActivityTable).values({ type, message, drawingId, actor: actor ?? null });
+  if (drawingId === undefined || actor === undefined || actorName === undefined) return;
+
+  let [channel] = await db
+    .select({ id: chatChannelsTable.id })
+    .from(chatChannelsTable)
+    .where(eq(chatChannelsTable.name, "drawing-reviews"))
+    .limit(1);
+  if (!channel) {
+    await db.insert(chatChannelsTable).values({
+      name: "drawing-reviews",
+      description: "Questions and decisions about drawing reviews",
+      createdBy: Number(actor),
+    }).onConflictDoNothing({ target: chatChannelsTable.name });
+    [channel] = await db
+      .select({ id: chatChannelsTable.id })
+      .from(chatChannelsTable)
+      .where(eq(chatChannelsTable.name, "drawing-reviews"))
+      .limit(1);
+  }
+  if (!channel) throw new Error("The drawing-reviews chat channel could not be created");
+
+  await db.insert(chatMessagesTable).values({
+    channelId: channel.id,
+    authorId: Number(actor),
+    authorName: actorName,
+    content: `Drawing update · ${message}`,
+  });
 }
 
 export async function getDashboard() {

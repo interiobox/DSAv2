@@ -48,3 +48,9 @@ Team chat is persisted as channels plus messages, with the signed-in local porta
 **Why:** Drawing-review and site-coordination conversations need to survive reloads and be visible to other authenticated users without requiring a WebSocket service.
 
 **How to apply:** Keep channel/message mutations behind portal authentication, use generated API hooks, and preserve immediate local updates plus periodic freshness for the active channel.
+
+Every drawing mutation is mirrored into the persistent `drawing-reviews` chat channel, including metadata/status edits, assignments, uploads, comments, discipline changes, and deletion.
+
+**Why:** The team needs one durable conversation stream that reflects the drawing library’s audit trail without requiring users to manually repost changes.
+
+**How to apply:** Route server-side drawing activity through the shared activity helper so UI, API, and admin-originated mutations remain covered.

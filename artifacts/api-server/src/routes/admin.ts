@@ -1,7 +1,8 @@
 import { Router, type IRouter } from "express";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { db, disciplinesTable, drawingActivityTable, drawingsTable, sessionsTable, usersTable } from "@workspace/db";
-import { hashPassword, publicUser, requireAdmin } from "../lib/portalAuth";
+import { hashPassword, publicUser, requireAdmin, requireCurrentUser } from "../lib/portalAuth";
+import { addActivity } from "../lib/drawings";
 
 const router: IRouter = Router();
 router.use("/admin", requireAdmin);
@@ -160,7 +161,20 @@ router.patch("/admin/disciplines/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Discipline not found" });
     return;
   }
+  const affectedDrawings = await db.select({ id: drawingsTable.id, title: drawingsTable.title })
+    .from(drawingsTable)
+    .where(eq(drawingsTable.discipline, currentDiscipline.name));
   await db.update(drawingsTable).set({ discipline: name }).where(eq(drawingsTable.discipline, currentDiscipline.name));
+  const user = requireCurrentUser(req);
+  for (const drawing of affectedDrawings) {
+    await addActivity(
+      "drawing_updated",
+      `${drawing.title} changed discipline from ${currentDiscipline.name} to ${name}`,
+      drawing.id,
+      String(user.id),
+      user.name,
+    );
+  }
   res.json(discipline);
 });
 
