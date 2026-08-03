@@ -36,6 +36,12 @@ const statusTone = (status: string) =>
   status === "issued" ? "bg-blue-100 text-blue-800" :
   status === "in_review" ? "bg-amber-100 text-amber-800" :
   status === "superseded" ? "bg-slate-100 text-slate-700" : ""
+const activityLabel = (type: string) => type.replace("drawing_", "").replace("_", " ")
+const activityTone = (type: string) =>
+  type.includes("issued") ? "bg-blue-100 text-blue-800" :
+  type.includes("approved") ? "bg-emerald-100 text-emerald-800" :
+  type.includes("assigned") ? "bg-violet-100 text-violet-800" :
+  type.includes("uploaded") ? "bg-cyan-100 text-cyan-800" : "bg-muted text-muted-foreground"
 
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:projectName")
@@ -171,6 +177,12 @@ export default function ProjectDetail() {
                   <HealthMetric label="Checklist" value={`${checklistProgress}%`} warning={checklistItems > 0 && checklistProgress < 100} />
                 </div>
               </div>
+              {projectNeedsAttention && (
+                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-amber-200/70 pt-4 text-xs">
+                  {overdueDrawings.length > 0 && <Link className="font-medium text-amber-800 hover:underline" href={`/drawings?project=${encodeURIComponent(project.name)}`}>Review {overdueDrawings.length} overdue drawing{overdueDrawings.length === 1 ? "" : "s"} <ArrowRight className="ml-1 inline h-3 w-3" /></Link>}
+                  {unassignedDrawings.length > 0 && <Link className="font-medium text-amber-800 hover:underline" href={`/drawings?project=${encodeURIComponent(project.name)}`}>Assign {unassignedDrawings.length} unassigned drawing{unassignedDrawings.length === 1 ? "" : "s"} <ArrowRight className="ml-1 inline h-3 w-3" /></Link>}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -179,7 +191,7 @@ export default function ProjectDetail() {
               <Card>
                 <CardHeader className="border-b">
                   <div className="flex items-center justify-between gap-3">
-                    <div><CardTitle className="text-base">Project drawings</CardTitle><CardDescription>Recent drawing work for {project.name}.</CardDescription></div>
+                    <div><CardTitle className="text-base">Project drawings</CardTitle><CardDescription>{projectDrawings.length ? `Showing ${Math.min(projectDrawings.length, 8)} of ${projectDrawings.length} drawings.` : `No drawing work for ${project.name} yet.`}</CardDescription></div>
                     <Button variant="ghost" size="sm" asChild><Link href={`/drawings?project=${encodeURIComponent(project.name)}`}>Open library <ArrowRight className="ml-1.5 h-4 w-4" /></Link></Button>
                   </div>
                 </CardHeader>
@@ -211,7 +223,10 @@ export default function ProjectDetail() {
                       return <div key={activity.id} className="flex gap-3 px-6 py-4">
                         <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
                         <div className="min-w-0">
-                          <p className="text-sm">{activity.message}</p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="secondary" className={`text-[10px] capitalize ${activityTone(activity.type)}`}>{activityLabel(activity.type)}</Badge>
+                            <p className="text-sm">{activity.message}</p>
+                          </div>
                           <p className="mt-1 text-xs text-muted-foreground">{activity.actor ?? "System"} · {formatDateShort(activity.createdAt)}{drawing ? <> · <Link className="text-primary hover:underline" href={`/drawings/${drawing.id}`}>{drawing.drawingNumber}</Link></> : null}</p>
                         </div>
                       </div>
@@ -225,7 +240,7 @@ export default function ProjectDetail() {
               <Card>
                 <CardHeader><CardTitle className="flex items-center gap-2 text-base"><CalendarDays className="h-4 w-4 text-primary" />Upcoming dates</CardTitle><CardDescription>Deadlines connected to this project.</CardDescription></CardHeader>
                 <CardContent className="p-0">
-                  {dueDrawings.length === 0 ? <p className="px-6 pb-6 text-sm text-muted-foreground">No drawing deadlines have been set.</p> : <div className="divide-y">{dueDrawings.map((drawing) => <Link key={drawing.id} href={`/drawings/${drawing.id}`} className="flex items-center justify-between gap-3 px-6 py-3 hover:bg-muted/40"><div className="min-w-0"><p className="truncate text-sm font-medium">{drawing.title}</p><p className="mt-1 text-xs text-muted-foreground">{drawing.drawingNumber}</p></div><span className="shrink-0 text-right text-xs font-medium">{formatDateShort(drawing.dueDate)}</span></Link>)}</div>}
+                  {dueDrawings.length === 0 ? <p className="px-6 pb-6 text-sm text-muted-foreground">No drawing deadlines have been set.</p> : <div className="divide-y">{dueDrawings.map((drawing) => { const overdue = drawing.dueDate < today && drawing.status !== "issued" && drawing.status !== "superseded"; return <Link key={drawing.id} href={`/drawings/${drawing.id}`} className="flex items-center justify-between gap-3 px-6 py-3 hover:bg-muted/40"><div className="min-w-0"><p className="truncate text-sm font-medium">{drawing.title}</p><p className="mt-1 text-xs text-muted-foreground">{drawing.drawingNumber}</p></div><span className={`shrink-0 text-right text-xs font-semibold ${overdue ? "text-destructive" : "text-foreground"}`}>{overdue ? "Overdue · " : ""}{formatDateShort(drawing.dueDate)}</span></Link> })}</div>}
                 </CardContent>
               </Card>
 
@@ -240,7 +255,7 @@ export default function ProjectDetail() {
               <Card>
                 <CardHeader><CardTitle className="flex items-center gap-2 text-base"><ClipboardList className="h-4 w-4 text-primary" />Project checklists</CardTitle><CardDescription>Handover and readiness work for this project.</CardDescription></CardHeader>
                 <CardContent>
-                  {checklistsLoading ? <Skeleton className="h-10 w-full" /> : !checklists?.length ? <p className="text-sm text-muted-foreground">No checklists have been applied yet.</p> : <div className="space-y-4">{checklists.slice(0, 3).map((checklist) => { const complete = checklist.items.filter((item) => item.completed).length; const total = checklist.items.length; return <div key={checklist.id}><div className="flex items-center justify-between gap-3 text-sm"><span className="truncate font-medium">{checklist.name}</span><span className="shrink-0 text-xs text-muted-foreground">{complete}/{total}</span></div><Progress className="mt-2 h-2" value={total ? (complete / total) * 100 : 0} /></div> })}</div>}
+                  {checklistsLoading ? <Skeleton className="h-10 w-full" /> : !checklists?.length ? <p className="text-sm text-muted-foreground">No checklists have been applied yet.</p> : <div className="space-y-4">{checklists.slice(0, 3).map((checklist) => { const complete = checklist.items.filter((item) => item.completed).length; const total = checklist.items.length; const progress = total ? Math.round((complete / total) * 100) : 0; return <div key={checklist.id}><div className="flex items-center justify-between gap-3 text-sm"><span className="truncate font-medium">{checklist.name}</span><Badge variant="outline" className="shrink-0">{progress}%</Badge></div><div className="mt-2 flex items-center gap-3"><Progress className="h-2 flex-1" value={progress} /><span className="shrink-0 text-[11px] text-muted-foreground">{complete}/{total}</span></div></div> })}</div>}
                   <Button variant="outline" size="sm" className="mt-5 w-full" asChild><Link href="/checklists">Manage checklists <ArrowRight className="ml-1.5 h-4 w-4" /></Link></Button>
                 </CardContent>
               </Card>
