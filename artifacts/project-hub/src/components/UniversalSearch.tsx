@@ -63,7 +63,18 @@ export function UniversalSearch() {
       { label: "Team Chat", detail: "Project coordination conversations", icon: MessageSquare, href: "/chat" },
       { label: "Notifications", detail: "Your unread updates", icon: Bell, href: "/notifications" },
       { label: "Activity", detail: "Full drawing activity history", icon: Activity, href: "/activity" },
+      { label: "Reports", detail: "Detailed register health and workload", icon: BarChart3, href: "/reports" },
+      { label: "Standards", detail: "Reusable checklist templates and categories", icon: BookOpen, href: "/standards" },
+      { label: "Issue Register", detail: "Review comments and drawing issues", icon: FileWarning, href: "/issues" },
+      { label: "Files", detail: "Uploaded drawing files and history", icon: FolderOpen, href: "/files" },
+      { label: "Contacts", detail: "Project contacts and partners", icon: UsersRound, href: "/contacts" },
+      { label: "Archive", detail: "Superseded drawings for reference", icon: Archive, href: "/archive" },
       { label: "Settings", detail: "Personal preferences and categories", icon: Settings, href: "/settings" },
+      ...(user?.role === "admin" ? [
+        { label: "Team Directory", detail: "People available for assignments", icon: UsersRound, href: "/team" },
+        { label: "Portal Users", detail: "Manage portal accounts", icon: UserRoundCog, href: "/users" },
+        { label: "Admin", detail: "Manage access and workspace audit", icon: ShieldCheck, href: "/admin" },
+      ] : []),
     ].map((item) => ({
       ...item,
       id: `navigation-${item.href}`,
@@ -83,7 +94,7 @@ export function UniversalSearch() {
       detail: "Project drawing register",
       group: "Projects",
       icon: FolderKanban,
-      href: "/projects",
+      href: `/projects/${encodeURIComponent(project.name)}`,
     }))
     const categoryResults = (categories ?? []).map((category) => ({
       id: `category-${category.id}`,
@@ -129,21 +140,22 @@ export function UniversalSearch() {
 
   return (
     <>
-      <Button
+      <button
         type="button"
-        variant="outline"
-        className="h-9 w-full justify-between border-sidebar-border/70 bg-sidebar-accent/30 px-3 text-sidebar-foreground/70 shadow-none hover:bg-sidebar-accent hover:text-sidebar-foreground"
+        className="flex h-9 w-full items-center justify-between rounded-sm border border-sidebar-border bg-background/50 px-3 text-sm text-sidebar-foreground/60 shadow-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar"
         onClick={() => setOpen(true)}
       >
         <span className="flex items-center gap-2">
           <Search className="h-4 w-4" />
           <span>Search library...</span>
         </span>
-        <CommandShortcut className="rounded border border-sidebar-border/70 px-1.5 py-0.5 text-[10px]">⌘K</CommandShortcut>
-      </Button>
+        <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-sidebar-border bg-sidebar-accent/50 px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex text-sidebar-foreground/70">
+          <span className="text-xs">⌘</span>K
+        </kbd>
+      </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Search drawings, projects, people, categories..." />
-        <CommandList className="max-h-[min(65vh,520px)]">
+        <CommandList className="max-h-[min(65vh,520px)] custom-scrollbar">
           <CommandEmpty>No matching records found.</CommandEmpty>
           {Array.from(groupedResults.entries()).map(([group, groupResults]) => (
             <CommandGroup key={group} heading={group}>
@@ -154,11 +166,12 @@ export function UniversalSearch() {
                     key={result.id}
                     value={`${result.label} ${result.detail ?? ""}`}
                     onSelect={() => selectResult(result.href)}
+                    className="cursor-pointer"
                   >
-                    <Icon className="text-muted-foreground" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate">{result.label}</span>
-                      {result.detail && <span className="block truncate text-xs text-muted-foreground">{result.detail}</span>}
+                    <Icon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0 flex-1 flex items-center justify-between gap-2">
+                      <span className="truncate font-medium">{result.label}</span>
+                      {result.detail && <span className="truncate text-xs text-muted-foreground">{result.detail}</span>}
                     </span>
                   </CommandItem>
                 )

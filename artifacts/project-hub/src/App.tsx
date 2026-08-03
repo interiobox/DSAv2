@@ -21,6 +21,7 @@ import { Files, Issues, Notifications, Reports, Standards, Team } from "@/pages/
 import SettingsPage from "@/pages/Settings";
 import Dashboard from "@/pages/Dashboard";
 import ContactsPage from "@/pages/Contacts";
+import { Layers } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -102,14 +103,17 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
 function AuthLanding() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md rounded-lg border bg-card p-8 text-center shadow-sm">
-        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded bg-primary">
-          <span className="text-xl font-bold text-primary-foreground">▱</span>
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-12">
+      <div className="w-full max-w-sm">
+        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-sm bg-primary shadow-sm border border-primary/20">
+          <Layers className="h-7 w-7 text-primary-foreground" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">Design Sense Architects</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Sign in to manage the Drawing Library, assignments, reviews, and your personal feed.</p>
-        <div className="mt-6">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Design Sense Architects</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Drawing Library & Coordination</p>
+        </div>
+        <div className="rounded-sm border border-border/80 bg-card p-8 text-center shadow-sm">
+          <p className="text-sm text-muted-foreground mb-6">Sign in to manage the register, assignments, reviews, and your personal feed.</p>
           <ButtonLink href="/sign-in">Sign in</ButtonLink>
         </div>
       </div>
@@ -119,7 +123,7 @@ function AuthLanding() {
 
 function ButtonLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+    <Link href={href} className="inline-flex h-10 w-full items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
       {children}
     </Link>
   );
@@ -140,7 +144,7 @@ function SignInPage() {
     setError("");
     setIsSubmitting(true);
     try {
-      const signedInUser = await login(username, password);
+      await login(username, password);
       setLocation("/dashboard");
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : "Unable to sign in");
@@ -150,30 +154,32 @@ function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md rounded-lg border bg-card p-8 shadow-sm">
-        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded bg-primary">
-          <span className="text-xl font-bold text-primary-foreground">▱</span>
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-12">
+      <div className="w-full max-w-sm">
+        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-sm bg-primary shadow-sm border border-primary/20">
+          <Layers className="h-7 w-7 text-primary-foreground" />
         </div>
-        <div className="text-center">
+        <div className="text-center mb-8">
           <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Sign in to access the Design Sense Architects Drawing Library.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Sign in to access your workspace.</p>
         </div>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <div>
-            <label htmlFor="username" className="mb-1.5 block text-sm font-medium">Username</label>
-            <input id="username" value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" required />
-          </div>
-          <div>
-            <label htmlFor="password" className="mb-1.5 block text-sm font-medium">Password</label>
-            <input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" required />
-          </div>
-          {error && <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{error}</p>}
-          <button type="submit" disabled={isSubmitting} className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60">
-            {isSubmitting ? "Signing in..." : "Sign in"}
-          </button>
-        </form>
-        <p className="mt-5 text-center text-xs text-muted-foreground">Accounts are created and managed by an administrator.</p>
+        <div className="rounded-sm border border-border/80 bg-card p-8 shadow-sm">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="username" className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-muted-foreground font-mono">Username</label>
+              <input id="username" value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" className="flex h-10 w-full rounded-sm border border-border/80 bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" required />
+            </div>
+            <div>
+              <label htmlFor="password" className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-muted-foreground font-mono">Password</label>
+              <input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" className="flex h-10 w-full rounded-sm border border-border/80 bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" required />
+            </div>
+            {error && <p role="alert" className="rounded-sm border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">{error}</p>}
+            <button type="submit" disabled={isSubmitting} className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-sm bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
+              {isSubmitting ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
+        </div>
+        <p className="mt-6 text-center text-xs text-muted-foreground">Accounts are created and managed by administrators.</p>
       </div>
     </div>
   );
@@ -186,7 +192,12 @@ function HomeRedirect() {
 }
 
 function LoadingScreen() {
-  return <div className="flex min-h-[100dvh] items-center justify-center bg-background text-sm text-muted-foreground">Loading your account...</div>;
+  return (
+    <div className="flex min-h-[100dvh] flex-col gap-4 items-center justify-center bg-background">
+      <Layers className="h-8 w-8 text-primary animate-pulse" />
+      <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">Loading workspace...</div>
+    </div>
+  );
 }
 
 function AdminUsersRoute() {
