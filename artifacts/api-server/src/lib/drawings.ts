@@ -56,15 +56,15 @@ export async function addActivity(
 export async function getDashboard() {
   const rows = await db.select().from(drawingsTable);
   const today = new Date().toISOString().slice(0, 10);
-  const byDiscipline: Record<string, number> = {};
-  for (const row of rows) byDiscipline[row.discipline] = (byDiscipline[row.discipline] ?? 0) + 1;
+  const byCategory: Record<string, number> = {};
+  for (const row of rows) byCategory[row.discipline] = (byCategory[row.discipline] ?? 0) + 1;
   return {
     totalDrawings: rows.length,
     inReview: rows.filter((row) => row.status === "in_review").length,
     approved: rows.filter((row) => row.status === "approved").length,
     issued: rows.filter((row) => row.status === "issued").length,
     overdue: rows.filter((row) => row.dueDate && row.dueDate < today && row.status !== "issued" && row.status !== "superseded").length,
-    byDiscipline,
+    byCategory,
   };
 }
 

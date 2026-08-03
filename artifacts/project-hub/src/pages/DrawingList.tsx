@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query"
 
 import {
   useListDrawings, useCreateDrawing, useDeleteDrawing,
-  useListProjects, useCreateProject, useListDisciplines,
+  useListProjects, useCreateProject, useListCategories,
   getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey,
   getListProjectsQueryKey
 } from "@workspace/api-client-react"
@@ -36,7 +36,7 @@ export default function DrawingList() {
   const isAdmin = user?.role === "admin"
   
   const [searchQuery, setSearchQuery] = React.useState("")
-  const [disciplineFilter, setDisciplineFilter] = React.useState<DrawingDiscipline | "all">("all")
+  const [categoryFilter, setCategoryFilter] = React.useState<DrawingDiscipline | "all">("all")
   const [statusFilter, setStatusFilter] = React.useState<DrawingStatus | "all">("all")
   const [projectFilter, setProjectFilter] = React.useState("all")
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
@@ -45,14 +45,14 @@ export default function DrawingList() {
   const [newProjectName, setNewProjectName] = React.useState("")
   const { data: drawings, isLoading } = useListDrawings({
     search: searchQuery || undefined,
-    discipline: disciplineFilter !== "all" ? disciplineFilter : undefined,
+    discipline: categoryFilter !== "all" ? categoryFilter : undefined,
     status: statusFilter !== "all" ? statusFilter : undefined,
-  }, { query: { queryKey: getListDrawingsQueryKey({ search: searchQuery || undefined, discipline: disciplineFilter !== "all" ? disciplineFilter : undefined, status: statusFilter !== "all" ? statusFilter : undefined }) }})
+  }, { query: { queryKey: getListDrawingsQueryKey({ search: searchQuery || undefined, discipline: categoryFilter !== "all" ? categoryFilter : undefined, status: statusFilter !== "all" ? statusFilter : undefined }) }})
 
   const createDrawing = useCreateDrawing()
   const deleteDrawing = useDeleteDrawing()
   const { data: projects, isLoading: projectsLoading } = useListProjects()
-  const { data: disciplines } = useListDisciplines()
+  const { data: categories } = useListCategories()
   const createProject = useCreateProject()
   const projectOptions = React.useMemo(() => projects?.map((project) => project.name) ?? [], [projects])
   const visibleDrawings = React.useMemo(
@@ -177,14 +177,14 @@ export default function DrawingList() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={disciplineFilter} onValueChange={(v: any) => setDisciplineFilter(v)}>
+          <Select value={categoryFilter} onValueChange={(v: any) => setCategoryFilter(v)}>
             <SelectTrigger className="w-full sm:w-[160px]">
-              <SelectValue placeholder="Discipline" />
+              <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Disciplines</SelectItem>
-               {(disciplines ?? []).map(discipline => (
-                 <SelectItem key={discipline.id} value={discipline.name} className="capitalize">{discipline.name}</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
+               {(categories ?? []).map(category => (
+                 <SelectItem key={category.id} value={category.name} className="capitalize">{category.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -199,8 +199,8 @@ export default function DrawingList() {
               ))}
             </SelectContent>
           </Select>
-          {(searchQuery || disciplineFilter !== "all" || statusFilter !== "all" || projectFilter !== "all") && (
-            <Button variant="ghost" size="icon" onClick={() => { setSearchQuery(""); setDisciplineFilter("all"); setStatusFilter("all"); setProjectFilter("all"); }} title="Clear filters">
+          {(searchQuery || categoryFilter !== "all" || statusFilter !== "all" || projectFilter !== "all") && (
+            <Button variant="ghost" size="icon" onClick={() => { setSearchQuery(""); setCategoryFilter("all"); setStatusFilter("all"); setProjectFilter("all"); }} title="Clear filters">
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -280,7 +280,7 @@ export default function DrawingList() {
             <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur-md">
               <TableRow>
                 <TableHead>Title</TableHead>
-                <TableHead className="w-[120px]">Discipline</TableHead>
+              <TableHead className="w-[120px]">Category</TableHead>
                 <TableHead className="w-[120px]">Status</TableHead>
                 <TableHead className="w-[120px]">Updated</TableHead>
                 <TableHead className="w-[60px]"></TableHead>

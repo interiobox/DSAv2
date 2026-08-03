@@ -3,7 +3,7 @@ import { useRoute, Link, useLocation } from "wouter"
 import { useQueryClient } from "@tanstack/react-query"
 import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, FileText, Upload, Download, Loader2, History, MessageSquare, Pencil, MoreHorizontal, FolderKanban } from "lucide-react"
 
-import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, useListProjects, useListDisciplines, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey, getListNotificationsQueryKey } from "@workspace/api-client-react"
+import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, useListProjects, useListCategories, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey, getListNotificationsQueryKey } from "@workspace/api-client-react"
 import type { DrawingStatus } from "@workspace/api-client-react"
 
 import { Button } from "@/components/ui/button"
@@ -75,7 +75,7 @@ export default function DrawingDetail() {
   const { user } = usePortalAuth()
   const currentUserName = user?.name || user?.username || ""
   const isAdmin = user?.role === "admin"
-  const { data: disciplines } = useListDisciplines()
+  const { data: categories } = useListCategories()
 
   const loadUploads = React.useCallback(async () => {
     const response = await fetch(`/api/drawings/${id}/uploads`)
@@ -401,7 +401,7 @@ export default function DrawingDetail() {
                 </dl>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x">
                   <div className="px-6 py-4">
-                    <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Discipline</dt>
+                    <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Category</dt>
                     <dd className="font-medium text-foreground capitalize">{drawing.discipline}</dd>
                   </div>
                   <div className="px-6 py-4">
@@ -606,8 +606,8 @@ export default function DrawingDetail() {
                   <SelectContent>{["draft", "in_review", "approved", "issued", "superseded"].map((status) => <SelectItem key={status} value={status} className="capitalize">{statusLabel(status)}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={drawingForm.discipline} onValueChange={(discipline) => setDrawingForm({ ...drawingForm, discipline })}>
-                  <SelectTrigger><SelectValue placeholder="Discipline" /></SelectTrigger>
-                  <SelectContent>{(disciplines ?? []).map((discipline) => <SelectItem key={discipline.id} value={discipline.name} className="capitalize">{discipline.name}</SelectItem>)}</SelectContent>
+                  <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+                  <SelectContent>{(categories ?? []).map((category) => <SelectItem key={category.id} value={category.name} className="capitalize">{category.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <Select value={drawingForm.projectName} onValueChange={(projectName) => setDrawingForm({ ...drawingForm, projectName })}>

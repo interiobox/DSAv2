@@ -6,4 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type DashboardSummaryByDiscipline = {[key: string]: number};
+export interface Category {
+  id: number;
+  name: string;
+  createdAt: Date;
+}

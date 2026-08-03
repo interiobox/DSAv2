@@ -465,6 +465,71 @@ export const ListDisciplinesResponse = zod.array(ListDisciplinesResponseItem)
 
 
 /**
+ * @summary List drawing categories
+ */
+export const ListCategoriesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem)
+
+
+/**
+ * @summary Add a drawing category
+ */
+
+
+
+export const CreateCategoryBody = zod.object({
+  "name": zod.string().min(1)
+})
+
+export const CreateCategoryResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Rename a drawing category
+ */
+
+
+
+export const UpdateCategoryParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+export const UpdateCategoryBody = zod.object({
+  "name": zod.string().min(1)
+})
+
+export const UpdateCategoryResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a drawing category
+ */
+
+
+
+export const DeleteCategoryParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const DeleteCategoryResponse = zod.void()
+
+
+/**
  * @summary List all portal users
  */
 export const AdminListUsersResponseItem = zod.object({
@@ -947,7 +1012,7 @@ export const GetDashboardSummaryResponse = zod.object({
   "approved": zod.number(),
   "issued": zod.number(),
   "overdue": zod.number(),
-  "byDiscipline": zod.record(zod.string(), zod.number())
+  "byCategory": zod.record(zod.string(), zod.number())
 })
 
 

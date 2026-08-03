@@ -57,11 +57,11 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Discipline Breakdown */}
+          {/* Category Breakdown */}
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>By Discipline</CardTitle>
-              <CardDescription>Distribution of drawings across disciplines</CardDescription>
+              <CardTitle>By Category</CardTitle>
+              <CardDescription>Distribution of drawings across categories</CardDescription>
             </CardHeader>
             <CardContent>
               {isSummaryLoading ? (
@@ -70,12 +70,12 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {summary && Object.entries(summary.byDiscipline).map(([discipline, count]) => {
+                  {summary && Object.entries(summary.byCategory).map(([category, count]) => {
                     const percentage = (count / summary.totalDrawings) * 100;
                     return (
-                      <div key={discipline} className="space-y-1.5">
+                      <div key={category} className="space-y-1.5">
                         <div className="flex justify-between text-sm">
-                          <span className="font-medium capitalize text-foreground/80">{discipline}</span>
+                          <span className="font-medium capitalize text-foreground/80">{category}</span>
                           <span className="text-muted-foreground font-mono">{count}</span>
                         </div>
                         <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
@@ -87,7 +87,7 @@ export default function Dashboard() {
                       </div>
                     );
                   })}
-                  {(!summary || Object.keys(summary.byDiscipline).length === 0) && (
+                  {(!summary || Object.keys(summary.byCategory).length === 0) && (
                     <p className="text-sm text-muted-foreground py-4 text-center">No drawings recorded yet.</p>
                   )}
                 </div>

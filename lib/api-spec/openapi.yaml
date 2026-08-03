@@ -416,6 +416,66 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Discipline"
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [drawings]
+      summary: List drawing categories
+      responses:
+        "200":
+          description: Drawing categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [drawings]
+      summary: Add a drawing category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+  /categories/{id}:
+    patch:
+      operationId: updateCategory
+      tags: [drawings]
+      summary: Rename a drawing category
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [drawings]
+      summary: Delete a drawing category
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
   /admin/users:
     get:
       operationId: adminListUsers
@@ -1091,6 +1151,24 @@ components:
           type: string
           minLength: 1
       required: [name]
+    Category:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, createdAt]
+    CategoryInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+      required: [name]
     DrawingStatus:
       type: string
       enum: [draft, in_review, approved, issued, superseded]
@@ -1239,11 +1317,11 @@ components:
           type: number
         overdue:
           type: number
-        byDiscipline:
+        byCategory:
           type: object
           additionalProperties:
             type: number
-      required: [totalDrawings, inReview, approved, issued, overdue, byDiscipline]
+      required: [totalDrawings, inReview, approved, issued, overdue, byCategory]
     Activity:
       type: object
       properties:

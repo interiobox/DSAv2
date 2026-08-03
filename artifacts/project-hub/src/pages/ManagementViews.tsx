@@ -2,7 +2,7 @@ import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Bell, BarChart3, BookOpen, File, FileWarning, FolderOpen, UsersRound } from "lucide-react"
 
-import { getListNotificationsQueryKey, useGetDashboardSummary, useListActivity, useListChecklistTemplates, useListDisciplines, useListDrawings, useListNotifications, useListProjects, useListUsers, useMarkAllNotificationsRead, useMarkNotificationRead } from "@workspace/api-client-react"
+import { getListNotificationsQueryKey, useGetDashboardSummary, useListActivity, useListChecklistTemplates, useListCategories, useListDrawings, useListNotifications, useListProjects, useListUsers, useMarkAllNotificationsRead, useMarkNotificationRead } from "@workspace/api-client-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -61,10 +61,10 @@ export function Reports() {
 
 export function Standards() {
   const { data: templates, isLoading } = useListChecklistTemplates()
-  const { data: disciplines } = useListDisciplines()
+  const { data: categories } = useListCategories()
   return <div className="flex h-full flex-1 flex-col overflow-hidden"><Header icon={BookOpen} title="Standards & Templates" description="Reusable review and handover standards for the team." /><div className="flex-1 overflow-auto p-4 sm:p-6"><div className="mx-auto max-w-6xl space-y-6">
     <Card><CardHeader className="border-b"><CardTitle className="text-base">Checklist templates</CardTitle><CardDescription>Open Checklists to manage reusable templates and apply them to projects.</CardDescription></CardHeader><CardContent className="p-0">{isLoading ? <Skeleton className="m-6 h-32" /> : templates?.length ? <div className="divide-y">{templates.map((template) => <div className="flex items-center justify-between gap-4 px-6 py-4" key={template.id}><div><p className="font-medium">{template.name}</p><p className="mt-1 text-xs text-muted-foreground">{template.items.length} checklist item{template.items.length === 1 ? "" : "s"}{template.description ? ` · ${template.description}` : ""}</p></div><Badge variant="outline">Reusable</Badge></div>)}</div> : <Empty icon={BookOpen} text="No standards templates yet." />}</CardContent></Card>
-    <Card><CardHeader className="border-b"><CardTitle className="text-base">Active disciplines</CardTitle></CardHeader><CardContent className="flex flex-wrap gap-2 p-6">{(disciplines ?? []).map((discipline) => <Badge key={discipline.id} variant="secondary">{discipline.name}</Badge>)}</CardContent></Card>
+    <Card><CardHeader className="border-b"><CardTitle className="text-base">Active categories</CardTitle></CardHeader><CardContent className="flex flex-wrap gap-2 p-6">{(categories ?? []).map((category) => <Badge key={category.id} variant="secondary">{category.name}</Badge>)}</CardContent></Card>
   </div></div></div>
 }
 

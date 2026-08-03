@@ -73,6 +73,12 @@ Assignments and comments should retain stable portal user IDs alongside display 
 
 **How to apply:** Resolve new assignments to active users, notify by stored ID, derive comment authorship from the session, and allow comment edits/deletes only for the author or an administrator.
 
+Drawing classifications are user-managed shared categories; any authenticated portal user may add, rename, or delete an unused category.
+
+**Why:** The team needs to evolve drawing metadata collaboratively without routing routine category maintenance through administrator-only screens.
+
+**How to apply:** Keep category CRUD authenticated but not admin-gated, prevent deleting categories still used by drawings, and update all user-facing language from discipline to category while preserving legacy storage compatibility.
+
 Personal notifications are persisted per portal user and are created for username mentions, drawing assignments, and assigned-drawing status changes; chat and comment mention delivery currently uses short polling rather than a WebSocket.
 
 **Why:** The portal needs reliable unread/read state across reloads while preserving the existing simple deployment model.

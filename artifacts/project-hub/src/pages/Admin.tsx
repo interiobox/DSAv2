@@ -1,20 +1,14 @@
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { KeyRound, Plus, Save, ShieldCheck, Trash2, Users, Workflow } from "lucide-react"
+import { KeyRound, Plus, Save, ShieldCheck, Trash2, Users } from "lucide-react"
 
 import {
   getAdminListActivityQueryKey,
-  getAdminListDisciplinesQueryKey,
   getAdminListUsersQueryKey,
-  getListDisciplinesQueryKey,
-  useAdminCreateDiscipline,
   useAdminCreateUser,
-  useAdminDeleteDiscipline,
   useAdminDeleteUser,
   useAdminListActivity,
-  useAdminListDisciplines,
   useAdminListUsers,
-  useAdminUpdateDiscipline,
   useAdminUpdateUser,
 } from "@workspace/api-client-react"
 import type { AdminUserInputRole, AdminUserUpdateRole, PortalUser } from "@workspace/api-client-react"
@@ -41,18 +35,12 @@ export default function AdminPage() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { data: users, isLoading: usersLoading } = useAdminListUsers()
-  const { data: disciplines, isLoading: disciplinesLoading } = useAdminListDisciplines()
   const { data: activity, isLoading: activityLoading } = useAdminListActivity()
   const createUser = useAdminCreateUser()
   const updateUser = useAdminUpdateUser()
   const deleteUser = useAdminDeleteUser()
-  const createDiscipline = useAdminCreateDiscipline()
-  const updateDiscipline = useAdminUpdateDiscipline()
-  const deleteDiscipline = useAdminDeleteDiscipline()
   const [newUser, setNewUser] = React.useState<DraftUser>({ name: "", username: "", password: "", role: "user", active: true })
-  const [newDiscipline, setNewDiscipline] = React.useState("")
   const [userDrafts, setUserDrafts] = React.useState<Record<number, DraftUser>>({})
-  const [disciplineDrafts, setDisciplineDrafts] = React.useState<Record<number, string>>({})
 
   if (user?.role !== "admin") return <Redirect to="/drawings" />
 
@@ -62,7 +50,6 @@ export default function AdminPage() {
 
   function invalidateUsers() {
     void queryClient.invalidateQueries({ queryKey: getAdminListUsersQueryKey() })
-    void queryClient.invalidateQueries({ queryKey: getListDisciplinesQueryKey() })
   }
 
   function handleCreateUser(event: React.FormEvent<HTMLFormElement>) {
@@ -106,20 +93,6 @@ export default function AdminPage() {
     })
   }
 
-  function handleCreateDiscipline(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!newDiscipline.trim()) return
-    createDiscipline.mutate({ data: { name: newDiscipline.trim() } }, {
-      onSuccess: () => {
-        setNewDiscipline("")
-        void queryClient.invalidateQueries({ queryKey: getAdminListDisciplinesQueryKey() })
-        void queryClient.invalidateQueries({ queryKey: getListDisciplinesQueryKey() })
-        toast({ title: "Discipline added" })
-      },
-      onError: (error) => showError("Discipline could not be added", error),
-    })
-  }
-
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
       <div className="flex-none border-b bg-card px-6 py-5 shadow-sm">
@@ -127,7 +100,7 @@ export default function AdminPage() {
           <ShieldCheck className="h-6 w-6 text-primary" />
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Admin</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Manage portal access, disciplines, and everything happening in the workspace.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Manage portal access and everything happening in the workspace.</p>
           </div>
         </div>
       </div>
@@ -135,7 +108,6 @@ export default function AdminPage() {
         <div className="mx-auto max-w-6xl space-y-6">
           <div className="grid gap-4 sm:grid-cols-3">
             <Card><CardContent className="flex items-center gap-3 p-5"><Users className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{users?.length ?? 0}</p><p className="text-xs text-muted-foreground">Portal users</p></div></CardContent></Card>
-            <Card><CardContent className="flex items-center gap-3 p-5"><Workflow className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{disciplines?.length ?? 0}</p><p className="text-xs text-muted-foreground">Disciplines</p></div></CardContent></Card>
             <Card><CardContent className="flex items-center gap-3 p-5"><KeyRound className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{users?.filter((item) => item.role === "admin").length ?? 0}</p><p className="text-xs text-muted-foreground">Administrators</p></div></CardContent></Card>
           </div>
 
@@ -190,15 +162,7 @@ export default function AdminPage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            <Card>
-              <CardHeader><CardTitle className="text-base">Drawing disciplines</CardTitle><CardDescription>Add the disciplines your portal needs for drawing metadata.</CardDescription></CardHeader>
-              <CardContent>
-                <form onSubmit={handleCreateDiscipline} className="mb-4 flex gap-2"><Input value={newDiscipline} onChange={(event) => setNewDiscipline(event.target.value)} placeholder="e.g. Fire protection" /><Button type="submit" size="icon" disabled={createDiscipline.isPending || !newDiscipline.trim()}><Plus className="h-4 w-4" /></Button></form>
-                {disciplinesLoading ? <Skeleton className="h-12 w-full" /> : <div className="divide-y rounded-md border">{(disciplines ?? []).map((discipline) => { const name = disciplineDrafts[discipline.id] ?? discipline.name; return <div key={discipline.id} className="flex items-center gap-2 p-3"><Input value={name} onChange={(event) => setDisciplineDrafts({ ...disciplineDrafts, [discipline.id]: event.target.value })} className="h-9" /><Button size="icon" variant="ghost" onClick={() => updateDiscipline.mutate({ id: discipline.id, data: { name } }, { onSuccess: () => { void queryClient.invalidateQueries({ queryKey: getAdminListDisciplinesQueryKey() }); void queryClient.invalidateQueries({ queryKey: getListDisciplinesQueryKey() }) }, onError: (error) => showError("Discipline could not be updated", error) })}><Save className="h-4 w-4" /></Button><Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteDiscipline.mutate({ id: discipline.id }, { onSuccess: () => { void queryClient.invalidateQueries({ queryKey: getAdminListDisciplinesQueryKey() }); void queryClient.invalidateQueries({ queryKey: getListDisciplinesQueryKey() }) }, onError: (error) => showError("Discipline could not be deleted", error) })}><Trash2 className="h-4 w-4" /></Button></div> })}</div>}
-              </CardContent>
-            </Card>
-
+          <div className="grid gap-6">
             <Card>
               <CardHeader><CardTitle className="text-base">Everyone’s activity <Badge variant="outline">{activity?.length ?? 0}</Badge></CardTitle><CardDescription>Complete portal activity, not only your own actions.</CardDescription></CardHeader>
               <CardContent className="p-0">{activityLoading ? <div className="space-y-3 p-6"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div> : <div className="max-h-[460px] divide-y overflow-auto">{(activity ?? []).map((item) => <div key={item.id} className="px-6 py-3"><p className="text-sm">{item.message}</p><p className="mt-1 text-xs text-muted-foreground">{formatDate(item.createdAt)}</p></div>)}</div>}</CardContent>

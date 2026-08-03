@@ -5,7 +5,7 @@
  * Architectural drawing management API
  * OpenAPI spec version: 0.1.0
  */
-import type { DashboardSummaryByDiscipline } from './dashboardSummaryByDiscipline';
+import type { DashboardSummaryByCategory } from './dashboardSummaryByCategory';
 
 export interface DashboardSummary {
   totalDrawings: number;
@@ -13,5 +13,5 @@ export interface DashboardSummary {
   approved: number;
   issued: number;
   overdue: number;
-  byDiscipline: DashboardSummaryByDiscipline;
+  byCategory: DashboardSummaryByCategory;
 }

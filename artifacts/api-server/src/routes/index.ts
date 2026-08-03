@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import authRouter from "./auth";
 import adminRouter from "./admin";
 import disciplinesRouter from "./disciplines";
+import categoriesRouter from "./categories";
 import drawingsRouter from "./drawings";
 import projectsRouter from "./projects";
 import usersRouter from "./users";
@@ -22,6 +23,7 @@ router.use((req, res, next): void => {
 });
 router.use(adminRouter);
 router.use(disciplinesRouter);
+router.use(categoriesRouter);
 router.use(drawingsRouter);
 router.use(projectsRouter);
 router.use(usersRouter);

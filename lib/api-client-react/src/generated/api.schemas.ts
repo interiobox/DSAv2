@@ -160,6 +160,17 @@ export interface DisciplineInput {
   name: string;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  createdAt: string;
+}
+
+export interface CategoryInput {
+  /** @minLength 1 */
+  name: string;
+}
+
 export type DrawingStatus = typeof DrawingStatus[keyof typeof DrawingStatus];
 
 
@@ -292,7 +303,7 @@ export interface DrawingUpdate {
   attachmentContentType?: string | null;
 }
 
-export type DashboardSummaryByDiscipline = {[key: string]: number};
+export type DashboardSummaryByCategory = {[key: string]: number};
 
 export interface DashboardSummary {
   totalDrawings: number;
@@ -300,7 +311,7 @@ export interface DashboardSummary {
   approved: number;
   issued: number;
   overdue: number;
-  byDiscipline: DashboardSummaryByDiscipline;
+  byCategory: DashboardSummaryByCategory;
 }
 
 export type ActivityType = typeof ActivityType[keyof typeof ActivityType];
