@@ -67,6 +67,12 @@ My Feed is a distinct user-specific workspace and should remain a primary naviga
 
 **How to apply:** Preserve `/feed` and its sidebar entry during navigation simplification; remove only truly overlapping shared aggregation tabs.
 
+Assignments and comments should retain stable portal user IDs alongside display names; legacy name-based records remain readable, but new notification and ownership checks should prefer IDs.
+
+**Why:** Display names can be duplicated or changed, and using them as identity caused incorrect assignment notifications and comment impersonation risks.
+
+**How to apply:** Resolve new assignments to active users, notify by stored ID, derive comment authorship from the session, and allow comment edits/deletes only for the author or an administrator.
+
 Personal notifications are persisted per portal user and are created for username mentions, drawing assignments, and assigned-drawing status changes; chat and comment mention delivery currently uses short polling rather than a WebSocket.
 
 **Why:** The portal needs reliable unread/read state across reloads while preserving the existing simple deployment model.

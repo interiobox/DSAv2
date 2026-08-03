@@ -11,7 +11,7 @@ import {
   ListChatMessagesParams,
 } from "@workspace/api-zod";
 import { requireCurrentUser } from "../lib/portalAuth";
-import { notifyMentions } from "../lib/notifications";
+import { notifyMentions, safelyNotify } from "../lib/notifications";
 
 const router: IRouter = Router();
 
@@ -112,12 +112,12 @@ router.post("/chat/channels/:channelId/messages", async (req, res): Promise<void
     authorName: user.name,
     content,
   }).returning();
-  await notifyMentions(content, {
+  await safelyNotify(() => notifyMentions(content, {
     type: "mention",
     title: `You were mentioned in #${channel.name}`,
     message: `{mention} was mentioned in #${channel.name} by ${user.name}: ${content}`,
     link: "/chat",
-  }, user.id);
+  }, user.id));
   res.status(201).json(message);
 });
 

@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { db, notificationsTable, usersTable } from "@workspace/db";
 
 type NotificationInput = {
@@ -22,7 +22,11 @@ export async function createNotification(input: NotificationInput) {
 export async function notifyUserByName(name: string | null | undefined, input: Omit<NotificationInput, "recipientId">, excludeUserId?: number) {
   const trimmed = name?.trim();
   if (!trimmed) return;
-  const [user] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.name, trimmed)).limit(1);
+  const [user] = await db.select({ id: usersTable.id })
+    .from(usersTable)
+    .where(and(sql`lower(${usersTable.name}) = lower(${trimmed})`, eq(usersTable.active, true)))
+    .orderBy(usersTable.id)
+    .limit(1);
   if (user && user.id !== excludeUserId) {
     await createNotification({ ...input, recipientId: user.id });
   }
@@ -33,7 +37,10 @@ export async function notifyMentions(content: string, input: Omit<NotificationIn
   if (!usernames.length) return;
   const users = await db.select({ id: usersTable.id, username: usersTable.username })
     .from(usersTable)
-    .where(inArray(usersTable.username, usernames));
+    .where(and(
+      eq(usersTable.active, true),
+      sql`lower(${usersTable.username}) IN (${sql.join(usernames.map((username) => sql`${username}`), sql`, `)})`,
+    ));
   await Promise.all(users.filter((user) => user.id !== excludeUserId).map((user) => createNotification({
     ...input,
     recipientId: user.id,
@@ -45,10 +52,35 @@ export async function notifyDrawingAssignee(drawingId: number, assignedTo: strin
   await notifyUserByName(assignedTo, { ...input, link: input.link ?? `/drawings/${drawingId}` }, excludeUserId);
 }
 
+export async function notifyUserById(userId: number | null | undefined, input: Omit<NotificationInput, "recipientId">, excludeUserId?: number) {
+  if (!userId || userId === excludeUserId) return;
+  const [user] = await db.select({ id: usersTable.id })
+    .from(usersTable)
+    .where(and(eq(usersTable.id, userId), eq(usersTable.active, true)))
+    .limit(1);
+  if (user) await createNotification({ ...input, recipientId: user.id });
+}
+
+export async function notifyDrawingAssigneeById(drawingId: number, userId: number | null | undefined, assignedTo: string | null | undefined, input: Omit<NotificationInput, "recipientId">, excludeUserId?: number) {
+  if (userId) {
+    await notifyUserById(userId, { ...input, link: input.link ?? `/drawings/${drawingId}` }, excludeUserId);
+  } else {
+    await notifyDrawingAssignee(drawingId, assignedTo, input, excludeUserId);
+  }
+}
+
+export async function safelyNotify(task: () => Promise<void>) {
+  try {
+    await task();
+  } catch (error) {
+    console.error("Notification delivery failed", error);
+  }
+}
+
 export async function listUserNotifications(userId: number) {
   return db.select().from(notificationsTable)
     .where(eq(notificationsTable.recipientId, userId))
-    .orderBy(asc(notificationsTable.readAt), asc(notificationsTable.createdAt), asc(notificationsTable.id));
+    .orderBy(asc(notificationsTable.readAt), desc(notificationsTable.createdAt), desc(notificationsTable.id));
 }
 
 export async function markNotificationRead(notificationId: number, userId: number) {
@@ -56,5 +88,9 @@ export async function markNotificationRead(notificationId: number, userId: numbe
     .set({ readAt: new Date() })
     .where(and(eq(notificationsTable.id, notificationId), eq(notificationsTable.recipientId, userId), isNull(notificationsTable.readAt)))
     .returning();
-  return notification;
+  if (notification) return notification;
+  const [alreadyRead] = await db.select().from(notificationsTable)
+    .where(and(eq(notificationsTable.id, notificationId), eq(notificationsTable.recipientId, userId)))
+    .limit(1);
+  return alreadyRead;
 }

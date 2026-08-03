@@ -22,6 +22,7 @@ export const drawingsTable = pgTable("drawings", {
   discipline: text("discipline").notNull(),
   status: text("status").notNull().default("draft"),
   assignedTo: text("assigned_to"),
+  assignedToUserId: integer("assigned_to_user_id"),
   revision: text("revision").notNull().default("A"),
   projectName: text("project_name").notNull(),
   sheetSize: text("sheet_size").notNull().default("A1"),
@@ -77,6 +78,7 @@ export const drawingCommentsTable = pgTable("drawing_comments", {
   drawingId: integer("drawing_id").notNull(),
   comment: text("comment").notNull(),
   author: text("author").notNull(),
+  authorId: integer("author_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

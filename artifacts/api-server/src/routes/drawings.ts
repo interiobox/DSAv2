@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request } from "express";
-import { asc, desc, eq } from "drizzle-orm";
-import { db, drawingActivityTable, drawingCommentsTable, drawingUploadsTable, drawingsTable } from "@workspace/db";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { db, drawingActivityTable, drawingCommentsTable, drawingUploadsTable, drawingsTable, usersTable } from "@workspace/db";
 import {
   CreateDrawingBody,
   CreateDrawingResponse,
@@ -30,7 +30,7 @@ import {
 import { addActivity, getIdParam, listDrawingRows, toDateString } from "../lib/drawings";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { requireCurrentUser } from "../lib/portalAuth";
-import { notifyDrawingAssignee, notifyMentions } from "../lib/notifications";
+import { notifyDrawingAssigneeById, notifyMentions, safelyNotify } from "../lib/notifications";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -133,12 +133,12 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
   const activityType = data.status === "issued" ? "drawing_issued" : data.status === "approved" ? "drawing_approved" : "drawing_updated";
   await addActivity(activityType, `${drawing.title} was updated`, drawing.id, currentUserId(req), currentUserName(req));
   if (data.status !== undefined) {
-    await notifyDrawingAssignee(drawing.id, drawing.assignedTo, {
+    await safelyNotify(() => notifyDrawingAssigneeById(drawing.id, drawing.assignedToUserId, drawing.assignedTo, {
       type: "status_change",
       title: "Assigned drawing status changed",
-      message: `${drawing.title} is now ${data.status.replace("_", " ")}`,
+      message: `${drawing.title} is now ${String(data.status).replace("_", " ")}`,
       link: `/drawings/${drawing.id}`,
-    }, Number(currentUserId(req)));
+    }, Number(currentUserId(req))));
   }
   res.json(UpdateDrawingResponse.parse(drawing));
 });
@@ -155,24 +155,40 @@ router.patch("/drawings/:id/assignment", async (req, res): Promise<void> => {
     return;
   }
   const assigneeName = body.data.assigneeName?.trim() || null;
+  let assigneeUserId: number | null = null;
+  let canonicalAssigneeName = assigneeName;
+  if (assigneeName) {
+    const [assignee] = await db.select({ id: usersTable.id, name: usersTable.name })
+      .from(usersTable)
+      .where(and(sql`lower(${usersTable.name}) = lower(${assigneeName})`, eq(usersTable.active, true)))
+      .orderBy(usersTable.id)
+      .limit(1);
+    if (!assignee) {
+      res.status(400).json({ error: "Assignment must target an active portal user" });
+      return;
+    }
+    assigneeUserId = assignee.id;
+    canonicalAssigneeName = assignee.name;
+  }
   const [drawing] = await db.update(drawingsTable).set({
-    assignedTo: assigneeName,
+    assignedTo: canonicalAssigneeName,
+    assignedToUserId: assigneeUserId,
     updatedAt: new Date(),
   }).where(eq(drawingsTable.id, params.data.id)).returning();
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
   }
-  const message = assigneeName
-    ? `${currentUserName(req)} assigned ${drawing.title} to ${assigneeName}`
+  const message = canonicalAssigneeName
+    ? `${currentUserName(req)} assigned ${drawing.title} to ${canonicalAssigneeName}`
     : `${currentUserName(req)} unassigned ${drawing.title}`;
   await addActivity("drawing_assigned", message, drawing.id, currentUserId(req), currentUserName(req));
-  await notifyDrawingAssignee(drawing.id, assigneeName, {
+  await safelyNotify(() => notifyDrawingAssigneeById(drawing.id, drawing.assignedToUserId, drawing.assignedTo, {
     type: "assignment",
     title: "Drawing assigned to you",
     message: `${drawing.title} was assigned to you by ${currentUserName(req)}`,
     link: `/drawings/${drawing.id}`,
-  }, Number(currentUserId(req)));
+  }, Number(currentUserId(req))));
   res.json(UpdateDrawingAssignmentResponse.parse(drawing));
 });
 
@@ -320,18 +336,20 @@ router.post("/drawings/:id/comments", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Drawing not found" });
     return;
   }
+  const currentUser = requireCurrentUser(req);
   const [comment] = await db.insert(drawingCommentsTable).values({
     drawingId: drawing.id,
     ...body.data,
-    author: currentUserName(req),
+    author: currentUser.name,
+    authorId: currentUser.id,
   }).returning();
   await addActivity("comment_added", `${comment.author} commented on ${drawing.title}`, drawing.id, currentUserId(req), currentUserName(req));
-  await notifyMentions(body.data.comment, {
+  await safelyNotify(() => notifyMentions(body.data.comment, {
     type: "mention",
     title: `You were mentioned on ${drawing.title}`,
     message: `{mention} was mentioned by ${comment.author}: ${body.data.comment}`,
     link: `/drawings/${drawing.id}`,
-  }, Number(currentUserId(req)));
+  }, Number(currentUserId(req))));
   res.status(201).json(CreateDrawingCommentResponse.parse(comment));
 });
 
@@ -351,7 +369,12 @@ router.patch("/drawings/:id/comments/:commentId", async (req, res): Promise<void
     res.status(404).json({ error: "Comment not found" });
     return;
   }
-  const [updated] = await db.update(drawingCommentsTable).set(body.data)
+  const user = requireCurrentUser(req);
+  if (user.role !== "admin" && comment.authorId !== user.id) {
+    res.status(403).json({ error: "You can only edit your own comments" });
+    return;
+  }
+  const [updated] = await db.update(drawingCommentsTable).set({ comment: body.data.comment })
     .where(eq(drawingCommentsTable.id, comment.id)).returning();
   await addActivity("drawing_updated", `${updated.author} edited a review comment on drawing ${comment.drawingId}`, comment.drawingId, currentUserId(req), currentUserName(req));
   res.json(UpdateDrawingCommentResponse.parse(updated));
@@ -366,6 +389,11 @@ router.delete("/drawings/:id/comments/:commentId", async (req, res): Promise<voi
   const [comment] = await db.select().from(drawingCommentsTable).where(eq(drawingCommentsTable.id, params.data.commentId));
   if (!comment || comment.drawingId !== params.data.id) {
     res.status(404).json({ error: "Comment not found" });
+    return;
+  }
+  const user = requireCurrentUser(req);
+  if (user.role !== "admin" && comment.authorId !== user.id && comment.author !== user.name) {
+    res.status(403).json({ error: "You can only delete your own comments" });
     return;
   }
   await db.delete(drawingCommentsTable).where(eq(drawingCommentsTable.id, comment.id));

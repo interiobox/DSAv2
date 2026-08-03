@@ -3,7 +3,7 @@ import { useRoute, Link, useLocation } from "wouter"
 import { useQueryClient } from "@tanstack/react-query"
 import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, FileText, Upload, Download, Loader2, History, MessageSquare, Pencil, MoreHorizontal, FolderKanban } from "lucide-react"
 
-import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, useListProjects, useListDisciplines, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey } from "@workspace/api-client-react"
+import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, useListProjects, useListDisciplines, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey, getListNotificationsQueryKey } from "@workspace/api-client-react"
 import type { DrawingStatus } from "@workspace/api-client-react"
 
 import { Button } from "@/components/ui/button"
@@ -171,6 +171,7 @@ export default function DrawingDetail() {
       queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
       queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() })
       queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() })
       setIsEditOpen(false)
       toast({ title: "Drawing updated" })
     } catch (error) {
@@ -289,17 +290,16 @@ export default function DrawingDetail() {
   const handleCommentEdit = async (item: DrawingComment) => {
     const comment = window.prompt("Edit comment", item.comment)
     if (comment === null || !comment.trim()) return
-    const author = window.prompt("Edit reviewer name", item.author)
-    if (author === null || !author.trim()) return
     try {
       const response = await fetch(`/api/drawings/${id}/comments/${item.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comment: comment.trim(), author: author.trim() }),
+        body: JSON.stringify({ comment: comment.trim() }),
       })
       if (!response.ok) throw new Error("The comment could not be updated")
       await loadComments()
       queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() })
       toast({ title: "Comment updated" })
     } catch (error) {
       toast({ title: "Update failed", description: error instanceof Error ? error.message : "The comment could not be updated." })
@@ -313,6 +313,7 @@ export default function DrawingDetail() {
       if (!response.ok) throw new Error("The comment could not be deleted")
       await loadComments()
       queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+      queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() })
       toast({ title: "Comment deleted" })
     } catch (error) {
       toast({ title: "Delete failed", description: error instanceof Error ? error.message : "The comment could not be deleted." })
@@ -524,7 +525,7 @@ export default function DrawingDetail() {
                             <span className="font-medium text-foreground">{item.author}</span>
                             <span className="ml-2 text-xs text-muted-foreground">{formatDate(item.createdAt)}</span>
                           </div>
-                          <DropdownMenu>
+                            {(isAdmin || item.author === currentUserName) && <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-8 w-8">
                                 <MoreHorizontal className="h-4 w-4" />
@@ -539,7 +540,7 @@ export default function DrawingDetail() {
                                 <Trash2 className="mr-2 h-4 w-4" /> Delete comment
                               </DropdownMenuItem>
                             </DropdownMenuContent>
-                          </DropdownMenu>
+                            </DropdownMenu>}
                         </div>
                         <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">{item.comment}</p>
                       </div>

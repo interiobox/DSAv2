@@ -5,6 +5,10 @@ import { CheckCircle2, Circle, Clock3, FileText, Loader2, UserRound, UserRoundPl
 
 import {
   getListDrawingsQueryKey,
+  getGetDrawingQueryKey,
+  getGetDashboardSummaryQueryKey,
+  getListActivityQueryKey,
+  getListNotificationsQueryKey,
   useListDrawings,
   useListUsers,
   useUpdateDrawingAssignment,
@@ -100,6 +104,10 @@ export default function Assignments() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
+          queryClient.invalidateQueries({ queryKey: getGetDrawingQueryKey(id) })
+          queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() })
+          queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
+          queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() })
           toast({
             title: trimmedAssignee ? "Drawing assigned" : "Drawing unassigned",
             description: trimmedAssignee ? `Assigned to ${trimmedAssignee}.` : "The drawing is available for someone to claim.",

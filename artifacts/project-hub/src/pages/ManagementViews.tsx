@@ -24,7 +24,6 @@ export function Notifications() {
   const { data: notifications, isLoading } = useListNotifications({
     query: {
       queryKey: getListNotificationsQueryKey(),
-      refetchInterval: 5000,
     },
   })
   const markRead = useMarkNotificationRead()
