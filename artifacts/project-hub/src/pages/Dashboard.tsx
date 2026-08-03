@@ -2,7 +2,7 @@ import * as React from "react"
 import { Link, useLocation } from "wouter"
 import { useGetDashboardSummary, useListActivity } from "@workspace/api-client-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { FileText, Clock, CheckCircle, Send, Plus, Activity as ActivityIcon } from "lucide-react"
+import { ArrowRight, CheckCircle, Clock, FileText, FolderKanban, Plus, Send, Activity as ActivityIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDateShort } from "@/lib/utils"
@@ -17,15 +17,23 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Overview</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Status summary of all project drawings.</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Overview</h1>
+              <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary">Live register</span>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">A quick read on drawing progress across every project.</p>
           </div>
-          <Button onClick={() => setLocation('/drawings?create=true')} className="shrink-0 group">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => setLocation("/projects")} className="shrink-0">
+              <FolderKanban className="mr-2 h-4 w-4" /> Browse projects
+            </Button>
+            <Button onClick={() => setLocation('/drawings?create=true')} className="shrink-0 group">
             <Plus className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
             New Drawing
-          </Button>
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -55,6 +63,22 @@ export default function Dashboard() {
             loading={isSummaryLoading}
           />
         </div>
+
+        <Card className="border-primary/15 bg-primary/[0.03]">
+          <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Register pulse</p>
+              <p className="mt-1 text-sm font-medium">Keep review work moving toward issue.</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {summary?.totalDrawings ? `${Math.round(((summary.issued ?? 0) / summary.totalDrawings) * 100)}% of drawings are issued.` : "Add a drawing to start tracking project progress."}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" asChild><Link href="/review-queue">Open review queue <ArrowRight className="ml-1.5 h-4 w-4" /></Link></Button>
+              <Button size="sm" variant="ghost" asChild><Link href="/deadlines">View deadlines <ArrowRight className="ml-1.5 h-4 w-4" /></Link></Button>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Category Breakdown */}
@@ -88,7 +112,11 @@ export default function Dashboard() {
                     );
                   })}
                   {(!summary || Object.keys(summary.byCategory).length === 0) && (
-                    <p className="text-sm text-muted-foreground py-4 text-center">No drawings recorded yet.</p>
+                    <div className="py-6 text-center">
+                      <FileText className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
+                      <p className="text-sm text-muted-foreground">No drawings recorded yet.</p>
+                      <Button size="sm" variant="link" className="mt-1" onClick={() => setLocation("/drawings?create=true")}>Create the first drawing <ArrowRight className="ml-1 h-3.5 w-3.5" /></Button>
+                    </div>
                   )}
                 </div>
               )}

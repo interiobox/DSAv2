@@ -126,7 +126,10 @@ export default function Assignments() {
       <div className="flex-none border-b bg-card px-4 py-4 sm:px-6 sm:py-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Assignments</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Assignments</h1>
+              <Badge variant="outline">{visibleDrawings.length} visible</Badge>
+            </div>
             <p className="mt-1 text-sm text-muted-foreground">See who owns each drawing and how work is progressing.</p>
           </div>
           <div className="w-full max-w-sm">
@@ -172,7 +175,7 @@ export default function Assignments() {
             </Card>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-lg border bg-card p-3 sm:flex-row">
+          <div className="flex flex-col gap-3 rounded-lg border bg-card p-3 shadow-sm sm:flex-row sm:items-center">
             <Select value={personFilter} onValueChange={setPersonFilter}>
               <SelectTrigger className="w-full sm:w-[220px]">
                 <Users className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -195,10 +198,11 @@ export default function Assignments() {
               </SelectContent>
             </Select>
             {(personFilter !== "all" || projectFilter !== "all") && (
-              <Button variant="ghost" size="icon" onClick={() => { setPersonFilter("all"); setProjectFilter("all") }} title="Clear filters">
-                <X className="h-4 w-4" />
+              <Button variant="ghost" size="sm" onClick={() => { setPersonFilter("all"); setProjectFilter("all") }} title="Clear filters">
+                <X className="mr-1.5 h-4 w-4" /> Clear filters
               </Button>
             )}
+            <span className="text-xs text-muted-foreground sm:ml-auto">{assignedCount} assigned · {(drawings?.length ?? 0) - assignedCount} unassigned</span>
           </div>
 
           {isLoading ? (
@@ -220,9 +224,9 @@ export default function Assignments() {
                   <Card key={person}>
                     <CardHeader className="border-b px-4 py-4 sm:px-6">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <CardTitle className="flex items-center gap-3 text-base">
+                          <CardTitle className="flex items-center gap-3 text-base">
                           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">{initials(person)}</span>
-                          <span>{person}</span>
+                           <span>{person}</span>
                           <Badge variant="outline">{personDrawings.length} drawing{personDrawings.length === 1 ? "" : "s"}</Badge>
                         </CardTitle>
                         <div className="flex min-w-[180px] items-center gap-3">

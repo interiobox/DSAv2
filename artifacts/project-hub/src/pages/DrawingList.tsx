@@ -138,8 +138,11 @@ export default function DrawingList() {
       {/* Header */}
       <div className="flex-none px-4 py-4 sm:px-6 sm:py-5 border-b bg-card z-10 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Drawing Library</h1>
-          <p className="text-sm text-muted-foreground mt-1">All project drawings in one place.</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Drawing Library</h1>
+            <Badge variant="outline">{isLoading ? "Loading" : `${visibleDrawings.length} shown`}</Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">All project drawings in one place, grouped by project for quick scanning.</p>
         </div>
           <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
            <Button className="w-full sm:w-auto" variant="outline" onClick={() => setIsProjectOpen(true)}>
@@ -205,6 +208,9 @@ export default function DrawingList() {
             </Button>
           )}
         </div>
+        <p className="text-xs text-muted-foreground sm:self-center">
+          {projectFilter !== "all" ? `Showing drawings in ${projectFilter}.` : "Use search and filters to narrow the register."}
+        </p>
       </div>
 
       {/* Table Area */}
@@ -221,8 +227,9 @@ export default function DrawingList() {
           ) : visibleDrawings.length === 0 ? (
             <div className="rounded-lg border bg-card px-5 py-12 text-center text-muted-foreground">
               <FileText className="mx-auto mb-2 h-8 w-8 opacity-50" />
-              <p>No drawings found.</p>
-              <p className="mt-1 text-xs">Try changing your search or filters.</p>
+              <p className="font-medium text-foreground">No drawings found.</p>
+              <p className="mt-1 text-xs">Try changing your search or filters, or create a new drawing.</p>
+              <Button size="sm" className="mt-4" onClick={() => setIsCreateOpen(true)} disabled={projectsLoading}><Plus className="mr-2 h-4 w-4" />Create drawing</Button>
             </div>
           ) : (
             groupedDrawings.map(([project, projectDrawings]) => (
@@ -302,8 +309,9 @@ export default function DrawingList() {
                   <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                     <div className="flex flex-col items-center justify-center">
                       <FileText className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                      <p>No drawings found.</p>
-                      <p className="text-xs">Adjust your filters or add a new drawing.</p>
+                       <p className="font-medium text-foreground">No drawings found.</p>
+                       <p className="text-xs">Adjust your filters or add a new drawing.</p>
+                       <Button size="sm" variant="outline" className="mt-3" onClick={() => setIsCreateOpen(true)} disabled={projectsLoading}><Plus className="mr-2 h-4 w-4" />Create drawing</Button>
                     </div>
                   </TableCell>
                 </TableRow>
