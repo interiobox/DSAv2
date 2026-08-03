@@ -54,3 +54,9 @@ Every drawing mutation is mirrored into the persistent `drawing-reviews` chat ch
 **Why:** The team needs one durable conversation stream that reflects the drawing library’s audit trail without requiring users to manually repost changes.
 
 **How to apply:** Route server-side drawing activity through the shared activity helper so UI, API, and admin-originated mutations remain covered.
+
+The navigation now includes operational views for projects, review queue, activity, deadlines, archive, notifications, reports, standards, issue register, files, team directory, and personal settings.
+
+**Why:** The portal should support the complete drawing-review workflow without turning the existing single-purpose drawing library into an unrelated project-management system.
+
+**How to apply:** Prefer live aggregations of drawings, projects, comments, uploads, checklists, users, and activity; keep settings local to the signed-in browser unless a server preference model is explicitly added.

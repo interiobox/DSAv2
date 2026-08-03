@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { FileText, Layers, ListChecks, LogOut, MessageSquare, ShieldCheck, UserRoundCog, Users } from "lucide-react"
+import { Archive, Bell, BookOpen, CalendarDays, FileText, FolderKanban, FolderOpen, History, Layers, ListChecks, LogOut, MessageSquare, BarChart3, ClipboardCheck, Settings, ShieldCheck, Users, UsersRound, UserRoundCog, FileWarning } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
 
@@ -42,6 +42,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Users className="w-4 h-4" />
             <span>Assignments</span>
           </Link>
+          <Link href="/projects" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/projects") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <FolderKanban className="h-4 w-4" /><span>Projects</span>
+          </Link>
+          <Link href="/review-queue" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/review-queue") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <ClipboardCheck className="h-4 w-4" /><span>Review Queue</span>
+          </Link>
+          <Link href="/deadlines" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/deadlines") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <CalendarDays className="h-4 w-4" /><span>Deadlines</span>
+          </Link>
           <Link href="/checklists" className={cn(
             "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
             location.startsWith("/checklists") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -56,6 +65,30 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <MessageSquare className="w-4 h-4" />
             <span>Team Chat</span>
           </Link>
+          <Link href="/activity" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/activity") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <History className="h-4 w-4" /><span>Activity</span>
+          </Link>
+          <Link href="/notifications" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/notifications") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <Bell className="h-4 w-4" /><span>Notifications</span>
+          </Link>
+          <Link href="/reports" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/reports") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <BarChart3 className="h-4 w-4" /><span>Reports</span>
+          </Link>
+          <Link href="/standards" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/standards") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <BookOpen className="h-4 w-4" /><span>Standards</span>
+          </Link>
+          <Link href="/issues" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/issues") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <FileWarning className="h-4 w-4" /><span>Issue Register</span>
+          </Link>
+          <Link href="/files" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/files") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <FolderOpen className="h-4 w-4" /><span>Files</span>
+          </Link>
+          <Link href="/team" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/team") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <UsersRound className="h-4 w-4" /><span>Team Directory</span>
+          </Link>
+          <Link href="/archive" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/archive") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <Archive className="h-4 w-4" /><span>Archive</span>
+          </Link>
           {user?.role === "admin" && (
             <Link href="/users" className={cn(
               "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
@@ -65,6 +98,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <span>Users</span>
             </Link>
           )}
+          <Link href="/settings" className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors", location.startsWith("/settings") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground")}>
+            <Settings className="h-4 w-4" /><span>Settings</span>
+          </Link>
           <Link href="/feed" className={cn(
             "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
             location.startsWith("/feed") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"

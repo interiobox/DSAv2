@@ -15,6 +15,9 @@ import DrawingList from "@/pages/DrawingList";
 import MyFeed from "@/pages/MyFeed";
 import NotFound from "@/pages/not-found";
 import UsersPage from "@/pages/Users";
+import { Activity, Archive, Deadlines, Projects, ReviewQueue } from "@/pages/WorkspaceViews";
+import { Files, Issues, Notifications, Reports, Standards, Team } from "@/pages/ManagementViews";
+import SettingsPage from "@/pages/Settings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -198,8 +201,20 @@ function ProtectedRoutes() {
         <Route path="/drawings" component={DrawingList} />
         <Route path="/drawings/:id" component={DrawingDetail} />
         <Route path="/assignments" component={Assignments} />
+        <Route path="/projects" component={Projects} />
+        <Route path="/review-queue" component={ReviewQueue} />
+        <Route path="/activity" component={Activity} />
+        <Route path="/deadlines" component={Deadlines} />
+        <Route path="/archive" component={Archive} />
         <Route path="/checklists" component={ChecklistsPage} />
         <Route path="/chat" component={ChatPage} />
+        <Route path="/notifications" component={Notifications} />
+        <Route path="/reports" component={Reports} />
+        <Route path="/standards" component={Standards} />
+        <Route path="/issues" component={Issues} />
+        <Route path="/files" component={Files} />
+        <Route path="/team" component={Team} />
+        <Route path="/settings" component={SettingsPage} />
         <Route path="/users" component={AdminUsersRoute} />
         <Route path="/feed" component={MyFeed} />
         <Route path="/admin" component={AdminPage} />
