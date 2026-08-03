@@ -42,3 +42,9 @@ Reusable checklist templates are separate from project checklist instances; appl
 **Why:** Project teams need stable, auditable checklist progress even when the organization improves its standard template.
 
 **How to apply:** Treat templates as reusable definitions and project checklists as independent working records with their own item completion and attribution.
+
+Team chat is persisted as channels plus messages, with the signed-in local portal user recorded as the message author; the UI refreshes active conversations on a short polling interval.
+
+**Why:** Drawing-review and site-coordination conversations need to survive reloads and be visible to other authenticated users without requiring a WebSocket service.
+
+**How to apply:** Keep channel/message mutations behind portal authentication, use generated API hooks, and preserve immediate local updates plus periodic freshness for the active channel.

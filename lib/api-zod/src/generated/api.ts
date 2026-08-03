@@ -362,6 +362,87 @@ export const ToggleProjectChecklistItemResponse = zod.object({
 
 
 /**
+ * @summary List team chat channels
+ */
+export const ListChatChannelsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "createdBy": zod.number(),
+  "createdAt": zod.coerce.date()
+})
+export const ListChatChannelsResponse = zod.array(ListChatChannelsResponseItem)
+
+
+/**
+ * @summary Create a team chat channel
+ */
+
+
+
+export const CreateChatChannelBody = zod.object({
+  "name": zod.string().min(1),
+  "description": zod.string().optional()
+})
+
+export const CreateChatChannelResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "createdBy": zod.number(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List messages in a chat channel
+ */
+
+
+
+export const ListChatMessagesParams = zod.object({
+  "channelId": zod.coerce.number().min(1)
+})
+
+export const ListChatMessagesResponseItem = zod.object({
+  "id": zod.number(),
+  "channelId": zod.number(),
+  "authorId": zod.number(),
+  "authorName": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListChatMessagesResponse = zod.array(ListChatMessagesResponseItem)
+
+
+/**
+ * @summary Post a message to a chat channel
+ */
+
+
+
+export const CreateChatMessageParams = zod.object({
+  "channelId": zod.coerce.number().min(1)
+})
+
+
+
+
+export const CreateChatMessageBody = zod.object({
+  "content": zod.string().min(1)
+})
+
+export const CreateChatMessageResponse = zod.object({
+  "id": zod.number(),
+  "channelId": zod.number(),
+  "authorId": zod.number(),
+  "authorName": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
  * @summary List team users
  */
 export const ListUsersResponseItem = zod.object({

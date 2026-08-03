@@ -26,6 +26,8 @@ tags:
     description: Drawing file upload and serving operations
   - name: checklists
     description: Reusable project checklist operations
+  - name: chat
+    description: Team chat channels and messages
 paths:
   /auth/login:
     post:
@@ -302,6 +304,88 @@ paths:
                 $ref: "#/components/schemas/ProjectChecklist"
         "404":
           description: Checklist item not found
+  /chat/channels:
+    get:
+      operationId: listChatChannels
+      tags: [chat]
+      summary: List team chat channels
+      responses:
+        "200":
+          description: Team chat channels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatChannel"
+    post:
+      operationId: createChatChannel
+      tags: [chat]
+      summary: Create a team chat channel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatChannelInput"
+      responses:
+        "201":
+          description: Created chat channel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatChannel"
+        "409":
+          description: A channel with this name already exists
+  /chat/channels/{channelId}/messages:
+    get:
+      operationId: listChatMessages
+      tags: [chat]
+      summary: List messages in a chat channel
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: number
+            minimum: 1
+      responses:
+        "200":
+          description: Chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+        "404":
+          description: Chat channel not found
+    post:
+      operationId: createChatMessage
+      tags: [chat]
+      summary: Post a message to a chat channel
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: number
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageInput"
+      responses:
+        "201":
+          description: Created chat message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+        "404":
+          description: Chat channel not found
   /users:
     get:
       operationId: listUsers
@@ -1250,6 +1334,54 @@ components:
         metadata:
           $ref: "#/components/schemas/UploadUrlRequest"
       required: [uploadURL, objectPath, metadata]
+    ChatChannel:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        createdBy:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, description, createdBy, createdAt]
+    ChatChannelInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+      required: [name]
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: number
+        channelId:
+          type: number
+        authorId:
+          type: number
+        authorName:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, channelId, authorId, authorName, content, createdAt]
+    ChatMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+      required: [content]
     ErrorEnvelope:
       type: object
       properties:

@@ -399,6 +399,35 @@ export interface UploadUrlResponse {
   metadata: UploadUrlRequest;
 }
 
+export interface ChatChannel {
+  id: number;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  createdBy: number;
+  createdAt: string;
+}
+
+export interface ChatChannelInput {
+  /** @minLength 1 */
+  name: string;
+  description?: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  channelId: number;
+  authorId: number;
+  authorName: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface ChatMessageInput {
+  /** @minLength 1 */
+  content: string;
+}
+
 export interface ErrorEnvelope {
   error: string;
 }
