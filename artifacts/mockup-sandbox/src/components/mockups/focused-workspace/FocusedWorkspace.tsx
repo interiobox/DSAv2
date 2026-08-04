@@ -67,21 +67,13 @@ const allNavItems = [
   { label: "Overview", icon: LayoutDashboard },
   { label: "Drawing Library", icon: FileText, count: "248" },
   { label: "Projects", icon: FolderKanban },
-  { label: "Assignments", icon: UsersRound, count: "7" },
-  { label: "Review queue", icon: ClipboardCheck, count: "12" },
-  { label: "Deadlines", icon: CalendarClock, count: "4" },
-  { label: "Checklists", icon: CheckCircle2 },
-  { label: "My feed", icon: Sparkles },
-  { label: "Team chat", icon: MessageSquare, count: "3" },
-  { label: "Activity", icon: History },
-  { label: "Standards", icon: BookOpen },
-  { label: "Issue register", icon: FileCheck2 },
-  { label: "Files", icon: FolderOpen },
-  { label: "Contacts", icon: UserRound },
-  { label: "Reports", icon: Layers3 },
+  { label: "Work queue", icon: ClipboardCheck, count: "12" },
+  { label: "My work", icon: Sparkles, count: "7" },
+  { label: "Collaboration", icon: MessageSquare, count: "3" },
+  { label: "Reference", icon: BookOpen },
   { label: "Recycle bin", icon: Archive },
-  { label: "Team & admin", icon: ShieldCheck },
   { label: "Settings", icon: Settings2 },
+  { label: "Team & admin", icon: ShieldCheck },
 ];
 
 function StatusPill({ status }: { status: Status }) {
@@ -247,10 +239,10 @@ export function FocusedWorkspace() {
                 <div className="fw-attention-list">
                   <button className="fw-attention-item is-urgent" onClick={() => setSelectedDrawing(drawings[0])}><div className="fw-attention-icon"><Clock3 size={15} /></div><div><strong>A-204 is due today</strong><span>Review from Maya · Harbour House</span><em className="fw-mono">16:00 / 4 hrs</em></div><ChevronRight size={15} /></button>
                   <button className="fw-attention-item" onClick={() => setSelectedDrawing(drawings[1])}><div className="fw-attention-icon"><MessageSquare size={15} /></div><div><strong>Coordination note needs reply</strong><span>Transfer beam setting out · S-118</span><em className="fw-mono">D. Okafor / 32 min</em></div><ChevronRight size={15} /></button>
-                  <button className="fw-attention-item" onClick={() => chooseNav("Assignments")}><div className="fw-attention-icon"><UsersRound size={15} /></div><div><strong>2 assignments are unclaimed</strong><span>North Quay Lofts package</span><em className="fw-mono">ASSIGNMENTS / 2 OPEN</em></div><ChevronRight size={15} /></button>
-                  <button className="fw-attention-item" onClick={() => chooseNav("Checklists")}><div className="fw-attention-icon"><CheckCircle2 size={15} /></div><div><strong>Stage 04 checklist is 80%</strong><span>Civic Arts Centre · issue gate</span><em className="fw-mono">2 CHECKS LEFT</em></div><ChevronRight size={15} /></button>
-                </div>
-                <button className="fw-attention-footer" onClick={() => chooseNav("Activity")}>Open activity trail <ArrowUpRight size={13} /></button>
+                   <button className="fw-attention-item" onClick={() => chooseNav("My work")}><div className="fw-attention-icon"><UsersRound size={15} /></div><div><strong>2 assignments are unclaimed</strong><span>North Quay Lofts package</span><em className="fw-mono">MY WORK / 2 OPEN</em></div><ChevronRight size={15} /></button>
+                   <button className="fw-attention-item" onClick={() => chooseNav("Work queue")}><div className="fw-attention-icon"><CheckCircle2 size={15} /></div><div><strong>Stage 04 checklist is 80%</strong><span>Civic Arts Centre · issue gate</span><em className="fw-mono">WORK QUEUE / 2 CHECKS</em></div><ChevronRight size={15} /></button>
+                 </div>
+                 <button className="fw-attention-footer" onClick={() => chooseNav("Collaboration")}>Open collaboration <ArrowUpRight size={13} /></button>
               </aside>
             </div>
 
@@ -264,7 +256,7 @@ export function FocusedWorkspace() {
                 </div>
               </div>
               <div className="fw-activity-panel">
-                <div className="fw-panel-heading"><div><div className="fw-section-kicker fw-mono">COLLABORATION</div><h2>Latest activity</h2></div><button className="fw-text-button" onClick={() => chooseNav("Team chat")}>Team chat <MessageSquare size={13} /></button></div>
+                 <div className="fw-panel-heading"><div><div className="fw-section-kicker fw-mono">COLLABORATION</div><h2>Latest activity</h2></div><button className="fw-text-button" onClick={() => chooseNav("Collaboration")}>Open collaboration <MessageSquare size={13} /></button></div>
                 <div className="fw-activity-list"><div className="fw-activity-row"><span className="fw-small-avatar fw-avatar-blue">DO</span><p><strong>Daniel Okafor</strong> commented on <b>S-118</b><span>“Please confirm the transfer zone is clear of the riser.”</span></p><time className="fw-mono">09:10</time></div><div className="fw-activity-row"><span className="fw-small-avatar fw-avatar-sand">LB</span><p><strong>Lucía Byrne</strong> submitted <b>A-611</b> for review<span>Revision P05 · North Quay Lofts</span></p><time className="fw-mono">08:42</time></div><div className="fw-activity-row"><span className="fw-small-avatar fw-avatar-green">RS</span><p><strong>Ravi Singh</strong> marked <b>M-301</b> approved<span>Civic Arts Centre · package 04</span></p><time className="fw-mono">Yesterday</time></div></div>
                 <div className="fw-quick-note"><input value={note} onChange={(event) => setNote(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") postNote(); }} placeholder="Add a coordination note..." /><button onClick={postNote} aria-label="Send note"><Send size={15} /></button></div>
               </div>
@@ -278,7 +270,7 @@ export function FocusedWorkspace() {
             <div className="fw-drawing-preview"><div className="fw-preview-grid" /><div className="fw-preview-label fw-mono">A / {selectedDrawing.revision} / 1:100</div><div className="fw-preview-line one" /><div className="fw-preview-line two" /><div className="fw-preview-box" /></div>
             <dl className="fw-detail-list"><div><dt>Project</dt><dd>{selectedDrawing.project}</dd></div><div><dt>Discipline</dt><dd>{selectedDrawing.discipline}</dd></div><div><dt>Owner</dt><dd>{selectedDrawing.owner}</dd></div><div><dt>Due</dt><dd className={selectedDrawing.dueTone === "soon" ? "is-soon" : ""}>{selectedDrawing.due}</dd></div><div><dt>Last update</dt><dd>{selectedDrawing.updated}</dd></div></dl>
             <div className="fw-drawer-note"><div className="fw-section-kicker fw-mono">COORDINATION NOTE</div><p>{selectedDrawing.number === "S-118" ? "Transfer beam alignment needs confirmation against M-301 plant room route." : "Review mark-up is ready for your decision. No unresolved consultant comments."}</p></div>
-            <div className="fw-drawer-actions"><button className="fw-button fw-button-primary" onClick={() => { setShowToast(true); window.setTimeout(() => setShowToast(false), 2400); }}><FileText size={15} />Open drawing</button><button className="fw-button fw-button-quiet" onClick={() => chooseNav("Review queue")}><ClipboardCheck size={15} />Review queue</button></div>
+             <div className="fw-drawer-actions"><button className="fw-button fw-button-primary" onClick={() => { setShowToast(true); window.setTimeout(() => setShowToast(false), 2400); }}><FileText size={15} />Open drawing</button><button className="fw-button fw-button-quiet" onClick={() => chooseNav("Work queue")}><ClipboardCheck size={15} />Work queue</button></div>
           </aside>
         )}
         {showToast && <div className="fw-toast"><Check size={15} />Workspace action saved locally<span className="fw-mono">LOCAL MOCK</span></div>}
