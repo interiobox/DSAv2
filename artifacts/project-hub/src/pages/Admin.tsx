@@ -154,7 +154,7 @@ export default function AdminPage() {
                         </div>
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={draft.active} onChange={(event) => setUserDrafts({ ...userDrafts, [portalUser.id]: { ...draft, active: event.target.checked } })} /> Active account</label>
-                          <div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => saveUser(portalUser)} disabled={updateUser.isPending}><Save className="mr-1.5 h-3.5 w-3.5" />Save</Button><Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { if (window.confirm(`Delete ${portalUser.name}?`)) deleteUser.mutate({ id: portalUser.id }, { onSuccess: invalidateUsers, onError: (error) => showError("User could not be deleted", error) }) }}><Trash2 className="mr-1.5 h-3.5 w-3.5" />Delete</Button></div>
+                           <div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => saveUser(portalUser)} disabled={updateUser.isPending}><Save className="mr-1.5 h-3.5 w-3.5" />Save</Button><Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { if (window.confirm(`Move ${portalUser.name} to the recycle bin? They can be restored by an administrator within 30 days.`)) deleteUser.mutate({ id: portalUser.id }, { onSuccess: invalidateUsers, onError: (error) => showError("User could not be moved to recycle bin", error) }) }}><Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle</Button></div>
                         </div>
                       </div>
                     })}

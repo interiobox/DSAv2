@@ -54,7 +54,7 @@ export async function addActivity(
 }
 
 export async function getDashboard() {
-  const rows = await db.select().from(drawingsTable);
+  const rows = await db.select().from(drawingsTable).where(isNull(drawingsTable.deletedAt));
   const today = new Date().toISOString().slice(0, 10);
   const byCategory: Record<string, number> = {};
   for (const row of rows) byCategory[row.discipline] = (byCategory[row.discipline] ?? 0) + 1;

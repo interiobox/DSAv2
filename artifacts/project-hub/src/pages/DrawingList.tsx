@@ -126,7 +126,7 @@ export default function DrawingList() {
   }
 
   function handleDelete(id: number, title: string) {
-    if (!confirm(`Are you sure you want to delete “${title}”?`)) return
+    if (!confirm(`Move “${title}” to the recycle bin? You can restore it within 30 days.`)) return
     
     deleteDrawing.mutate(
       { id },
@@ -134,7 +134,7 @@ export default function DrawingList() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
           queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() })
-          toast({ title: "Drawing deleted" })
+          toast({ title: "Drawing moved to recycle bin" })
         }
       }
     )
@@ -276,7 +276,7 @@ export default function DrawingList() {
                             </DropdownMenuItem>
                              {isAdmin && (
                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}>
-                                 <Trash2 className="mr-2 h-4 w-4" /> Delete drawing
+                                  <Trash2 className="mr-2 h-4 w-4" /> Move to recycle bin
                                </DropdownMenuItem>
                              )}
                           </DropdownMenuContent>
@@ -364,7 +364,7 @@ export default function DrawingList() {
                           </DropdownMenuItem>
                            {isAdmin && (
                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(drawing.id, drawing.title)}} className="text-destructive focus:text-destructive">
-                               <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                <Trash2 className="mr-2 h-4 w-4" /> Move to recycle bin
                              </DropdownMenuItem>
                            )}
                         </DropdownMenuContent>

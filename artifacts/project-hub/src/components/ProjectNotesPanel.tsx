@@ -65,11 +65,11 @@ export function ProjectNotesPanel({ projectName }: { projectName: string }) {
   }
 
   function removeNote(id: number) {
-    if (!window.confirm("Delete this project note?")) return
+    if (!window.confirm("Move this project note to the recycle bin? You can restore it within 30 days.")) return
     deleteNote.mutate({ id }, {
       onSuccess: () => {
         refresh()
-        toast({ title: "Project note deleted" })
+        toast({ title: "Project note moved to recycle bin" })
       },
       onError: showError,
     })
@@ -117,7 +117,7 @@ export function ProjectNotesPanel({ projectName }: { projectName: string }) {
                     <span>{note.authorName} · {formatDate(note.updatedAt)}</span>
                     {canManage && <span className="flex items-center gap-1">
                       <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { setEditingId(note.id); setEditingText(note.content) }}><Pencil className="mr-1 h-3 w-3" />Edit</Button>
-                      <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => removeNote(note.id)} disabled={deleteNote.isPending}><Trash2 className="mr-1 h-3 w-3" />Delete</Button>
+                      <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => removeNote(note.id)} disabled={deleteNote.isPending}><Trash2 className="mr-1 h-3 w-3" />Recycle</Button>
                     </span>}
                   </div>
                 </>

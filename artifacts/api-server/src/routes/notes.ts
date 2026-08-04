@@ -77,7 +77,7 @@ router.patch("/project-notes/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Note content is required" });
     return;
   }
-  const [note] = await db.update(projectNotesTable).set({ content }).where(eq(projectNotesTable.id, id)).returning();
+  const [note] = await db.update(projectNotesTable).set({ content }).where(and(eq(projectNotesTable.id, id), isNull(projectNotesTable.deletedAt))).returning();
   res.json(note);
 });
 
@@ -88,7 +88,7 @@ router.delete("/project-notes/:id", async (req, res): Promise<void> => {
     return;
   }
   const user = requireCurrentUser(req);
-  const [current] = await db.select().from(projectNotesTable).where(eq(projectNotesTable.id, id)).limit(1);
+  const [current] = await db.select().from(projectNotesTable).where(and(eq(projectNotesTable.id, id), isNull(projectNotesTable.deletedAt))).limit(1);
   if (!current) {
     res.status(404).json({ error: "Project note not found" });
     return;
@@ -154,7 +154,7 @@ router.patch("/personal-notes/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Note content is required" });
     return;
   }
-  const [note] = await db.update(personalNotesTable).set({ title, content }).where(eq(personalNotesTable.id, id)).returning();
+  const [note] = await db.update(personalNotesTable).set({ title, content }).where(and(eq(personalNotesTable.id, id), isNull(personalNotesTable.deletedAt))).returning();
   res.json(note);
 });
 

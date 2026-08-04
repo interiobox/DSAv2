@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { asc } from "drizzle-orm";
+import { asc, isNull } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import {
   ListUsersResponse,
@@ -8,7 +8,7 @@ import {
 const router: IRouter = Router();
 
 router.get("/users", async (_req, res): Promise<void> => {
-  const users = await db.select().from(usersTable).orderBy(asc(usersTable.name));
+  const users = await db.select().from(usersTable).where(isNull(usersTable.deletedAt)).orderBy(asc(usersTable.name));
   res.json(ListUsersResponse.parse(users));
 });
 

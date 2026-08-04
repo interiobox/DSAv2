@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 
 import {
@@ -23,7 +23,7 @@ import { requireCurrentUser } from "../lib/portalAuth";
 const router: IRouter = Router();
 
 async function loadContact(id: number) {
-  const [contact] = await db.select().from(contactsTable).where(eq(contactsTable.id, id)).limit(1);
+  const [contact] = await db.select().from(contactsTable).where(and(eq(contactsTable.id, id), isNull(contactsTable.deletedAt))).limit(1);
   if (!contact) return null;
   const projects = await db
     .select({
@@ -34,7 +34,7 @@ async function loadContact(id: number) {
       createdAt: contactProjectsTable.createdAt,
     })
     .from(contactProjectsTable)
-    .where(eq(contactProjectsTable.contactId, id))
+    .where(and(eq(contactProjectsTable.contactId, id), isNull(contactProjectsTable.deletedAt)))
     .orderBy(asc(contactProjectsTable.projectName), asc(contactProjectsTable.id));
   return { ...contact, projects };
 }
@@ -57,9 +57,13 @@ router.get("/contacts", async (req, res): Promise<void> => {
       .select({ contact: contactsTable })
       .from(contactsTable)
       .innerJoin(contactProjectsTable, eq(contactProjectsTable.contactId, contactsTable.id))
-      .where(eq(contactProjectsTable.projectName, projectName))
+       .where(and(
+         eq(contactProjectsTable.projectName, projectName),
+         isNull(contactsTable.deletedAt),
+         isNull(contactProjectsTable.deletedAt),
+       ))
       .orderBy(asc(contactsTable.companyName), asc(contactsTable.id))
-    : await db.select({ contact: contactsTable }).from(contactsTable).orderBy(asc(contactsTable.companyName), asc(contactsTable.id));
+    : await db.select({ contact: contactsTable }).from(contactsTable).where(isNull(contactsTable.deletedAt)).orderBy(asc(contactsTable.companyName), asc(contactsTable.id));
   const uniqueContacts = Array.from(new Map(contacts.map(({ contact }) => [contact.id, contact])).values());
   const result = await Promise.all(uniqueContacts.map((contact) => loadContact(contact.id)));
   res.json(result.filter((contact): contact is NonNullable<typeof contact> => Boolean(contact)));
@@ -112,7 +116,7 @@ router.patch("/contacts/:id", async (req, res): Promise<void> => {
     return;
   }
   const id = params.data.id;
-  const [existing] = await db.select({ id: contactsTable.id }).from(contactsTable).where(eq(contactsTable.id, id)).limit(1);
+  const [existing] = await db.select({ id: contactsTable.id }).from(contactsTable).where(and(eq(contactsTable.id, id), isNull(contactsTable.deletedAt))).limit(1);
   if (!existing) {
     res.status(404).json({ error: "Contact not found" });
     return;
@@ -137,13 +141,12 @@ router.delete("/contacts/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [existing] = await db.select({ id: contactsTable.id }).from(contactsTable).where(eq(contactsTable.id, parsed.data.id)).limit(1);
+  const [existing] = await db.select({ id: contactsTable.id }).from(contactsTable).where(and(eq(contactsTable.id, parsed.data.id), isNull(contactsTable.deletedAt))).limit(1);
   if (!existing) {
     res.status(404).json({ error: "Contact not found" });
     return;
   }
-  await db.delete(contactProjectsTable).where(eq(contactProjectsTable.contactId, parsed.data.id));
-  await db.delete(contactsTable).where(eq(contactsTable.id, parsed.data.id));
+  await db.update(contactsTable).set({ deletedAt: new Date() }).where(eq(contactsTable.id, parsed.data.id));
   res.sendStatus(204);
 });
 
@@ -158,21 +161,23 @@ router.post("/contacts/:id/projects", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [contact] = await db.select({ id: contactsTable.id }).from(contactsTable).where(eq(contactsTable.id, params.data.id)).limit(1);
+  const [contact] = await db.select({ id: contactsTable.id }).from(contactsTable).where(and(eq(contactsTable.id, params.data.id), isNull(contactsTable.deletedAt))).limit(1);
   if (!contact) {
     res.status(404).json({ error: "Contact not found" });
     return;
   }
   const projectName = parsed.data.projectName.trim();
-  const [project] = await db.select({ name: projectsTable.name }).from(projectsTable).where(eq(projectsTable.name, projectName)).limit(1);
-  const [legacyProject] = await db.select({ projectName: drawingsTable.projectName }).from(drawingsTable).where(eq(drawingsTable.projectName, projectName)).limit(1);
+  const [project] = await db.select({ name: projectsTable.name }).from(projectsTable)
+    .where(and(eq(projectsTable.name, projectName), isNull(projectsTable.deletedAt))).limit(1);
+  const [legacyProject] = await db.select({ projectName: drawingsTable.projectName }).from(drawingsTable)
+    .where(and(eq(drawingsTable.projectName, projectName), isNull(drawingsTable.deletedAt))).limit(1);
   if (!project && !legacyProject) {
     res.status(404).json({ error: "Project not found" });
     return;
   }
   const [duplicate] = await db.select({ id: contactProjectsTable.id })
     .from(contactProjectsTable)
-    .where(and(eq(contactProjectsTable.contactId, contact.id), eq(contactProjectsTable.projectName, projectName)))
+    .where(and(eq(contactProjectsTable.contactId, contact.id), eq(contactProjectsTable.projectName, projectName), isNull(contactProjectsTable.deletedAt)))
     .limit(1);
   if (duplicate) {
     res.status(409).json({ error: "This contact is already linked to that project" });
@@ -194,13 +199,13 @@ router.delete("/contacts/:id/projects/:projectId", async (req, res): Promise<voi
     return;
   }
   const [association] = await db.select().from(contactProjectsTable)
-    .where(and(eq(contactProjectsTable.id, parsed.data.projectId), eq(contactProjectsTable.contactId, parsed.data.id)))
+    .where(and(eq(contactProjectsTable.id, parsed.data.projectId), eq(contactProjectsTable.contactId, parsed.data.id), isNull(contactProjectsTable.deletedAt)))
     .limit(1);
   if (!association) {
     res.status(404).json({ error: "Project association not found" });
     return;
   }
-  await db.delete(contactProjectsTable).where(eq(contactProjectsTable.id, association.id));
+  await db.update(contactProjectsTable).set({ deletedAt: new Date() }).where(eq(contactProjectsTable.id, association.id));
   res.json(await loadContact(parsed.data.id));
 });
 

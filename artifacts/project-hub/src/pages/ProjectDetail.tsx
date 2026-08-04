@@ -104,7 +104,7 @@ export default function ProjectDetail() {
         window.location.href = "/archive"
       },
       onError: (error) => toast({
-        title: "Project could not be deleted",
+        title: "Project could not be moved to recycle bin",
         description: error instanceof Error ? error.message : "Please try again.",
       }),
     })

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { db, disciplinesTable, drawingsTable } from "@workspace/db";
 import { requireCurrentUser } from "../lib/portalAuth";
 import { addActivity } from "../lib/drawings";
@@ -56,10 +56,10 @@ router.patch("/categories/:id", async (req, res): Promise<void> => {
     .returning();
   const affectedDrawings = await db.select({ id: drawingsTable.id, title: drawingsTable.title })
     .from(drawingsTable)
-    .where(eq(drawingsTable.discipline, currentCategory.name));
+    .where(and(eq(drawingsTable.discipline, currentCategory.name), isNull(drawingsTable.deletedAt)));
   await db.update(drawingsTable)
     .set({ discipline: name })
-    .where(eq(drawingsTable.discipline, currentCategory.name));
+    .where(and(eq(drawingsTable.discipline, currentCategory.name), isNull(drawingsTable.deletedAt)));
   const user = requireCurrentUser(req);
   for (const drawing of affectedDrawings) {
     await addActivity(
@@ -88,7 +88,7 @@ router.delete("/categories/:id", async (req, res): Promise<void> => {
   }
   const [used] = await db.select({ id: drawingsTable.id })
     .from(drawingsTable)
-    .where(eq(drawingsTable.discipline, category.name))
+    .where(and(eq(drawingsTable.discipline, category.name), isNull(drawingsTable.deletedAt)))
     .limit(1);
   if (used) {
     res.status(409).json({ error: "This category is used by existing drawings and cannot be deleted" });

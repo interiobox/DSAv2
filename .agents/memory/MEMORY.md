@@ -1,1 +1,2 @@
 - [Drawing register product](drawing-register.md) — preserve the architectural drawing vocabulary, metadata, and review/issue workflow.
+- [Recycle-bin retention](drawing-register.md) — recyclable records use their own deletedAt timestamp; stored files are removed only after expiry.

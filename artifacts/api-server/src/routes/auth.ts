@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import { authenticatePortalUser, clearSession, createSession, publicUser, verifyPassword } from "../lib/portalAuth";
 
@@ -12,7 +12,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Username and password are required" });
     return;
   }
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.username, username)).limit(1);
+  const [user] = await db.select().from(usersTable).where(and(eq(usersTable.username, username), isNull(usersTable.deletedAt))).limit(1);
   if (!user || !user.active || !(await verifyPassword(password, user.passwordHash))) {
     res.status(401).json({ error: "Invalid username or password" });
     return;

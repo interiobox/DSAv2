@@ -61,7 +61,7 @@ router.patch("/admin/users/:id", async (req, res): Promise<void> => {
     return;
   }
   if (username && username !== current.username) {
-    const [duplicate] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.username, username)).limit(1);
+    const [duplicate] = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.username, username), isNull(usersTable.deletedAt))).limit(1);
     if (duplicate) {
       res.status(409).json({ error: "That username is already in use" });
       return;
@@ -126,7 +126,7 @@ router.post("/admin/disciplines", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Discipline name is required" });
     return;
   }
-  const [existing] = await db.select().from(disciplinesTable).where(sql`lower(${disciplinesTable.name}) = lower(${name})`).limit(1);
+  const [existing] = await db.select().from(disciplinesTable).where(sql`lower(${disciplinesTable.name}) = lower(${name}) AND ${disciplinesTable.deletedAt} IS NULL`).limit(1);
   if (existing) {
     res.status(409).json({ error: "That discipline already exists" });
     return;
@@ -145,13 +145,13 @@ router.patch("/admin/disciplines/:id", async (req, res): Promise<void> => {
   const [existing] = await db
     .select({ id: disciplinesTable.id })
     .from(disciplinesTable)
-    .where(sql`lower(${disciplinesTable.name}) = lower(${name}) AND ${disciplinesTable.id} <> ${id}`)
+    .where(sql`lower(${disciplinesTable.name}) = lower(${name}) AND ${disciplinesTable.id} <> ${id} AND ${disciplinesTable.deletedAt} IS NULL`)
     .limit(1);
   if (existing) {
     res.status(409).json({ error: "That discipline already exists" });
     return;
   }
-  const [currentDiscipline] = await db.select().from(disciplinesTable).where(eq(disciplinesTable.id, id)).limit(1);
+  const [currentDiscipline] = await db.select().from(disciplinesTable).where(and(eq(disciplinesTable.id, id), isNull(disciplinesTable.deletedAt))).limit(1);
   if (!currentDiscipline) {
     res.status(404).json({ error: "Discipline not found" });
     return;
@@ -163,8 +163,8 @@ router.patch("/admin/disciplines/:id", async (req, res): Promise<void> => {
   }
   const affectedDrawings = await db.select({ id: drawingsTable.id, title: drawingsTable.title })
     .from(drawingsTable)
-    .where(eq(drawingsTable.discipline, currentDiscipline.name));
-  await db.update(drawingsTable).set({ discipline: name }).where(eq(drawingsTable.discipline, currentDiscipline.name));
+     .where(and(eq(drawingsTable.discipline, currentDiscipline.name), isNull(drawingsTable.deletedAt)));
+  await db.update(drawingsTable).set({ discipline: name }).where(and(eq(drawingsTable.discipline, currentDiscipline.name), isNull(drawingsTable.deletedAt)));
   const user = requireCurrentUser(req);
   for (const drawing of affectedDrawings) {
     await addActivity(
@@ -180,12 +180,12 @@ router.patch("/admin/disciplines/:id", async (req, res): Promise<void> => {
 
 router.delete("/admin/disciplines/:id", async (req, res): Promise<void> => {
   const id = Number(req.params.id);
-  const [discipline] = await db.select().from(disciplinesTable).where(eq(disciplinesTable.id, id)).limit(1);
+  const [discipline] = await db.select().from(disciplinesTable).where(and(eq(disciplinesTable.id, id), isNull(disciplinesTable.deletedAt))).limit(1);
   if (!discipline) {
     res.status(404).json({ error: "Discipline not found" });
     return;
   }
-  const [used] = await db.select({ id: drawingsTable.id }).from(drawingsTable).where(eq(drawingsTable.discipline, discipline.name)).limit(1);
+  const [used] = await db.select({ id: drawingsTable.id }).from(drawingsTable).where(and(eq(drawingsTable.discipline, discipline.name), isNull(drawingsTable.deletedAt))).limit(1);
   if (used) {
     res.status(409).json({ error: "This discipline is used by existing drawings and cannot be deleted" });
     return;
@@ -199,7 +199,7 @@ router.get("/admin/activity", async (_req, res): Promise<void> => {
 });
 
 router.get("/admin/personal-notes", async (_req, res): Promise<void> => {
-  res.json(await db.select().from(personalNotesTable).orderBy(desc(personalNotesTable.updatedAt), desc(personalNotesTable.id)));
+  res.json(await db.select().from(personalNotesTable).where(isNull(personalNotesTable.deletedAt)).orderBy(desc(personalNotesTable.updatedAt), desc(personalNotesTable.id)));
 });
 
 export default router;

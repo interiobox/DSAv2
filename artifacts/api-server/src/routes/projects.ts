@@ -13,9 +13,9 @@ const router: IRouter = Router();
 router.get("/projects", async (_req, res): Promise<void> => {
   const [projects, drawings] = await Promise.all([
     db.select().from(projectsTable).where(isNull(projectsTable.deletedAt)).orderBy(asc(projectsTable.name)),
-    db.select({ projectName: drawingsTable.projectName }).from(drawingsTable),
+    db.select({ projectName: drawingsTable.projectName }).from(drawingsTable).where(isNull(drawingsTable.deletedAt)),
   ]);
-  const allProjectNames = await db.select({ name: projectsTable.name }).from(projectsTable);
+  const allProjectNames = await db.select({ name: projectsTable.name }).from(projectsTable).where(isNull(projectsTable.deletedAt));
   const knownNames = new Set(allProjectNames.map((project) => project.name.toLocaleLowerCase()));
   const legacyNames = new Map<string, string>();
   for (const drawing of drawings) {
@@ -57,7 +57,7 @@ router.post("/projects", async (req, res): Promise<void> => {
   // Project names are case-insensitive for the user-facing picker.
   const [existingProjects, drawings] = await Promise.all([
     db.select().from(projectsTable).where(isNull(projectsTable.deletedAt)),
-    db.select({ projectName: drawingsTable.projectName }).from(drawingsTable),
+    db.select({ projectName: drawingsTable.projectName }).from(drawingsTable).where(isNull(drawingsTable.deletedAt)),
   ]);
   const normalizedName = name.toLocaleLowerCase();
   const duplicate = existingProjects.some((project) => project.name.toLocaleLowerCase() === normalizedName)

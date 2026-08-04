@@ -92,11 +92,11 @@ export default function MyFeed() {
   }
 
   function removePersonalNote(id: number) {
-    if (!window.confirm("Delete this personal note?")) return
+    if (!window.confirm("Move this personal note to the recycle bin? You can restore it within 30 days.")) return
     deletePersonalNote.mutate({ id }, {
       onSuccess: () => {
         refreshPersonalNotes()
-        toast({ title: "Personal note deleted" })
+        toast({ title: "Personal note moved to recycle bin" })
       },
       onError: showNoteError,
     })
@@ -194,7 +194,7 @@ export default function MyFeed() {
           <Card>
             <CardHeader className="border-b">
               <CardTitle className="flex items-center gap-2 text-base"><StickyNote className="h-4 w-4 text-primary" />My personal notes <Badge variant="outline">{personalNotes?.length ?? 0}</Badge></CardTitle>
-              <p className="text-sm text-muted-foreground">Private notes only visible to you. You can edit or delete your own notes anytime.</p>
+              <p className="text-sm text-muted-foreground">Private notes only visible to you. You can edit or move your own notes to the recycle bin anytime.</p>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
               <form onSubmit={submitPersonalNote} className="space-y-2 rounded-lg border bg-muted/20 p-3">
@@ -214,7 +214,7 @@ export default function MyFeed() {
                     </div>
                   ) : (
                     <div key={note.id} className="rounded-lg border p-3">
-                      <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="font-medium">{note.title}</p><p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">{note.content}</p></div><div className="flex shrink-0 gap-1"><Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { setEditingNoteId(note.id); setEditingTitle(note.title); setEditingContent(note.content) }}><Pencil className="mr-1 h-3 w-3" />Edit</Button><Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => removePersonalNote(note.id)} disabled={deletePersonalNote.isPending}><Trash2 className="mr-1 h-3 w-3" />Delete</Button></div></div>
+                      <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="font-medium">{note.title}</p><p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">{note.content}</p></div><div className="flex shrink-0 gap-1"><Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { setEditingNoteId(note.id); setEditingTitle(note.title); setEditingContent(note.content) }}><Pencil className="mr-1 h-3 w-3" />Edit</Button><Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => removePersonalNote(note.id)} disabled={deletePersonalNote.isPending}><Trash2 className="mr-1 h-3 w-3" />Recycle</Button></div></div>
                       <p className="mt-2 text-xs text-muted-foreground">Updated {formatDate(note.updatedAt)}</p>
                     </div>
                   ))}

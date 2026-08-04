@@ -61,7 +61,7 @@ export function Projects() {
         void queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() })
         toast({ title: "Project moved to recycle bin", description: "Its drawings remain available for recovery." })
       },
-      onError: (error) => toast({ title: "Project could not be deleted", description: error instanceof Error ? error.message : "Please try again." }),
+      onError: (error) => toast({ title: "Project could not be moved to recycle bin", description: error instanceof Error ? error.message : "Please try again." }),
     })
   }
   return (

@@ -133,10 +133,10 @@ export default function DrawingDetail() {
   }
 
   const handleDelete = () => {
-    if (!confirm(`Permanently delete “${drawing.title}”?`)) return
+    if (!confirm(`Move “${drawing.title}” to the recycle bin? You can restore it within 30 days.`)) return
     deleteDrawing.mutate({ id }, {
       onSuccess: () => {
-        toast({ title: "Drawing deleted" })
+        toast({ title: "Drawing moved to recycle bin" })
         queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
         setLocation("/drawings")
       }
@@ -274,16 +274,16 @@ export default function DrawingDetail() {
   }
 
   const handleUploadDelete = async (upload: DrawingUpload) => {
-    if (!confirm(`Delete ${upload.fileName}? This also removes the stored file.`)) return
+    if (!confirm(`Move ${upload.fileName} to the recycle bin? The stored file is retained for 30 days.`)) return
     try {
       const response = await fetch(`/api/drawings/${id}/uploads/${upload.id}`, { method: "DELETE" })
-      if (!response.ok) throw new Error("The upload could not be deleted")
+      if (!response.ok) throw new Error("The upload could not be moved to the recycle bin")
       await loadUploads()
       queryClient.invalidateQueries({ queryKey: getGetDrawingQueryKey(id) })
       queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
-      toast({ title: "Upload deleted" })
+      toast({ title: "Upload moved to recycle bin" })
     } catch (error) {
-      toast({ title: "Delete failed", description: error instanceof Error ? error.message : "The upload could not be deleted." })
+      toast({ title: "Could not move upload to recycle bin", description: error instanceof Error ? error.message : "The upload could not be recycled." })
     }
   }
 
@@ -310,13 +310,13 @@ export default function DrawingDetail() {
     if (!confirm("Delete this review comment?")) return
     try {
       const response = await fetch(`/api/drawings/${id}/comments/${item.id}`, { method: "DELETE" })
-      if (!response.ok) throw new Error("The comment could not be deleted")
+      if (!response.ok) throw new Error("The comment could not be moved to the recycle bin")
       await loadComments()
       queryClient.invalidateQueries({ queryKey: getListActivityQueryKey() })
       queryClient.invalidateQueries({ queryKey: getListNotificationsQueryKey() })
       toast({ title: "Comment deleted" })
     } catch (error) {
-      toast({ title: "Delete failed", description: error instanceof Error ? error.message : "The comment could not be deleted." })
+      toast({ title: "Could not move comment to recycle bin", description: error instanceof Error ? error.message : "The comment could not be recycled." })
     }
   }
 
@@ -368,9 +368,9 @@ export default function DrawingDetail() {
           {isAdmin && (
             <>
               <div className="w-px h-8 bg-border mx-1" />
-              <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleDelete} title="Delete drawing">
+              <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleDelete} title="Move drawing to recycle bin">
                 <Trash2 className="w-4 h-4" />
-                <span className="sr-only">Delete drawing</span>
+                <span className="sr-only">Move drawing to recycle bin</span>
               </Button>
             </>
           )}

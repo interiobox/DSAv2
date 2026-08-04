@@ -68,7 +68,7 @@ export function UniversalSearch() {
       { label: "Issue Register", detail: "Review comments and drawing issues", icon: FileWarning, href: "/issues" },
       { label: "Files", detail: "Uploaded drawing files and history", icon: FolderOpen, href: "/files" },
       { label: "Contacts", detail: "Project contacts and partners", icon: UsersRound, href: "/contacts" },
-      { label: "Recycle bin", detail: "Archived drawings and deleted projects", icon: Archive, href: "/archive" },
+      { label: "Recycle bin", detail: "All recycled records retained for 30 days", icon: Archive, href: "/archive" },
       { label: "Settings", detail: "Personal preferences and categories", icon: Settings, href: "/settings" },
       ...(user?.role === "admin" ? [
         { label: "Team Directory", detail: "People available for assignments", icon: UsersRound, href: "/team" },

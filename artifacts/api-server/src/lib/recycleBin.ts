@@ -1,6 +1,7 @@
 import { and, eq, isNull, isNotNull, lt } from "drizzle-orm";
 import {
   checklistTemplatesTable,
+  checklistTemplateItemsTable,
   contactProjectsTable,
   contactsTable,
   db,
@@ -9,6 +10,7 @@ import {
   drawingUploadsTable,
   drawingsTable,
   personalNotesTable,
+  projectChecklistItemsTable,
   projectChecklistsTable,
   projectNotesTable,
   projectsTable,
@@ -121,7 +123,8 @@ export async function restoreRecycleBinEntry(type: RecycleBinType, id: number, u
 
 export async function purgeExpiredRecycleBin() {
   const before = expiredBefore();
-  const expiredDrawings = await db.select({ id: drawingsTable.id }).from(drawingsTable).where(and(isNotNull(drawingsTable.deletedAt), lt(drawingsTable.deletedAt, before)));
+  const expiredDrawings = await db.select({ id: drawingsTable.id }).from(drawingsTable)
+    .where(and(isNotNull(drawingsTable.deletedAt), lt(drawingsTable.deletedAt, before)));
   for (const drawing of expiredDrawings) {
     const uploads = await db.select().from(drawingUploadsTable).where(eq(drawingUploadsTable.drawingId, drawing.id));
     for (const upload of uploads) await objectStorageService.deleteObjectEntity(upload.filePath);
@@ -129,24 +132,56 @@ export async function purgeExpiredRecycleBin() {
     await db.delete(drawingUploadsTable).where(eq(drawingUploadsTable.drawingId, drawing.id));
     await db.delete(drawingsTable).where(eq(drawingsTable.id, drawing.id));
   }
-  const expiredContacts = await db.select({ id: contactsTable.id }).from(contactsTable).where(and(isNotNull(contactsTable.deletedAt), lt(contactsTable.deletedAt, before)));
+  const expiredContacts = await db.select({ id: contactsTable.id }).from(contactsTable)
+    .where(and(isNotNull(contactsTable.deletedAt), lt(contactsTable.deletedAt, before)));
   for (const contact of expiredContacts) {
+    await db.delete(contactProjectsTable).where(eq(contactProjectsTable.contactId, contact.id));
     await db.delete(contactsTable).where(eq(contactsTable.id, contact.id));
   }
   await db.delete(contactProjectsTable).where(and(isNotNull(contactProjectsTable.deletedAt), lt(contactProjectsTable.deletedAt, before)));
-  const expiredProjects = await db.select({ id: projectsTable.id }).from(projectsTable).where(and(isNotNull(projectsTable.deletedAt), lt(projectsTable.deletedAt, before)));
+  const expiredProjects = await db.select({ id: projectsTable.id, name: projectsTable.name }).from(projectsTable)
+    .where(and(isNotNull(projectsTable.deletedAt), lt(projectsTable.deletedAt, before)));
   for (const project of expiredProjects) {
-    await db.delete(contactProjectsTable).where(eq(contactProjectsTable.projectName, (await db.select({ name: projectsTable.name }).from(projectsTable).where(eq(projectsTable.id, project.id)).limit(1))[0]?.name ?? ""));
-    await db.delete(projectNotesTable).where(eq(projectNotesTable.projectName, (await db.select({ name: projectsTable.name }).from(projectsTable).where(eq(projectsTable.id, project.id)).limit(1))[0]?.name ?? ""));
-    await db.delete(projectChecklistsTable).where(eq(projectChecklistsTable.projectName, (await db.select({ name: projectsTable.name }).from(projectsTable).where(eq(projectsTable.id, project.id)).limit(1))[0]?.name ?? ""));
+    const projectDrawings = await db.select({ id: drawingsTable.id }).from(drawingsTable)
+      .where(eq(drawingsTable.projectName, project.name));
+    for (const drawing of projectDrawings) {
+      const uploads = await db.select().from(drawingUploadsTable).where(eq(drawingUploadsTable.drawingId, drawing.id));
+      for (const upload of uploads) await objectStorageService.deleteObjectEntity(upload.filePath);
+      await db.delete(drawingCommentsTable).where(eq(drawingCommentsTable.drawingId, drawing.id));
+      await db.delete(drawingUploadsTable).where(eq(drawingUploadsTable.drawingId, drawing.id));
+      await db.delete(drawingsTable).where(eq(drawingsTable.id, drawing.id));
+    }
+    await db.delete(contactProjectsTable).where(eq(contactProjectsTable.projectName, project.name));
+    await db.delete(projectNotesTable).where(eq(projectNotesTable.projectName, project.name));
+    const projectChecklists = await db.select({ id: projectChecklistsTable.id }).from(projectChecklistsTable)
+      .where(eq(projectChecklistsTable.projectName, project.name));
+    for (const checklist of projectChecklists) {
+      await db.delete(projectChecklistItemsTable).where(eq(projectChecklistItemsTable.projectChecklistId, checklist.id));
+    }
+    await db.delete(projectChecklistsTable).where(eq(projectChecklistsTable.projectName, project.name));
     await db.delete(projectsTable).where(eq(projectsTable.id, project.id));
   }
-  await db.delete(drawingUploadsTable).where(and(isNotNull(drawingUploadsTable.deletedAt), lt(drawingUploadsTable.deletedAt, before)));
+  const expiredUploads = await db.select().from(drawingUploadsTable)
+    .where(and(isNotNull(drawingUploadsTable.deletedAt), lt(drawingUploadsTable.deletedAt, before)));
+  for (const upload of expiredUploads) {
+    await objectStorageService.deleteObjectEntity(upload.filePath);
+    await db.delete(drawingUploadsTable).where(eq(drawingUploadsTable.id, upload.id));
+  }
   await db.delete(drawingCommentsTable).where(and(isNotNull(drawingCommentsTable.deletedAt), lt(drawingCommentsTable.deletedAt, before)));
   await db.delete(projectNotesTable).where(and(isNotNull(projectNotesTable.deletedAt), lt(projectNotesTable.deletedAt, before)));
   await db.delete(personalNotesTable).where(and(isNotNull(personalNotesTable.deletedAt), lt(personalNotesTable.deletedAt, before)));
-  await db.delete(projectChecklistsTable).where(and(isNotNull(projectChecklistsTable.deletedAt), lt(projectChecklistsTable.deletedAt, before)));
-  await db.delete(checklistTemplatesTable).where(and(isNotNull(checklistTemplatesTable.deletedAt), lt(checklistTemplatesTable.deletedAt, before)));
+  const expiredChecklists = await db.select({ id: projectChecklistsTable.id }).from(projectChecklistsTable)
+    .where(and(isNotNull(projectChecklistsTable.deletedAt), lt(projectChecklistsTable.deletedAt, before)));
+  for (const checklist of expiredChecklists) {
+    await db.delete(projectChecklistItemsTable).where(eq(projectChecklistItemsTable.projectChecklistId, checklist.id));
+    await db.delete(projectChecklistsTable).where(eq(projectChecklistsTable.id, checklist.id));
+  }
+  const expiredTemplates = await db.select({ id: checklistTemplatesTable.id }).from(checklistTemplatesTable)
+    .where(and(isNotNull(checklistTemplatesTable.deletedAt), lt(checklistTemplatesTable.deletedAt, before)));
+  for (const template of expiredTemplates) {
+    await db.delete(checklistTemplateItemsTable).where(eq(checklistTemplateItemsTable.templateId, template.id));
+    await db.delete(checklistTemplatesTable).where(eq(checklistTemplatesTable.id, template.id));
+  }
   await db.delete(disciplinesTable).where(and(isNotNull(disciplinesTable.deletedAt), lt(disciplinesTable.deletedAt, before)));
   await db.delete(usersTable).where(and(isNotNull(usersTable.deletedAt), lt(usersTable.deletedAt, before)));
 }

@@ -289,15 +289,15 @@ function ChecklistCard({ checklist }: { checklist: ProjectChecklist }) {
   }
 
   function handleDelete() {
-    if (!window.confirm(`Are you sure you want to delete the "${checklist.name}" checklist for ${checklist.projectName}?`)) return
+    if (!window.confirm(`Move the "${checklist.name}" checklist for ${checklist.projectName} to the recycle bin?`)) return
     
     deleteMutation.mutate({ id: checklist.id }, {
       onSuccess: () => {
-        toast({ title: "Checklist deleted" })
+        toast({ title: "Checklist moved to recycle bin" })
         queryClient.invalidateQueries({ queryKey: getListProjectChecklistsQueryKey() })
       },
       onError: (err) => {
-        toast({ title: "Delete failed", description: err instanceof Error ? err.message : "Could not delete checklist" })
+        toast({ title: "Could not move checklist to recycle bin", description: err instanceof Error ? err.message : "Could not recycle checklist" })
       }
     })
   }
@@ -316,7 +316,7 @@ function ChecklistCard({ checklist }: { checklist: ProjectChecklist }) {
               {isComplete && <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10 shrink-0">Complete</Badge>}
             </CardTitle>
           </div>
-          <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={handleDelete} title="Delete checklist" data-testid={`button-delete-checklist-${checklist.id}`}>
+          <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={handleDelete} title="Move checklist to recycle bin" data-testid={`button-delete-checklist-${checklist.id}`}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -410,15 +410,15 @@ function TemplateCard({ template, onEdit }: { template: ChecklistTemplate, onEdi
   const deleteMutation = useDeleteChecklistTemplate()
 
   function handleDelete() {
-    if (!window.confirm(`Are you sure you want to delete the "${template.name}" template? This won't affect existing checklists.`)) return
+    if (!window.confirm(`Move the "${template.name}" template to the recycle bin? Existing checklists will be preserved.`)) return
     
     deleteMutation.mutate({ id: template.id }, {
       onSuccess: () => {
-        toast({ title: "Template deleted" })
+        toast({ title: "Template moved to recycle bin" })
         queryClient.invalidateQueries({ queryKey: getListChecklistTemplatesQueryKey() })
       },
       onError: (err) => {
-        toast({ title: "Delete failed", description: err instanceof Error ? err.message : "Could not delete template" })
+        toast({ title: "Could not move template to recycle bin", description: err instanceof Error ? err.message : "Could not recycle template" })
       }
     })
   }
@@ -439,7 +439,7 @@ function TemplateCard({ template, onEdit }: { template: ChecklistTemplate, onEdi
         <Button variant="secondary" size="sm" className="flex-1 text-xs" onClick={onEdit} data-testid={`button-edit-template-${template.id}`}>
           Edit
         </Button>
-        <Button variant="ghost" size="sm" className="shrink-0 text-muted-foreground hover:text-destructive px-2" onClick={handleDelete} title="Delete template" data-testid={`button-delete-template-${template.id}`}>
+        <Button variant="ghost" size="sm" className="shrink-0 text-muted-foreground hover:text-destructive px-2" onClick={handleDelete} title="Move template to recycle bin" data-testid={`button-delete-template-${template.id}`}>
           <Trash2 className="h-4 w-4" />
         </Button>
       </CardFooter>

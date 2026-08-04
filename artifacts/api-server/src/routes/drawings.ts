@@ -182,7 +182,7 @@ router.patch("/drawings/:id/assignment", async (req, res): Promise<void> => {
     assignedTo: canonicalAssigneeName,
     assignedToUserId: assigneeUserId,
     updatedAt: new Date(),
-  }).where(eq(drawingsTable.id, params.data.id)).returning();
+  }).where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt))).returning();
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
@@ -215,10 +215,6 @@ router.delete("/drawings/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Drawing not found" });
     return;
   }
-  const uploads = await db.select().from(drawingUploadsTable).where(eq(drawingUploadsTable.drawingId, drawing.id));
-  for (const upload of uploads) {
-    await objectStorageService.deleteObjectEntity(upload.filePath);
-  }
   await addActivity("drawing_deleted", `${currentUserName(req)} deleted ${drawing.title} from the drawing library`, drawing.id, currentUserId(req), currentUserName(req));
   await db.update(drawingsTable).set({ deletedAt: new Date() }).where(eq(drawingsTable.id, drawing.id));
   res.sendStatus(204);
@@ -235,13 +231,13 @@ router.get("/drawings/:id/uploads", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [drawing] = await db.select({ id: drawingsTable.id }).from(drawingsTable).where(eq(drawingsTable.id, parsed.data.id));
+  const [drawing] = await db.select({ id: drawingsTable.id }).from(drawingsTable).where(and(eq(drawingsTable.id, parsed.data.id), isNull(drawingsTable.deletedAt)));
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
   }
   const uploads = await db.select().from(drawingUploadsTable)
-    .where(eq(drawingUploadsTable.drawingId, parsed.data.id))
+    .where(and(eq(drawingUploadsTable.drawingId, parsed.data.id), isNull(drawingUploadsTable.deletedAt)))
     .orderBy(desc(drawingUploadsTable.uploadedAt));
   res.json(ListDrawingUploadsResponse.parse(uploads));
 });
@@ -257,7 +253,7 @@ router.post("/drawings/:id/uploads", async (req, res): Promise<void> => {
     res.status(400).json({ error: body.error.message });
     return;
   }
-  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, params.data.id));
+  const [drawing] = await db.select().from(drawingsTable).where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt)));
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
@@ -380,7 +376,7 @@ router.patch("/drawings/:id/comments/:commentId", async (req, res): Promise<void
     return;
   }
   const [updated] = await db.update(drawingCommentsTable).set({ comment: body.data.comment })
-    .where(eq(drawingCommentsTable.id, comment.id)).returning();
+    .where(and(eq(drawingCommentsTable.id, comment.id), isNull(drawingCommentsTable.deletedAt))).returning();
   await addActivity("drawing_updated", `${updated.author} edited a review comment on drawing ${comment.drawingId}`, comment.drawingId, currentUserId(req), currentUserName(req));
   res.json(UpdateDrawingCommentResponse.parse(updated));
 });
@@ -391,7 +387,7 @@ router.delete("/drawings/:id/comments/:commentId", async (req, res): Promise<voi
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [comment] = await db.select().from(drawingCommentsTable).where(eq(drawingCommentsTable.id, params.data.commentId));
+  const [comment] = await db.select().from(drawingCommentsTable).where(and(eq(drawingCommentsTable.id, params.data.commentId), isNull(drawingCommentsTable.deletedAt)));
   if (!comment || comment.drawingId !== params.data.id) {
     res.status(404).json({ error: "Comment not found" });
     return;

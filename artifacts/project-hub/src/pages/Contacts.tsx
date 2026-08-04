@@ -195,7 +195,7 @@ function ContactCard({ contact, onEdit, onDelete, onAddProject }: {
           </div>
           <div className="flex shrink-0 gap-1">
             <Button variant="ghost" size="icon" onClick={onEdit} aria-label={`Edit ${contact.companyName}`}><Edit3 className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={onDelete} aria-label={`Delete ${contact.companyName}`}><Trash2 className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={onDelete} aria-label={`Move ${contact.companyName} to recycle bin`}><Trash2 className="h-4 w-4" /></Button>
           </div>
         </div>
       </CardHeader>
@@ -291,10 +291,10 @@ export default function ContactsPage() {
   }
 
   function handleDelete(contact: Contact) {
-    if (!window.confirm(`Delete ${contact.companyName} from the shared directory?`)) return
+    if (!window.confirm(`Move ${contact.companyName} to the recycle bin? You can restore it within 30 days.`)) return
     deleteContact.mutate({ id: contact.id }, {
       onSuccess: () => { invalidateContacts(); toast({ title: "Contact deleted" }) },
-      onError: (error) => toast({ title: "Contact could not be deleted", description: error instanceof Error ? error.message : "Please try again." }),
+      onError: (error) => toast({ title: "Contact could not be moved to recycle bin", description: error instanceof Error ? error.message : "Please try again." }),
     })
   }
 
