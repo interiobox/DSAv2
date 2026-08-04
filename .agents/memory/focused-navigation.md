@@ -3,7 +3,7 @@ name: Focused navigation
 description: Navigation hierarchy for the architectural drawing register
 ---
 
-The app should feel like one focused drawing-register workspace rather than a collection of equally weighted modules. Show every available route directly in the sidebar, ordered from daily drawing work through coordination, reference, archive, settings, and administration.
+The app should feel like one focused Drawing Library workspace rather than a collection of equally weighted modules. Show every available route directly in the sidebar, ordered from daily drawing work through coordination, reference, archive, settings, and administration.
 
 **Why:** The user prefers immediate access to every workspace without an extra “More tools” interaction; usefulness-first ordering keeps the full sidebar scannable.
 

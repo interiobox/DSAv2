@@ -57,7 +57,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navigation = (
     <div className="space-y-0.5">
       <NavItem href="/dashboard" icon={Layers}>Overview</NavItem>
-      <NavItem href="/drawings" icon={FileText}>Drawing register</NavItem>
+      <NavItem href="/drawings" icon={FileText}>Drawing Library</NavItem>
       <NavItem href="/projects" icon={FolderKanban}>Projects</NavItem>
       <NavItem href="/assignments" icon={Users}>Assignments</NavItem>
       <NavItem href="/review-queue" icon={ClipboardCheck}>Review Queue</NavItem>
@@ -94,7 +94,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-bold text-sidebar-foreground">Design Sense Architects</p>
-             <p className="truncate text-[10px] uppercase tracking-[0.16em] text-muted-foreground font-mono">Drawing register</p>
+             <p className="truncate text-[10px] uppercase tracking-[0.16em] text-muted-foreground font-mono">Drawing Library</p>
           </div>
         </div>
         <button type="button" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-sidebar-foreground hover:bg-sidebar-accent" onClick={() => setMobileMenuOpen(true)} aria-label="Open navigation menu">
@@ -133,7 +133,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                Design Sense<br />Architects
             </h1>
              <p className="mt-1.5 text-[10px] text-primary uppercase font-mono tracking-widest font-semibold">
-                Drawing register
+                Drawing Library
             </p>
           </div>
         </div>
