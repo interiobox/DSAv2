@@ -263,6 +263,18 @@ export default function DrawingList() {
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <Badge variant="outline" className={`capitalize rounded-sm shadow-sm ${statusTone(drawing.status)}`}>{statusLabel(drawing.status)}</Badge>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 rounded-sm px-2 text-xs font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60"
+                          onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}
+                          disabled={!isAdmin || deleteDrawing.isPending}
+                          title={isAdmin ? "Move drawing to recycle bin" : "Administrator access required"}
+                          data-testid={`button-recycle-drawing-mobile-${drawing.id}`}
+                        >
+                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
+                        </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(event) => event.stopPropagation()}>
                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-sm">
@@ -274,11 +286,6 @@ export default function DrawingList() {
                             <DropdownMenuItem onClick={(event) => { event.stopPropagation(); setLocation(`/drawings/${drawing.id}`) }}>
                               <Pencil className="mr-2 h-4 w-4" /> Edit drawing
                             </DropdownMenuItem>
-                             {isAdmin && (
-                               <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}>
-                                  <Trash2 className="mr-2 h-4 w-4" /> Move to recycle bin
-                               </DropdownMenuItem>
-                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -353,20 +360,30 @@ export default function DrawingList() {
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 rounded-sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[160px] rounded-sm">
+                         <div className="flex items-center justify-end gap-1.5">
+                           <Button
+                             type="button"
+                             variant="outline"
+                             size="sm"
+                             className="h-8 rounded-sm px-2 text-xs font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60"
+                             onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}
+                             disabled={!isAdmin || deleteDrawing.isPending}
+                             title={isAdmin ? "Move drawing to recycle bin" : "Administrator access required"}
+                             data-testid={`button-recycle-drawing-${drawing.id}`}
+                           >
+                             <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
+                           </Button>
+                           <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-sm" data-testid={`button-drawing-actions-${drawing.id}`}>
+                               <MoreHorizontal className="h-4 w-4" />
+                               <span className="sr-only">Drawing actions</span>
+                             </Button>
+                           </DropdownMenuTrigger>
+                         </div>
+                         <DropdownMenuContent align="end" className="w-[160px] rounded-sm">
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/drawings/${drawing.id}`)}}>
                             <Pencil className="mr-2 h-4 w-4" /> Edit drawing
                           </DropdownMenuItem>
-                           {isAdmin && (
-                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(drawing.id, drawing.title)}} className="text-destructive focus:text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" /> Move to recycle bin
-                             </DropdownMenuItem>
-                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

@@ -74,8 +74,8 @@ export function Projects() {
             const projectDrawings = (drawings ?? []).filter((drawing) => drawing.projectName === project.name)
             const active = projectDrawings.filter((drawing) => drawing.status !== "issued" && drawing.status !== "superseded").length
             const review = projectDrawings.filter((drawing) => drawing.status === "in_review").length
-            return <Link key={project.id} href={`/projects/${encodeURIComponent(project.name)}`} className="group block h-full rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-              <Card className="h-full transition-all group-hover:border-primary/40 group-hover:shadow-md rounded-sm border-border/60">
+            return <Card key={project.id} className="group h-full rounded-sm border-border/60 transition-all group-hover:border-primary/40 group-hover:shadow-md">
+              <Link href={`/projects/${encodeURIComponent(project.name)}`} className="block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                 <CardHeader className="border-b border-border/40 pb-4 bg-muted/20">
                   <CardTitle className="flex items-center justify-between gap-3 text-base">
                     <span className="truncate group-hover:text-primary transition-colors">{project.name}</span>
@@ -83,15 +83,21 @@ export function Projects() {
                   </CardTitle>
                   <CardDescription className="text-xs">Added {formatDateShort(project.createdAt)}</CardDescription>
                 </CardHeader>
-                <CardContent className="pt-5">
+              </Link>
+              <CardContent className="pt-5">
                   <div className="grid grid-cols-3 gap-3 text-center text-sm"><div><p className="font-bold font-mono text-lg">{active}</p><p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Active</p></div><div><p className="font-bold font-mono text-lg">{review}</p><p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Review</p></div><div><p className="font-bold font-mono text-lg">{projectDrawings.filter((drawing) => drawing.status === "issued").length}</p><p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Issued</p></div></div>
-                     <div className="mt-5 flex items-center justify-between border-t border-border/40 pt-4 text-xs font-semibold uppercase tracking-wider">
-                      <span className="flex items-center gap-1.5 text-primary"><span>Workspace</span><ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span>
-                       {isAdmin && project.id > 0 && <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground hover:text-destructive" onClick={(event) => handleDeleteProject(event, project.id, project.name)} disabled={deleteProject.isPending}><Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle</Button>}
+                    <div className="mt-5 flex items-center justify-between gap-3 border-t border-border/40 pt-4 text-xs font-semibold uppercase tracking-wider">
+                      <Link href={`/projects/${encodeURIComponent(project.name)}`} className="flex items-center gap-1.5 text-primary hover:underline">
+                        <span>Workspace</span><ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                      </Link>
+                      {project.id > 0 && (
+                        <Button type="button" variant="outline" size="sm" className="h-8 rounded-sm px-2.5 text-xs font-semibold text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={(event) => handleDeleteProject(event, project.id, project.name)} disabled={!isAdmin || deleteProject.isPending} title={isAdmin ? "Move project to recycle bin" : "Administrator access required"} data-testid={`button-recycle-project-${project.id}`}>
+                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle project
+                        </Button>
+                      )}
                     </div>
                 </CardContent>
-              </Card>
-            </Link>
+            </Card>
           })}</div>
         )}
       </div></div>

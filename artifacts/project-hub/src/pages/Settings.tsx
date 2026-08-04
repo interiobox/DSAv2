@@ -123,8 +123,8 @@ export default function Settings() {
                         <Button size="icon" variant="ghost" disabled={updateCategory.isPending || !name.trim()} onClick={() => updateCategory.mutate({ id: category.id, data: { name: name.trim() } }, { onSuccess: () => { invalidateCategories(); setCategoryDrafts((current) => ({ ...current, [category.id]: name.trim() })); toast({ title: "Category renamed" }) }, onError: categoryError })} aria-label={`Save ${category.name}`}>
                           <Save className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { if (window.confirm(`Move category “${category.name}” to the recycle bin?`)) deleteCategory.mutate({ id: category.id }, { onSuccess: () => { invalidateCategories(); toast({ title: "Category moved to recycle bin" }) }, onError: categoryError }) }} aria-label={`Move ${category.name} to recycle bin`}>
-                          <Trash2 className="h-4 w-4" />
+                        <Button size="sm" variant="outline" className="text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive" onClick={() => { if (window.confirm(`Move category “${category.name}” to the recycle bin?`)) deleteCategory.mutate({ id: category.id }, { onSuccess: () => { invalidateCategories(); toast({ title: "Category moved to recycle bin" }) }, onError: categoryError }) }} aria-label={`Move ${category.name} to recycle bin`} data-testid={`button-recycle-category-${category.id}`}>
+                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
                         </Button>
                       </div>
                     )

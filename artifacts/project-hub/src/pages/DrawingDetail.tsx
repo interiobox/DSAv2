@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useRoute, Link, useLocation } from "wouter"
 import { useQueryClient } from "@tanstack/react-query"
-import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, FileText, Upload, Download, Loader2, History, MessageSquare, Pencil, MoreHorizontal, FolderKanban } from "lucide-react"
+import { ArrowLeft, CheckCircle, Clock, Send, Archive, Trash2, Calendar, FileText, Upload, Download, Loader2, History, MessageSquare, Pencil, FolderKanban } from "lucide-react"
 
 import { useGetDrawing, useUpdateDrawing, useDeleteDrawing, useListProjects, useListCategories, getGetDrawingQueryKey, getListDrawingsQueryKey, getGetDashboardSummaryQueryKey, getListActivityQueryKey, getListNotificationsQueryKey } from "@workspace/api-client-react"
 import type { DrawingStatus } from "@workspace/api-client-react"
@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input"
 import { MentionTextarea } from "@/components/MentionTextarea"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { formatDate } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
@@ -365,15 +364,7 @@ export default function DrawingDetail() {
               <Archive className="w-4 h-4 mr-2" /> Archive
             </Button>
           )}
-          {isAdmin && (
-            <>
-              <div className="w-px h-8 bg-border mx-1" />
-              <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleDelete} title="Move drawing to recycle bin">
-                <Trash2 className="w-4 h-4" />
-                <span className="sr-only">Move drawing to recycle bin</span>
-              </Button>
-            </>
-          )}
+          <><div className="w-px h-8 bg-border mx-1" /><Button variant="outline" size="sm" className="text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={handleDelete} disabled={!isAdmin || deleteDrawing.isPending} title={isAdmin ? "Move drawing to recycle bin" : "Administrator access required"} data-testid="button-recycle-drawing-detail"><Trash2 className="mr-2 w-4 h-4" />Recycle drawing</Button></>
         </div>
       </div>
 
@@ -476,9 +467,8 @@ export default function DrawingDetail() {
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
                           <span className="font-mono text-xs text-muted-foreground">{upload.contentType}</span>
-                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => void handleUploadDelete(upload)} title={`Delete ${upload.fileName}`}>
-                             <Trash2 className="h-4 w-4" />
-                             <span className="sr-only">Delete upload</span>
+                           <Button variant="outline" size="sm" className="h-8 text-xs text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive" onClick={() => void handleUploadDelete(upload)} title={`Move ${upload.fileName} to recycle bin`} data-testid={`button-recycle-upload-${upload.id}`}>
+                             <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle upload
                            </Button>
                         </div>
                       </div>
@@ -525,22 +515,10 @@ export default function DrawingDetail() {
                             <span className="font-medium text-foreground">{item.author}</span>
                             <span className="ml-2 text-xs text-muted-foreground">{formatDate(item.createdAt)}</span>
                           </div>
-                            {(isAdmin || item.author === currentUserName) && <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Comment actions</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => void handleCommentEdit(item)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Edit comment
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => void handleCommentDelete(item)}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete comment
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                            </DropdownMenu>}
+                            {(isAdmin || item.author === currentUserName) && <div className="flex items-center gap-1.5">
+                              <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => void handleCommentEdit(item)} data-testid={`button-edit-comment-${item.id}`}><Pencil className="mr-1.5 h-3.5 w-3.5" />Edit</Button>
+                              <Button variant="outline" size="sm" className="h-8 px-2 text-xs text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive" onClick={() => void handleCommentDelete(item)} data-testid={`button-recycle-comment-${item.id}`}><Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle</Button>
+                            </div>}
                         </div>
                         <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">{item.comment}</p>
                       </div>

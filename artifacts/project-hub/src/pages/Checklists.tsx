@@ -316,8 +316,8 @@ function ChecklistCard({ checklist }: { checklist: ProjectChecklist }) {
               {isComplete && <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10 shrink-0">Complete</Badge>}
             </CardTitle>
           </div>
-          <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={handleDelete} title="Move checklist to recycle bin" data-testid={`button-delete-checklist-${checklist.id}`}>
-            <Trash2 className="h-4 w-4" />
+          <Button variant="outline" size="sm" className="shrink-0 text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive" onClick={handleDelete} title="Move checklist to recycle bin" data-testid={`button-delete-checklist-${checklist.id}`}>
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
           </Button>
         </div>
         <div className="mt-4 flex items-center gap-3">
@@ -439,8 +439,8 @@ function TemplateCard({ template, onEdit }: { template: ChecklistTemplate, onEdi
         <Button variant="secondary" size="sm" className="flex-1 text-xs" onClick={onEdit} data-testid={`button-edit-template-${template.id}`}>
           Edit
         </Button>
-        <Button variant="ghost" size="sm" className="shrink-0 text-muted-foreground hover:text-destructive px-2" onClick={handleDelete} title="Move template to recycle bin" data-testid={`button-delete-template-${template.id}`}>
-          <Trash2 className="h-4 w-4" />
+        <Button variant="outline" size="sm" className="shrink-0 text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive px-2" onClick={handleDelete} title="Move template to recycle bin" data-testid={`button-delete-template-${template.id}`}>
+          <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
         </Button>
       </CardFooter>
     </Card>

@@ -195,7 +195,7 @@ function ContactCard({ contact, onEdit, onDelete, onAddProject }: {
           </div>
           <div className="flex shrink-0 gap-1">
             <Button variant="ghost" size="icon" onClick={onEdit} aria-label={`Edit ${contact.companyName}`}><Edit3 className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={onDelete} aria-label={`Move ${contact.companyName} to recycle bin`}><Trash2 className="h-4 w-4" /></Button>
+            <Button variant="outline" size="sm" className="text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive" onClick={onDelete} aria-label={`Move ${contact.companyName} to recycle bin`} data-testid={`button-recycle-contact-${contact.id}`}><Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle</Button>
           </div>
         </div>
       </CardHeader>
