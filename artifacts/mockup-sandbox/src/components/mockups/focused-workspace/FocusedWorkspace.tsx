@@ -73,7 +73,7 @@ const allNavItems = [
   { label: "Collaboration", icon: MessageSquare, count: "3" },
   { label: "Notifications", icon: Bell, count: "4" },
   { label: "Reference", icon: BookOpen },
-  { label: "Recycle bin", icon: Archive },
+  { label: "Recycle bin", icon: Archive, iconOnly: true },
   { label: "Settings", icon: Settings2 },
   { label: "Team & admin", icon: ShieldCheck },
 ];
@@ -93,18 +93,25 @@ function RailItem({
   icon: Icon,
   active,
   count,
+  iconOnly,
   onClick,
 }: {
   label: string;
   icon: typeof FileText;
   active?: boolean;
   count?: string;
+  iconOnly?: boolean;
   onClick: () => void;
 }) {
   return (
-    <button className={`fw-rail-item ${active ? "is-active" : ""}`} onClick={onClick}>
+    <button
+      className={`fw-rail-item ${iconOnly ? "fw-rail-item-icon-only" : ""} ${active ? "is-active" : ""}`}
+      onClick={onClick}
+      aria-label={iconOnly ? label : undefined}
+      title={iconOnly ? label : undefined}
+    >
       <Icon size={15} strokeWidth={active ? 2.2 : 1.8} />
-      <span>{label}</span>
+      {!iconOnly && <span>{label}</span>}
       {count && <span className="fw-rail-count fw-mono">{count}</span>}
     </button>
   );
