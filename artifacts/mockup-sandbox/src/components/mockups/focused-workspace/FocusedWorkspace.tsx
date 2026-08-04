@@ -73,7 +73,7 @@ const allNavItems = [
   { label: "Collaboration", icon: MessageSquare, count: "3" },
   { label: "Notifications", icon: Bell, count: "4" },
   { label: "Reference", icon: BookOpen },
-  { label: "Recycle bin", icon: Archive, iconOnly: true },
+  { label: "Recycle bin", icon: Archive },
   { label: "Settings", icon: Settings2 },
   { label: "Team & admin", icon: ShieldCheck },
 ];
@@ -93,25 +93,18 @@ function RailItem({
   icon: Icon,
   active,
   count,
-  iconOnly,
   onClick,
 }: {
   label: string;
   icon: typeof FileText;
   active?: boolean;
   count?: string;
-  iconOnly?: boolean;
   onClick: () => void;
 }) {
   return (
-    <button
-      className={`fw-rail-item ${iconOnly ? "fw-rail-item-icon-only" : ""} ${active ? "is-active" : ""}`}
-      onClick={onClick}
-      aria-label={iconOnly ? label : undefined}
-      title={iconOnly ? label : undefined}
-    >
+    <button className={`fw-rail-item ${active ? "is-active" : ""}`} onClick={onClick}>
       <Icon size={15} strokeWidth={active ? 2.2 : 1.8} />
-      {!iconOnly && <span>{label}</span>}
+      <span>{label}</span>
       {count && <span className="fw-rail-count fw-mono">{count}</span>}
     </button>
   );
@@ -224,6 +217,7 @@ export function FocusedWorkspace() {
                     {(["All", "In review", "Coordination", "Approved", "Issued"] as const).map((filter) => (
                       <button key={filter} className={activeFilter === filter ? "is-active" : ""} onClick={() => setActiveFilter(filter)}>{filter}<span className="fw-mono">{filter === "All" ? "248" : filter === "In review" ? "12" : filter === "Coordination" ? "7" : filter === "Approved" ? "31" : "198"}</span></button>
                     ))}
+                    <button className="fw-filter-tab-archive" onClick={() => chooseNav("Recycle bin")} aria-label="Open recycle bin" title="Recycle bin"><Archive size={15} /></button>
                   </div>
                 </div>
                 <div className={`fw-table ${compactMode ? "is-compact" : ""}`}>
