@@ -6,10 +6,6 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface Project {
-  id: number;
-  name: string;
-  /** @nullable */
-  deletedAt: Date | null;
-  createdAt: Date;
-}
+export type RestoreRecycleBinEntry200 = {
+  id?: number;
+};

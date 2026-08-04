@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request } from "express";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { db, drawingActivityTable, drawingCommentsTable, drawingUploadsTable, drawingsTable, usersTable } from "@workspace/db";
 import {
   CreateDrawingBody,
@@ -60,6 +60,10 @@ router.post("/drawings", async (req, res): Promise<void> => {
     return;
   }
   const data = parsed.data;
+  if (data.status === "approved" && req.portalUser?.role !== "admin") {
+    res.status(403).json({ error: "Administrator access required to approve drawings" });
+    return;
+  }
   const [drawing] = await db.insert(drawingsTable).values({
     drawingNumber: data.drawingNumber ?? `DR-${Date.now().toString().slice(-6)}`,
     title: data.title ?? "Untitled drawing",
@@ -83,7 +87,7 @@ router.get("/drawings/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, parsed.data.id));
+  const [drawing] = await db.select().from(drawingsTable).where(and(eq(drawingsTable.id, parsed.data.id), isNull(drawingsTable.deletedAt)));
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
@@ -103,6 +107,10 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
     return;
   }
   const data = body.data;
+  if (data.status === "approved" && req.portalUser?.role !== "admin") {
+    res.status(403).json({ error: "Administrator access required to approve drawings" });
+    return;
+  }
   const issuedDate = data.status === "issued" && data.issuedDate === undefined
     ? new Date().toISOString().slice(0, 10)
     : data.issuedDate !== undefined
@@ -125,7 +133,7 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
     ...(data.attachmentSize !== undefined ? { attachmentSize: data.attachmentSize } : {}),
     ...(data.attachmentContentType !== undefined ? { attachmentContentType: data.attachmentContentType } : {}),
     updatedAt: new Date(),
-  }).where(eq(drawingsTable.id, params.data.id)).returning();
+  }).where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt))).returning();
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
@@ -202,7 +210,7 @@ router.delete("/drawings/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, parsed.data.id));
+  const [drawing] = await db.select().from(drawingsTable).where(and(eq(drawingsTable.id, parsed.data.id), isNull(drawingsTable.deletedAt)));
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
@@ -212,9 +220,7 @@ router.delete("/drawings/:id", async (req, res): Promise<void> => {
     await objectStorageService.deleteObjectEntity(upload.filePath);
   }
   await addActivity("drawing_deleted", `${currentUserName(req)} deleted ${drawing.title} from the drawing library`, drawing.id, currentUserId(req), currentUserName(req));
-  await db.delete(drawingCommentsTable).where(eq(drawingCommentsTable.drawingId, drawing.id));
-  await db.delete(drawingUploadsTable).where(eq(drawingUploadsTable.drawingId, drawing.id));
-  await db.delete(drawingsTable).where(eq(drawingsTable.id, drawing.id));
+  await db.update(drawingsTable).set({ deletedAt: new Date() }).where(eq(drawingsTable.id, drawing.id));
   res.sendStatus(204);
 });
 
@@ -278,17 +284,16 @@ router.delete("/drawings/:id/uploads/:uploadId", async (req, res): Promise<void>
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [upload] = await db.select().from(drawingUploadsTable).where(eq(drawingUploadsTable.id, params.data.uploadId));
+  const [upload] = await db.select().from(drawingUploadsTable).where(and(eq(drawingUploadsTable.id, params.data.uploadId), isNull(drawingUploadsTable.deletedAt)));
   if (!upload || upload.drawingId !== params.data.id) {
     res.status(404).json({ error: "Upload not found" });
     return;
   }
-  await objectStorageService.deleteObjectEntity(upload.filePath);
-  await db.delete(drawingUploadsTable).where(eq(drawingUploadsTable.id, upload.id));
-  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, upload.drawingId));
+  await db.update(drawingUploadsTable).set({ deletedAt: new Date() }).where(eq(drawingUploadsTable.id, upload.id));
+  const [drawing] = await db.select().from(drawingsTable).where(and(eq(drawingsTable.id, upload.drawingId), isNull(drawingsTable.deletedAt)));
   if (drawing?.attachmentPath === upload.filePath) {
     const [replacement] = await db.select().from(drawingUploadsTable)
-      .where(eq(drawingUploadsTable.drawingId, upload.drawingId))
+      .where(and(eq(drawingUploadsTable.drawingId, upload.drawingId), isNull(drawingUploadsTable.deletedAt)))
       .orderBy(desc(drawingUploadsTable.uploadedAt))
       .limit(1);
     await db.update(drawingsTable).set({
@@ -309,13 +314,13 @@ router.get("/drawings/:id/comments", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [drawing] = await db.select({ id: drawingsTable.id }).from(drawingsTable).where(eq(drawingsTable.id, parsed.data.id));
+  const [drawing] = await db.select({ id: drawingsTable.id }).from(drawingsTable).where(and(eq(drawingsTable.id, parsed.data.id), isNull(drawingsTable.deletedAt)));
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
   }
   const comments = await db.select().from(drawingCommentsTable)
-    .where(eq(drawingCommentsTable.drawingId, parsed.data.id))
+    .where(and(eq(drawingCommentsTable.drawingId, parsed.data.id), isNull(drawingCommentsTable.deletedAt)))
     .orderBy(desc(drawingCommentsTable.createdAt));
   res.json(ListDrawingCommentsResponse.parse(comments));
 });
@@ -331,7 +336,7 @@ router.post("/drawings/:id/comments", async (req, res): Promise<void> => {
     res.status(400).json({ error: body.error.message });
     return;
   }
-  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, params.data.id));
+  const [drawing] = await db.select().from(drawingsTable).where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt)));
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
@@ -364,7 +369,7 @@ router.patch("/drawings/:id/comments/:commentId", async (req, res): Promise<void
     res.status(400).json({ error: body.error.message });
     return;
   }
-  const [comment] = await db.select().from(drawingCommentsTable).where(eq(drawingCommentsTable.id, params.data.commentId));
+  const [comment] = await db.select().from(drawingCommentsTable).where(and(eq(drawingCommentsTable.id, params.data.commentId), isNull(drawingCommentsTable.deletedAt)));
   if (!comment || comment.drawingId !== params.data.id) {
     res.status(404).json({ error: "Comment not found" });
     return;
@@ -396,7 +401,7 @@ router.delete("/drawings/:id/comments/:commentId", async (req, res): Promise<voi
     res.status(403).json({ error: "You can only delete your own comments" });
     return;
   }
-  await db.delete(drawingCommentsTable).where(eq(drawingCommentsTable.id, comment.id));
+  await db.update(drawingCommentsTable).set({ deletedAt: new Date() }).where(eq(drawingCommentsTable.id, comment.id));
   await addActivity("drawing_updated", `${comment.author}'s review comment was deleted from drawing ${comment.drawingId}`, comment.drawingId, currentUserId(req), currentUserName(req));
   res.sendStatus(204);
 });

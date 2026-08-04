@@ -5,11 +5,13 @@ import { z } from "zod/v4";
 export const projectsTable = pgTable("projects", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const insertProjectSchema = createInsertSchema(projectsTable).omit({
   id: true,
+  deletedAt: true,
   createdAt: true,
 });
 export type InsertProject = z.infer<typeof insertProjectSchema>;
@@ -34,12 +36,14 @@ export const drawingsTable = pgTable("drawings", {
   attachmentName: text("attachment_name"),
   attachmentSize: integer("attachment_size"),
   attachmentContentType: text("attachment_content_type"),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const insertDrawingSchema = createInsertSchema(drawingsTable).omit({
   id: true,
+  deletedAt: true,
   updatedAt: true,
   createdAt: true,
 });
@@ -63,11 +67,13 @@ export const drawingUploadsTable = pgTable("drawing_uploads", {
   fileSize: integer("file_size").notNull(),
   contentType: text("content_type").notNull(),
   uploadedBy: text("uploaded_by").notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const insertDrawingUploadSchema = createInsertSchema(drawingUploadsTable).omit({
   id: true,
+  deletedAt: true,
   uploadedAt: true,
 });
 export type InsertDrawingUpload = z.infer<typeof insertDrawingUploadSchema>;
@@ -79,11 +85,13 @@ export const drawingCommentsTable = pgTable("drawing_comments", {
   comment: text("comment").notNull(),
   author: text("author").notNull(),
   authorId: integer("author_id"),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const insertDrawingCommentSchema = createInsertSchema(drawingCommentsTable).omit({
   id: true,
+  deletedAt: true,
   createdAt: true,
 });
 export type InsertDrawingComment = z.infer<typeof insertDrawingCommentSchema>;

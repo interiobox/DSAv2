@@ -14,6 +14,7 @@ import chatRouter from "./chat";
 import notificationsRouter from "./notifications";
 import contactsRouter from "./contacts";
 import notesRouter from "./notes";
+import recycleBinRouter from "./recycleBin";
 import { authenticatePortalUser } from "../lib/portalAuth";
 
 const router: IRouter = Router();
@@ -36,5 +37,6 @@ router.use(chatRouter);
 router.use(notificationsRouter);
 router.use(contactsRouter);
 router.use(notesRouter);
+router.use(recycleBinRouter);
 
 export default router;

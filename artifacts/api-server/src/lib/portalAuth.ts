@@ -1,7 +1,7 @@
 import { createHash, randomBytes, scrypt as nodeScrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import type { NextFunction, Request, Response } from "express";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import { db, disciplinesTable, usersTable, sessionsTable, type User } from "@workspace/db";
 
 const scrypt = promisify(nodeScrypt);
@@ -88,6 +88,7 @@ export async function authenticatePortalUser(req: Request, res: Response, next: 
       eq(sessionsTable.tokenHash, hashSessionToken(rawToken)),
       gt(sessionsTable.expiresAt, new Date()),
       eq(usersTable.active, true),
+      isNull(usersTable.deletedAt),
     ))
     .limit(1);
   if (!row) {
@@ -113,7 +114,7 @@ export function requireCurrentUser(req: Request) {
 }
 
 export async function ensurePortalSeed() {
-  const [admin] = await db.select().from(usersTable).where(eq(usersTable.username, "admin")).limit(1);
+  const [admin] = await db.select().from(usersTable).where(and(eq(usersTable.username, "admin"), isNull(usersTable.deletedAt))).limit(1);
   if (!admin) {
     await db.insert(usersTable).values({
       name: "Administrator",

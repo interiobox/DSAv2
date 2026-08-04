@@ -67,6 +67,8 @@ import type {
   ProjectNote,
   ProjectNoteInput,
   ProjectNoteUpdate,
+  RecycleBinEntry,
+  RestoreRecycleBinEntry200,
   UploadUrlRequest,
   UploadUrlResponse,
   User
@@ -696,6 +698,375 @@ export const useCreateProject = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateProjectMutationOptions(options));
+    }
+
+export const getListDeletedProjectsUrl = () => {
+
+
+
+
+  return `/api/projects/recycle-bin`
+}
+
+/**
+ * @summary List deleted projects in the recycle bin
+ */
+export const listDeletedProjects = async ( options?: Parameters<typeof customFetch>[1]): Promise<Project[]> => {
+
+  return customFetch<Project[]>(getListDeletedProjectsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDeletedProjectsQueryKey = () => {
+    return [
+    `/api/projects/recycle-bin`
+    ] as const;
+    }
+
+
+export const getListDeletedProjectsQueryOptions = <TData = Awaited<ReturnType<typeof listDeletedProjects>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDeletedProjects>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDeletedProjectsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDeletedProjects>>> = ({ signal }) => listDeletedProjects({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDeletedProjects>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDeletedProjectsQueryResult = NonNullable<Awaited<ReturnType<typeof listDeletedProjects>>>
+export type ListDeletedProjectsQueryError = ErrorType<void>
+
+
+/**
+ * @summary List deleted projects in the recycle bin
+ */
+
+export function useListDeletedProjects<TData = Awaited<ReturnType<typeof listDeletedProjects>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDeletedProjects>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDeletedProjectsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDeleteProjectUrl = (id: number,) => {
+
+
+
+
+  return `/api/projects/${id}`
+}
+
+/**
+ * @summary Move a project to the recycle bin
+ */
+export const deleteProject = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteProjectUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteProjectMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProject>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteProject>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteProject'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProject>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteProject(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteProjectMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProject>>>
+
+    export type DeleteProjectMutationError = ErrorType<void>
+
+    /**
+ * @summary Move a project to the recycle bin
+ */
+export const useDeleteProject = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProject>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteProject>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteProjectMutationOptions(options));
+    }
+
+export const getRestoreProjectUrl = (id: number,) => {
+
+
+
+
+  return `/api/projects/${id}/restore`
+}
+
+/**
+ * @summary Restore a project from the recycle bin
+ */
+export const restoreProject = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<Project> => {
+
+  return customFetch<Project>(getRestoreProjectUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRestoreProjectMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreProject>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof restoreProject>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['restoreProject'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof restoreProject>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  restoreProject(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RestoreProjectMutationResult = NonNullable<Awaited<ReturnType<typeof restoreProject>>>
+
+    export type RestoreProjectMutationError = ErrorType<void>
+
+    /**
+ * @summary Restore a project from the recycle bin
+ */
+export const useRestoreProject = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreProject>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof restoreProject>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getRestoreProjectMutationOptions(options));
+    }
+
+export const getListRecycleBinUrl = () => {
+
+
+
+
+  return `/api/recycle-bin`
+}
+
+/**
+ * @summary List all deleted records in the recycle bin
+ */
+export const listRecycleBin = async ( options?: Parameters<typeof customFetch>[1]): Promise<RecycleBinEntry[]> => {
+
+  return customFetch<RecycleBinEntry[]>(getListRecycleBinUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListRecycleBinQueryKey = () => {
+    return [
+    `/api/recycle-bin`
+    ] as const;
+    }
+
+
+export const getListRecycleBinQueryOptions = <TData = Awaited<ReturnType<typeof listRecycleBin>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRecycleBin>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListRecycleBinQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listRecycleBin>>> = ({ signal }) => listRecycleBin({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listRecycleBin>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListRecycleBinQueryResult = NonNullable<Awaited<ReturnType<typeof listRecycleBin>>>
+export type ListRecycleBinQueryError = ErrorType<void>
+
+
+/**
+ * @summary List all deleted records in the recycle bin
+ */
+
+export function useListRecycleBin<TData = Awaited<ReturnType<typeof listRecycleBin>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRecycleBin>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListRecycleBinQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRestoreRecycleBinEntryUrl = (type: string,
+    id: number,) => {
+
+
+
+
+  return `/api/recycle-bin/${type}/${id}/restore`
+}
+
+/**
+ * @summary Restore a deleted record from the recycle bin
+ */
+export const restoreRecycleBinEntry = async (type: string,
+    id: number, options?: Parameters<typeof customFetch>[1]): Promise<RestoreRecycleBinEntry200> => {
+
+  return customFetch<RestoreRecycleBinEntry200>(getRestoreRecycleBinEntryUrl(type,id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRestoreRecycleBinEntryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreRecycleBinEntry>>, TError,{type: string;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof restoreRecycleBinEntry>>, TError,{type: string;id: number}, TContext> => {
+
+const mutationKey = ['restoreRecycleBinEntry'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof restoreRecycleBinEntry>>, {type: string;id: number}> = (props) => {
+          const {type,id} = props ?? {};
+
+          return  restoreRecycleBinEntry(type,id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RestoreRecycleBinEntryMutationResult = NonNullable<Awaited<ReturnType<typeof restoreRecycleBinEntry>>>
+
+    export type RestoreRecycleBinEntryMutationError = ErrorType<void>
+
+    /**
+ * @summary Restore a deleted record from the recycle bin
+ */
+export const useRestoreRecycleBinEntry = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restoreRecycleBinEntry>>, TError,{type: string;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof restoreRecycleBinEntry>>,
+        TError,
+        {type: string;id: number},
+        TContext
+      > => {
+      return useMutation(getRestoreRecycleBinEntryMutationOptions(options));
     }
 
 export const getListContactsUrl = (params?: ListContactsParams,) => {

@@ -9,11 +9,13 @@ export const usersTable = pgTable("users", {
   passwordHash: text("password_hash"),
   role: text("role").notNull().default("user"),
   active: boolean("active").notNull().default(true),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({
   id: true,
+  deletedAt: true,
   createdAt: true,
 });
 

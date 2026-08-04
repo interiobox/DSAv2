@@ -14,6 +14,7 @@ export const contactsTable = pgTable("contacts", {
   address: text("address"),
   notes: text("notes"),
   createdBy: integer("created_by"),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
@@ -24,11 +25,13 @@ export const contactProjectsTable = pgTable("contact_projects", {
   projectName: text("project_name").notNull(),
   role: text("role"),
   notes: text("notes"),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const insertContactSchema = createInsertSchema(contactsTable).omit({
   id: true,
+  deletedAt: true,
   createdAt: true,
   updatedAt: true,
 });

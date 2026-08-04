@@ -7,6 +7,7 @@ export const checklistTemplatesTable = pgTable("checklist_templates", {
   name: text("name").notNull().unique(),
   description: text("description"),
   createdBy: integer("created_by").notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
@@ -24,6 +25,7 @@ export const projectChecklistsTable = pgTable("project_checklists", {
   templateId: integer("template_id").notNull(),
   name: text("name").notNull(),
   createdBy: integer("created_by").notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -39,6 +41,7 @@ export const projectChecklistItemsTable = pgTable("project_checklist_items", {
 
 export const insertChecklistTemplateSchema = createInsertSchema(checklistTemplatesTable).omit({
   id: true,
+  deletedAt: true,
   createdAt: true,
   updatedAt: true,
 });

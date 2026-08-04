@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { asc, eq, sql } from "drizzle-orm";
+import { asc, eq, isNull, sql } from "drizzle-orm";
 import { db, disciplinesTable, drawingsTable } from "@workspace/db";
 import { requireCurrentUser } from "../lib/portalAuth";
 import { addActivity } from "../lib/drawings";
@@ -7,7 +7,7 @@ import { addActivity } from "../lib/drawings";
 const router: IRouter = Router();
 
 router.get("/categories", async (_req, res): Promise<void> => {
-  res.json(await db.select().from(disciplinesTable).orderBy(asc(disciplinesTable.name)));
+  res.json(await db.select().from(disciplinesTable).where(isNull(disciplinesTable.deletedAt)).orderBy(asc(disciplinesTable.name)));
 });
 
 router.post("/categories", async (req, res): Promise<void> => {
@@ -18,7 +18,7 @@ router.post("/categories", async (req, res): Promise<void> => {
   }
   const [existing] = await db.select({ id: disciplinesTable.id })
     .from(disciplinesTable)
-    .where(sql`lower(${disciplinesTable.name}) = lower(${name})`)
+    .where(sql`lower(${disciplinesTable.name}) = lower(${name}) AND ${disciplinesTable.deletedAt} IS NULL`)
     .limit(1);
   if (existing) {
     res.status(409).json({ error: "That category already exists" });
@@ -37,14 +37,14 @@ router.patch("/categories/:id", async (req, res): Promise<void> => {
   }
   const [existing] = await db.select({ id: disciplinesTable.id })
     .from(disciplinesTable)
-    .where(sql`lower(${disciplinesTable.name}) = lower(${name}) AND ${disciplinesTable.id} <> ${id}`)
+    .where(sql`lower(${disciplinesTable.name}) = lower(${name}) AND ${disciplinesTable.id} <> ${id} AND ${disciplinesTable.deletedAt} IS NULL`)
     .limit(1);
   if (existing) {
     res.status(409).json({ error: "That category already exists" });
     return;
   }
   const [currentCategory] = await db.select().from(disciplinesTable)
-    .where(eq(disciplinesTable.id, id))
+    .where(sql`${disciplinesTable.id} = ${id} AND ${disciplinesTable.deletedAt} IS NULL`)
     .limit(1);
   if (!currentCategory) {
     res.status(404).json({ error: "Category not found" });
@@ -52,7 +52,7 @@ router.patch("/categories/:id", async (req, res): Promise<void> => {
   }
   const [category] = await db.update(disciplinesTable)
     .set({ name })
-    .where(eq(disciplinesTable.id, id))
+    .where(sql`${disciplinesTable.id} = ${id} AND ${disciplinesTable.deletedAt} IS NULL`)
     .returning();
   const affectedDrawings = await db.select({ id: drawingsTable.id, title: drawingsTable.title })
     .from(drawingsTable)
@@ -80,7 +80,7 @@ router.delete("/categories/:id", async (req, res): Promise<void> => {
     return;
   }
   const [category] = await db.select().from(disciplinesTable)
-    .where(eq(disciplinesTable.id, id))
+    .where(sql`${disciplinesTable.id} = ${id} AND ${disciplinesTable.deletedAt} IS NULL`)
     .limit(1);
   if (!category) {
     res.status(404).json({ error: "Category not found" });
@@ -94,7 +94,7 @@ router.delete("/categories/:id", async (req, res): Promise<void> => {
     res.status(409).json({ error: "This category is used by existing drawings and cannot be deleted" });
     return;
   }
-  await db.delete(disciplinesTable).where(eq(disciplinesTable.id, id));
+  await db.update(disciplinesTable).set({ deletedAt: new Date() }).where(eq(disciplinesTable.id, id));
   res.sendStatus(204);
 });
 

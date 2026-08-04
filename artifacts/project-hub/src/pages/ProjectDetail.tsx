@@ -11,10 +11,13 @@ import {
   FolderKanban,
   History,
   Mail,
+  Trash2,
   UsersRound,
 } from "lucide-react"
 
 import {
+  getListProjectsQueryKey,
+  useDeleteProject,
   useListActivity,
   useListContacts,
   useListDrawings,
@@ -29,6 +32,9 @@ import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ProjectNotesPanel } from "@/components/ProjectNotesPanel"
 import { formatDateShort } from "@/lib/utils"
+import { usePortalAuth } from "@/App"
+import { useQueryClient } from "@tanstack/react-query"
+import { useToast } from "@/hooks/use-toast"
 
 const statusLabel = (status: string) => status === "superseded" ? "Archived" : status.replace("_", " ")
 const statusTone = (status: string) =>
@@ -46,6 +52,10 @@ const activityTone = (type: string) =>
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:projectName")
   const projectName = params?.projectName ? decodeURIComponent(params.projectName) : ""
+  const { user } = usePortalAuth()
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  const deleteProject = useDeleteProject()
   const { data: projects, isLoading: projectsLoading } = useListProjects()
   const { data: drawings, isLoading: drawingsLoading } = useListDrawings()
   const { data: contacts, isLoading: contactsLoading } = useListContacts(
@@ -57,6 +67,7 @@ export default function ProjectDetail() {
   const { data: activities, isLoading: activitiesLoading } = useListActivity()
 
   const project = projects?.find((item) => item.name === projectName)
+  const isAdmin = user?.role === "admin"
   const projectDrawings = (drawings ?? []).filter((drawing) => drawing.projectName === projectName)
   const activeDrawings = projectDrawings.filter((drawing) => drawing.status !== "issued" && drawing.status !== "superseded")
   const issuedDrawings = projectDrawings.filter((drawing) => drawing.status === "issued")
@@ -83,6 +94,21 @@ export default function ProjectDetail() {
   const checklistProgress = checklistItems ? Math.round((completedChecklistItems / checklistItems) * 100) : 0
   const isLoading = projectsLoading || drawingsLoading
   const projectNeedsAttention = overdueDrawings.length > 0 || unassignedDrawings.length > 0
+
+  function handleDeleteProject() {
+    if (!project || !window.confirm(`Move “${project.name}” to the recycle bin? Its drawings will be kept.`)) return
+    deleteProject.mutate({ id: project.id }, {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() })
+        toast({ title: "Project moved to recycle bin", description: "Its drawings remain available for recovery." })
+        window.location.href = "/archive"
+      },
+      onError: (error) => toast({
+        title: "Project could not be deleted",
+        description: error instanceof Error ? error.message : "Please try again.",
+      }),
+    })
+  }
 
   if (isLoading) {
     return (
@@ -129,6 +155,7 @@ export default function ProjectDetail() {
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="rounded-sm" asChild><Link href={`/drawings?project=${encodeURIComponent(project.name)}`}><FileText className="mr-2 h-4 w-4" />View drawings</Link></Button>
               <Button className="rounded-sm shadow-sm" asChild><Link href={`/contacts?project=${encodeURIComponent(project.name)}`}><UsersRound className="mr-2 h-4 w-4" />Directory</Link></Button>
+              {isAdmin && project.id > 0 && <Button variant="outline" className="rounded-sm text-destructive hover:text-destructive" onClick={handleDeleteProject} disabled={deleteProject.isPending}><Trash2 className="mr-2 h-4 w-4" />{deleteProject.isPending ? "Recycling..." : "Recycle project"}</Button>}
             </div>
           </div>
           <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">

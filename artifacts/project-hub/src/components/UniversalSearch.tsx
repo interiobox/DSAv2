@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useLocation } from "wouter"
-import { Activity, Bell, BookOpen, CalendarDays, CheckSquare, FileText, FolderKanban, LayoutDashboard, MessageSquare, Search, Settings, Users } from "lucide-react"
+import { Activity, Archive, BarChart3, Bell, BookOpen, CalendarDays, CheckSquare, FileText, FileWarning, FolderKanban, FolderOpen, LayoutDashboard, MessageSquare, Search, Settings, ShieldCheck, UserRoundCog, Users, UsersRound } from "lucide-react"
 import {
   useListActivity,
   useListCategories,
@@ -68,7 +68,7 @@ export function UniversalSearch() {
       { label: "Issue Register", detail: "Review comments and drawing issues", icon: FileWarning, href: "/issues" },
       { label: "Files", detail: "Uploaded drawing files and history", icon: FolderOpen, href: "/files" },
       { label: "Contacts", detail: "Project contacts and partners", icon: UsersRound, href: "/contacts" },
-      { label: "Archive", detail: "Superseded drawings for reference", icon: Archive, href: "/archive" },
+      { label: "Recycle bin", detail: "Archived drawings and deleted projects", icon: Archive, href: "/archive" },
       { label: "Settings", detail: "Personal preferences and categories", icon: Settings, href: "/settings" },
       ...(user?.role === "admin" ? [
         { label: "Team Directory", detail: "People available for assignments", icon: UsersRound, href: "/team" },

@@ -8,6 +8,7 @@ export const projectNotesTable = pgTable("project_notes", {
   content: text("content").notNull(),
   authorId: integer("author_id").notNull(),
   authorName: text("author_name").notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
@@ -18,12 +19,14 @@ export const personalNotesTable = pgTable("personal_notes", {
   authorName: text("author_name").notNull(),
   title: text("title").notNull().default("Personal note"),
   content: text("content").notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
 export const insertProjectNoteSchema = createInsertSchema(projectNotesTable).omit({
   id: true,
+  deletedAt: true,
   createdAt: true,
   updatedAt: true,
 });
@@ -32,6 +35,7 @@ export type ProjectNote = typeof projectNotesTable.$inferSelect;
 
 export const insertPersonalNoteSchema = createInsertSchema(personalNotesTable).omit({
   id: true,
+  deletedAt: true,
   createdAt: true,
   updatedAt: true,
 });

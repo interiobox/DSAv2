@@ -87,7 +87,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <NavItem href="/issues" icon={FileWarning}>Issue Register</NavItem>
       <NavItem href="/files" icon={FolderOpen}>Files</NavItem>
       <NavItem href="/contacts" icon={UsersRound}>Contacts</NavItem>
-      <NavItem href="/archive" icon={Archive}>Archive</NavItem>
+       <NavItem href="/archive" icon={Archive}>Recycle bin</NavItem>
 
       <NavGroup title="Account" />
       <NavItem href="/settings" icon={Settings}>Settings</NavItem>

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import {
   db,
   personalNotesTable,
@@ -28,7 +28,7 @@ router.get("/project-notes", async (req, res): Promise<void> => {
     return;
   }
   const notes = await db.select().from(projectNotesTable)
-    .where(eq(projectNotesTable.projectName, projectName))
+    .where(and(eq(projectNotesTable.projectName, projectName), isNull(projectNotesTable.deletedAt)))
     .orderBy(desc(projectNotesTable.updatedAt), desc(projectNotesTable.id));
   res.json(notes);
 });
@@ -63,7 +63,7 @@ router.patch("/project-notes/:id", async (req, res): Promise<void> => {
     return;
   }
   const user = requireCurrentUser(req);
-  const [current] = await db.select().from(projectNotesTable).where(eq(projectNotesTable.id, id)).limit(1);
+  const [current] = await db.select().from(projectNotesTable).where(and(eq(projectNotesTable.id, id), isNull(projectNotesTable.deletedAt))).limit(1);
   if (!current) {
     res.status(404).json({ error: "Project note not found" });
     return;
@@ -97,14 +97,14 @@ router.delete("/project-notes/:id", async (req, res): Promise<void> => {
     res.status(403).json({ error: "Only the note author or an administrator can delete this note" });
     return;
   }
-  await db.delete(projectNotesTable).where(eq(projectNotesTable.id, id));
+  await db.update(projectNotesTable).set({ deletedAt: new Date() }).where(eq(projectNotesTable.id, id));
   res.sendStatus(204);
 });
 
 router.get("/personal-notes", async (req, res): Promise<void> => {
   const user = requireCurrentUser(req);
   const notes = await db.select().from(personalNotesTable)
-    .where(eq(personalNotesTable.userId, user.id))
+    .where(and(eq(personalNotesTable.userId, user.id), isNull(personalNotesTable.deletedAt)))
     .orderBy(desc(personalNotesTable.updatedAt), desc(personalNotesTable.id));
   res.json(notes);
 });
@@ -142,6 +142,7 @@ router.patch("/personal-notes/:id", async (req, res): Promise<void> => {
   const [current] = await db.select().from(personalNotesTable).where(and(
     eq(personalNotesTable.id, id),
     eq(personalNotesTable.userId, user.id),
+    isNull(personalNotesTable.deletedAt),
   )).limit(1);
   if (!current) {
     res.status(404).json({ error: "Personal note not found" });
@@ -167,12 +168,13 @@ router.delete("/personal-notes/:id", async (req, res): Promise<void> => {
   const [current] = await db.select({ id: personalNotesTable.id }).from(personalNotesTable).where(and(
     eq(personalNotesTable.id, id),
     eq(personalNotesTable.userId, user.id),
+    isNull(personalNotesTable.deletedAt),
   )).limit(1);
   if (!current) {
     res.status(404).json({ error: "Personal note not found" });
     return;
   }
-  await db.delete(personalNotesTable).where(eq(personalNotesTable.id, id));
+  await db.update(personalNotesTable).set({ deletedAt: new Date() }).where(eq(personalNotesTable.id, id));
   res.sendStatus(204);
 });
 

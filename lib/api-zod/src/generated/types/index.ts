@@ -70,6 +70,8 @@ export * from './projectInput';
 export * from './projectNote';
 export * from './projectNoteInput';
 export * from './projectNoteUpdate';
+export * from './recycleBinEntry';
+export * from './restoreRecycleBinEntry200';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';
 export * from './user';

@@ -139,6 +139,7 @@ export const CreateDrawingResponse = zod.object({
 export const ListProjectsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "deletedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
 })
 export const ListProjectsResponse = zod.array(ListProjectsResponseItem)
@@ -157,7 +158,79 @@ export const CreateProjectBody = zod.object({
 export const CreateProjectResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "deletedAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List deleted projects in the recycle bin
+ */
+export const ListDeletedProjectsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "deletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const ListDeletedProjectsResponse = zod.array(ListDeletedProjectsResponseItem)
+
+
+/**
+ * @summary Move a project to the recycle bin
+ */
+
+
+
+export const DeleteProjectParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const DeleteProjectResponse = zod.void()
+
+
+/**
+ * @summary Restore a project from the recycle bin
+ */
+
+
+
+export const RestoreProjectParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+export const RestoreProjectResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "deletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List all deleted records in the recycle bin
+ */
+export const ListRecycleBinResponseItem = zod.object({
+  "type": zod.string(),
+  "id": zod.number(),
+  "label": zod.string(),
+  "deletedAt": zod.coerce.date()
+})
+export const ListRecycleBinResponse = zod.array(ListRecycleBinResponseItem)
+
+
+/**
+ * @summary Restore a deleted record from the recycle bin
+ */
+
+
+
+export const RestoreRecycleBinEntryParams = zod.object({
+  "type": zod.coerce.string(),
+  "id": zod.coerce.number().min(1)
+})
+
+export const RestoreRecycleBinEntryResponse = zod.object({
+  "id": zod.number().optional()
 })
 
 

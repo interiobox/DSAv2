@@ -6,10 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface Project {
+export interface RecycleBinEntry {
+  type: string;
   id: number;
-  name: string;
-  /** @nullable */
-  deletedAt: Date | null;
-  createdAt: Date;
+  label: string;
+  deletedAt: Date;
 }

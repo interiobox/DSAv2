@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { db, chatChannelsTable, chatMessagesTable, drawingActivityTable, drawingsTable } from "@workspace/db";
 
 export function getIdParam(value: string | string[]): number {
@@ -74,6 +74,7 @@ export async function listDrawingRows(filters: {
   discipline?: string;
 }) {
   const conditions = [];
+  conditions.push(isNull(drawingsTable.deletedAt));
   if (filters.search) {
     const search = `%${filters.search}%`;
     conditions.push(

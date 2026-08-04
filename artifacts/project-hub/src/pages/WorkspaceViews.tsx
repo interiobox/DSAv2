@@ -1,8 +1,8 @@
 import * as React from "react"
 import { Link } from "wouter"
-import { Archive as ArchiveIcon, ArrowRight, CalendarDays, CheckCircle2, Clock3, FileText, FolderKanban, History, Search, SlidersHorizontal } from "lucide-react"
+import { Archive as ArchiveIcon, ArrowRight, CalendarDays, CheckCircle2, Clock3, FileText, FolderKanban, History, RotateCcw, Search, SlidersHorizontal, Trash2 } from "lucide-react"
 
-import { useListActivity, useListDrawings, useListProjects } from "@workspace/api-client-react"
+import { getListProjectsQueryKey, getListRecycleBinQueryKey, useDeleteProject, useListActivity, useListDrawings, useListProjects, useListRecycleBin, useRestoreRecycleBinEntry } from "@workspace/api-client-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,9 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDate, formatDateShort } from "@/lib/utils"
+import { usePortalAuth } from "@/App"
+import { useQueryClient } from "@tanstack/react-query"
+import { useToast } from "@/hooks/use-toast"
 
 const statusLabel = (status: string) => status === "superseded" ? "Archived" : status.replace("_", " ")
 const statusTone = (status: string) => status === "approved" ? "bg-emerald-100 text-emerald-800 border-emerald-200" : status === "issued" ? "bg-blue-100 text-blue-800 border-blue-200" : status === "in_review" ? "bg-amber-100 text-amber-800 border-amber-200" : status === "superseded" ? "bg-slate-100 text-slate-700 border-slate-200" : ""
@@ -39,11 +42,28 @@ function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message:
 }
 
 export function Projects() {
+  const { user } = usePortalAuth()
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
   const { data: projects, isLoading: projectsLoading } = useListProjects()
   const { data: drawings, isLoading: drawingsLoading } = useListDrawings()
+  const deleteProject = useDeleteProject()
   const [search, setSearch] = React.useState("")
+  const isAdmin = user?.role === "admin"
   const visibleProjects = (projects ?? []).filter((project) => project.name.toLowerCase().includes(search.toLowerCase()))
   const loading = projectsLoading || drawingsLoading
+  function handleDeleteProject(event: React.MouseEvent, projectId: number, projectName: string) {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!window.confirm(`Move “${projectName}” to the recycle bin? Its drawings will be kept.`)) return
+    deleteProject.mutate({ id: projectId }, {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() })
+        toast({ title: "Project moved to recycle bin", description: "Its drawings remain available for recovery." })
+      },
+      onError: (error) => toast({ title: "Project could not be deleted", description: error instanceof Error ? error.message : "Please try again." }),
+    })
+  }
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden">
       <PageHeader icon={FolderKanban} title="Projects" description="Project-level view of the drawing register." />
@@ -65,8 +85,9 @@ export function Projects() {
                 </CardHeader>
                 <CardContent className="pt-5">
                   <div className="grid grid-cols-3 gap-3 text-center text-sm"><div><p className="font-bold font-mono text-lg">{active}</p><p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Active</p></div><div><p className="font-bold font-mono text-lg">{review}</p><p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Review</p></div><div><p className="font-bold font-mono text-lg">{projectDrawings.filter((drawing) => drawing.status === "issued").length}</p><p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Issued</p></div></div>
-                    <div className="mt-5 flex items-center justify-between border-t border-border/40 pt-4 text-xs font-semibold uppercase tracking-wider">
+                     <div className="mt-5 flex items-center justify-between border-t border-border/40 pt-4 text-xs font-semibold uppercase tracking-wider">
                       <span className="flex items-center gap-1.5 text-primary"><span>Workspace</span><ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></span>
+                       {isAdmin && project.id > 0 && <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground hover:text-destructive" onClick={(event) => handleDeleteProject(event, project.id, project.name)} disabled={deleteProject.isPending}><Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle</Button>}
                     </div>
                 </CardContent>
               </Card>
@@ -126,8 +147,47 @@ export function Deadlines() {
 
 export function Archive() {
   const { data: drawings, isLoading } = useListDrawings({ status: "superseded" })
+  const { user } = usePortalAuth()
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  const isAdmin = user?.role === "admin"
+  const { data: recycleBinEntries, isLoading: recycleBinLoading } = useListRecycleBin({ query: { enabled: Boolean(user), queryKey: getListRecycleBinQueryKey() } })
+  const restoreEntry = useRestoreRecycleBinEntry()
+  function handleRestoreEntry(type: string, id: number, label: string) {
+    restoreEntry.mutate({ type, id }, {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: getListRecycleBinQueryKey() })
+        void queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() })
+        void queryClient.invalidateQueries()
+        toast({ title: "Item restored", description: `${label} is back in the active workspace.` })
+      },
+      onError: (error) => toast({ title: "Item could not be restored", description: error instanceof Error ? error.message : "Please try again." }),
+    })
+  }
+  const typeLabels: Record<string, string> = {
+    project: "Project",
+    drawing: "Drawing",
+    upload: "Upload",
+    comment: "Comment",
+    "project-note": "Project note",
+    "personal-note": "Personal note",
+    contact: "Contact",
+    "contact-project": "Contact link",
+    checklist: "Project checklist",
+    template: "Checklist template",
+    category: "Category",
+    user: "User",
+  }
+  const retentionLabel = (deletedAt: string) => {
+    const expiresAt = new Date(deletedAt).getTime() + 30 * 24 * 60 * 60 * 1000
+    const days = Math.max(0, Math.ceil((expiresAt - Date.now()) / (24 * 60 * 60 * 1000)))
+    return days === 1 ? "1 day left" : `${days} days left`
+  }
   return <div className="flex h-full flex-1 flex-col overflow-hidden">
-    <PageHeader icon={ArchiveIcon} title="Archive" description="Superseded drawings retained for reference and audit." />
-    <div className="flex-1 overflow-auto p-4 sm:p-8"><div className="mx-auto max-w-4xl"><Card className="rounded-sm shadow-sm border-border/60"><CardContent className="p-0">{isLoading ? <div className="space-y-4 p-6"><Skeleton className="h-16 w-full rounded-sm" /><Skeleton className="h-16 w-full rounded-sm" /></div> : !drawings?.length ? <EmptyState icon={ArchiveIcon} message="No archived drawings yet." /> : <div className="divide-y divide-border/50">{drawings.map((drawing) => <Link href={`/drawings/${drawing.id}`} key={drawing.id} className="flex items-center justify-between gap-4 px-6 py-5 transition-colors hover:bg-muted/40 group"><div className="min-w-0"><p className="truncate font-medium text-foreground/80 group-hover:text-foreground">{drawing.title}</p><p className="mt-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{drawing.drawingNumber} · {drawing.projectName} · Rev {drawing.revision}</p></div><span className="text-right text-[10px] font-mono uppercase tracking-wider text-muted-foreground bg-muted/30 px-2 py-1 rounded-sm border">Updated {formatDateShort(drawing.updatedAt)}</span></Link>)}</div>}</CardContent></Card></div></div>
+    <PageHeader icon={ArchiveIcon} title="Recycle bin" description="Deleted records are retained for 30 days. Restore anything you have access to; administrators can restore any record." />
+    <div className="flex-1 overflow-auto p-4 sm:p-8"><div className="mx-auto max-w-5xl space-y-6">
+      <Card className="rounded-sm shadow-sm border-border/60"><CardHeader className="border-b border-border/40 bg-muted/20"><CardTitle className="text-base">Deleted records <Badge variant="outline" className="ml-2">{recycleBinEntries?.length ?? 0}</Badge></CardTitle><CardDescription>Restore an item before its 30-day retention period expires.</CardDescription></CardHeader><CardContent className="p-0">{recycleBinLoading ? <div className="space-y-4 p-6"><Skeleton className="h-16 w-full rounded-sm" /><Skeleton className="h-16 w-full rounded-sm" /></div> : recycleBinEntries?.length ? <div className="divide-y divide-border/50">{recycleBinEntries.map((entry) => <div key={`${entry.type}-${entry.id}`} className="flex items-center justify-between gap-4 px-6 py-5"><div className="min-w-0"><div className="flex items-center gap-2"><Badge variant="outline" className="shrink-0 rounded-sm text-[10px] uppercase tracking-wider">{typeLabels[entry.type] ?? entry.type}</Badge><p className="truncate font-medium">{entry.label}</p></div><p className="mt-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Deleted {formatDateShort(entry.deletedAt)} · {retentionLabel(entry.deletedAt)}</p></div><Button size="sm" variant="outline" className="shrink-0 rounded-sm" onClick={() => handleRestoreEntry(entry.type, entry.id, entry.label)} disabled={restoreEntry.isPending}><RotateCcw className="mr-2 h-4 w-4" />Restore</Button></div>)}</div> : <EmptyState icon={ArchiveIcon} message="No records available to restore." />}</CardContent></Card>
+      <Card className="rounded-sm shadow-sm border-border/60"><CardHeader className="border-b border-border/40 bg-muted/20"><CardTitle className="text-base">Archived drawings <Badge variant="outline" className="ml-2">{drawings?.length ?? 0}</Badge></CardTitle><CardDescription>Superseded drawings retained for reference and audit.</CardDescription></CardHeader><CardContent className="p-0">{isLoading ? <div className="space-y-4 p-6"><Skeleton className="h-16 w-full rounded-sm" /><Skeleton className="h-16 w-full rounded-sm" /></div> : !drawings?.length ? <EmptyState icon={ArchiveIcon} message="No archived drawings yet." /> : <div className="divide-y divide-border/50">{drawings.map((drawing) => <Link href={`/drawings/${drawing.id}`} key={drawing.id} className="flex items-center justify-between gap-4 px-6 py-5 transition-colors hover:bg-muted/40 group"><div className="min-w-0"><p className="truncate font-medium text-foreground/80 group-hover:text-foreground">{drawing.title}</p><p className="mt-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{drawing.drawingNumber} · {drawing.projectName} · Rev {drawing.revision}</p></div><span className="text-right text-[10px] font-mono uppercase tracking-wider text-muted-foreground bg-muted/30 px-2 py-1 rounded-sm border">Updated {formatDateShort(drawing.updatedAt)}</span></Link>)}</div>}</CardContent></Card>
+    </div></div>
   </div>
 }

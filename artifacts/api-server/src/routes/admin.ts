@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { db, disciplinesTable, drawingActivityTable, drawingsTable, personalNotesTable, sessionsTable, usersTable } from "@workspace/db";
 import { hashPassword, publicUser, requireAdmin, requireCurrentUser } from "../lib/portalAuth";
 import { addActivity } from "../lib/drawings";
@@ -8,7 +8,7 @@ const router: IRouter = Router();
 router.use("/admin", requireAdmin);
 
 router.get("/admin/users", async (_req, res): Promise<void> => {
-  const users = await db.select().from(usersTable).orderBy(asc(usersTable.name));
+  const users = await db.select().from(usersTable).where(isNull(usersTable.deletedAt)).orderBy(asc(usersTable.name));
   res.json(users.map(publicUser));
 });
 
@@ -25,7 +25,7 @@ router.post("/admin/users", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Username must be 3-40 characters using letters, numbers, dots, dashes, or underscores" });
     return;
   }
-  const [existing] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.username, username)).limit(1);
+  const [existing] = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.username, username), isNull(usersTable.deletedAt))).limit(1);
   if (existing) {
     res.status(409).json({ error: "That username is already in use" });
     return;
@@ -46,7 +46,7 @@ router.patch("/admin/users/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Invalid user id" });
     return;
   }
-  const [current] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  const [current] = await db.select().from(usersTable).where(and(eq(usersTable.id, id), isNull(usersTable.deletedAt))).limit(1);
   if (!current) {
     res.status(404).json({ error: "User not found" });
     return;
@@ -71,7 +71,7 @@ router.patch("/admin/users/:id", async (req, res): Promise<void> => {
     const [duplicateName] = await db
       .select({ id: usersTable.id })
       .from(usersTable)
-      .where(sql`lower(${usersTable.name}) = lower(${name}) AND ${usersTable.id} <> ${id}`)
+      .where(sql`lower(${usersTable.name}) = lower(${name}) AND ${usersTable.id} <> ${id} AND ${usersTable.deletedAt} IS NULL`)
       .limit(1);
     if (duplicateName) {
       res.status(409).json({ error: "That display name is already in use" });
@@ -100,7 +100,7 @@ router.patch("/admin/users/:id", async (req, res): Promise<void> => {
 
 router.delete("/admin/users/:id", async (req, res): Promise<void> => {
   const id = Number(req.params.id);
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  const [user] = await db.select().from(usersTable).where(and(eq(usersTable.id, id), isNull(usersTable.deletedAt))).limit(1);
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
@@ -112,12 +112,12 @@ router.delete("/admin/users/:id", async (req, res): Promise<void> => {
       return;
     }
   }
-  await db.delete(usersTable).where(eq(usersTable.id, id));
+  await db.update(usersTable).set({ deletedAt: new Date(), active: false }).where(eq(usersTable.id, id));
   res.sendStatus(204);
 });
 
 router.get("/admin/disciplines", async (_req, res): Promise<void> => {
-  res.json(await db.select().from(disciplinesTable).orderBy(asc(disciplinesTable.name)));
+  res.json(await db.select().from(disciplinesTable).where(isNull(disciplinesTable.deletedAt)).orderBy(asc(disciplinesTable.name)));
 });
 
 router.post("/admin/disciplines", async (req, res): Promise<void> => {
@@ -190,7 +190,7 @@ router.delete("/admin/disciplines/:id", async (req, res): Promise<void> => {
     res.status(409).json({ error: "This discipline is used by existing drawings and cannot be deleted" });
     return;
   }
-  await db.delete(disciplinesTable).where(eq(disciplinesTable.id, id));
+  await db.update(disciplinesTable).set({ deletedAt: new Date() }).where(eq(disciplinesTable.id, id));
   res.sendStatus(204);
 });
 

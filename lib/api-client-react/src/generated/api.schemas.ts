@@ -12,7 +12,16 @@ export interface HealthStatus {
 export interface Project {
   id: number;
   name: string;
+  /** @nullable */
+  deletedAt: string | null;
   createdAt: string;
+}
+
+export interface RecycleBinEntry {
+  type: string;
+  id: number;
+  label: string;
+  deletedAt: string;
 }
 
 export interface ProjectInput {
@@ -622,6 +631,10 @@ export type ListDrawingsParams = {
 search?: string;
 status?: DrawingStatus;
 discipline?: DrawingDiscipline;
+};
+
+export type RestoreRecycleBinEntry200 = {
+  id?: number;
 };
 
 export type ListContactsParams = {

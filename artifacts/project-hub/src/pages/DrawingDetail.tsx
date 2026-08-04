@@ -350,7 +350,7 @@ export default function DrawingDetail() {
               <Clock className="w-4 h-4 mr-2" /> Request Review
             </Button>
           )}
-          {drawing.status === 'in_review' && (
+          {drawing.status === 'in_review' && isAdmin && (
             <Button className="flex-1 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 sm:flex-none" variant="outline" size="sm" onClick={() => handleStatusChange('approved')}>
               <CheckCircle className="w-4 h-4 mr-2" /> Approve
             </Button>
@@ -601,9 +601,9 @@ export default function DrawingDetail() {
             <form onSubmit={handleDrawingSave} className="space-y-4">
               <Input value={drawingForm.title} onChange={(e) => setDrawingForm({ ...drawingForm, title: e.target.value })} placeholder="Drawing name" aria-label="Drawing name" required />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Select value={drawingForm.status} onValueChange={(status) => setDrawingForm({ ...drawingForm, status })}>
+                  <Select value={drawingForm.status} onValueChange={(status) => setDrawingForm({ ...drawingForm, status })}>
                   <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-                  <SelectContent>{["draft", "in_review", "approved", "issued", "superseded"].map((status) => <SelectItem key={status} value={status} className="capitalize">{statusLabel(status)}</SelectItem>)}</SelectContent>
+                   <SelectContent>{["draft", "in_review", "approved", "issued", "superseded"].filter((status) => status !== "approved" || isAdmin || drawingForm.status === "approved").map((status) => <SelectItem key={status} value={status} className="capitalize">{statusLabel(status)}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={drawingForm.discipline} onValueChange={(discipline) => setDrawingForm({ ...drawingForm, discipline })}>
                   <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
