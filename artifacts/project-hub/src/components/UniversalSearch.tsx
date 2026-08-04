@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useLocation } from "wouter"
-import { Activity, Archive, BarChart3, Bell, BookOpen, CalendarDays, CheckSquare, FileText, FileWarning, FolderKanban, FolderOpen, LayoutDashboard, MessageSquare, Search, Settings, ShieldCheck, UserRoundCog, Users, UsersRound } from "lucide-react"
+import { Activity, Archive, BarChart3, Bell, BookOpen, CheckSquare, FileText, FileWarning, FolderKanban, LayoutDashboard, MessageSquare, Search, Settings, ShieldCheck, Users, UsersRound } from "lucide-react"
 import {
   useListActivity,
   useListCategories,
@@ -54,11 +54,9 @@ export function UniversalSearch() {
   const results = React.useMemo<SearchResult[]>(() => {
     const navigationResults = [
       { label: "Dashboard", detail: "Overview and drawing status", icon: LayoutDashboard, href: "/dashboard" },
-      { label: "Drawing Library", detail: "Browse and manage drawings", icon: FileText, href: "/drawings" },
+      { label: "Drawing Workspace", detail: "Library, reviews, deadlines, and files", icon: FileText, href: "/drawings" },
       { label: "Projects", detail: "Project-level drawing register", icon: FolderKanban, href: "/projects" },
       { label: "Assignments", detail: "Assigned drawing workload", icon: Users, href: "/assignments" },
-      { label: "Review Queue", detail: "Drawings waiting for review", icon: CheckSquare, href: "/review-queue" },
-      { label: "Deadlines", detail: "Upcoming drawing deadlines", icon: CalendarDays, href: "/deadlines" },
       { label: "My Feed", detail: "Your assigned work and activity", icon: FileText, href: "/feed" },
       { label: "Team Chat", detail: "Project coordination conversations", icon: MessageSquare, href: "/chat" },
       { label: "Notifications", detail: "Your unread updates", icon: Bell, href: "/notifications" },
@@ -66,13 +64,11 @@ export function UniversalSearch() {
       { label: "Reports", detail: "Detailed register health and workload", icon: BarChart3, href: "/reports" },
       { label: "Standards", detail: "Reusable checklist templates and categories", icon: BookOpen, href: "/standards" },
       { label: "Issue Register", detail: "Review comments and drawing issues", icon: FileWarning, href: "/issues" },
-      { label: "Files", detail: "Uploaded drawing files and history", icon: FolderOpen, href: "/files" },
       { label: "Contacts", detail: "Project contacts and partners", icon: UsersRound, href: "/contacts" },
       { label: "Recycle bin", detail: "All recycled records retained for 30 days", icon: Archive, href: "/archive" },
       { label: "Settings", detail: "Personal preferences and categories", icon: Settings, href: "/settings" },
       ...(user?.role === "admin" ? [
-        { label: "Team Directory", detail: "People available for assignments", icon: UsersRound, href: "/team" },
-        { label: "Portal Users", detail: "Manage portal accounts", icon: UserRoundCog, href: "/users" },
+        { label: "People", detail: "Assignment directory and portal users", icon: UsersRound, href: "/people" },
         { label: "Admin", detail: "Manage access and workspace audit", icon: ShieldCheck, href: "/admin" },
       ] : []),
     ].map((item) => ({
@@ -110,7 +106,7 @@ export function UniversalSearch() {
       detail: "Available for drawing assignments",
       group: "People",
       icon: Users,
-      href: user?.role === "admin" ? "/users" : "/assignments",
+      href: user?.role === "admin" ? "/people" : "/assignments",
     }))
     const activityResults = (activity ?? []).slice(0, 20).map((item) => ({
       id: `activity-${item.id}`,
