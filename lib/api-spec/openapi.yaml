@@ -182,6 +182,33 @@ paths:
         "403":
           description: Authentication required
   /projects/{id}:
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Rename a drawing project
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "400":
+          description: Project name is required
+        "403":
+          description: Administrator access required
+        "404":
+          description: Project not found
+        "409":
+          description: A project with this name already exists
     delete:
       operationId: deleteProject
       tags: [projects]

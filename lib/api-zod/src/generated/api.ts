@@ -176,6 +176,31 @@ export const ListDeletedProjectsResponse = zod.array(ListDeletedProjectsResponse
 
 
 /**
+ * @summary Rename a drawing project
+ */
+
+
+
+export const UpdateProjectParams = zod.object({
+  "id": zod.coerce.number().min(1)
+})
+
+
+
+
+export const UpdateProjectBody = zod.object({
+  "name": zod.string().min(1)
+})
+
+export const UpdateProjectResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "deletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Move a project to the recycle bin
  */
 

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useRoute } from "wouter"
+import { Link, useLocation, useRoute } from "wouter"
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,6 +11,7 @@ import {
   FolderKanban,
   History,
   Mail,
+  Pencil,
   Trash2,
   UsersRound,
 } from "lucide-react"
@@ -23,13 +24,16 @@ import {
   useListDrawings,
   useListProjectChecklists,
   useListProjects,
+  useUpdateProject,
 } from "@workspace/api-client-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ProjectNotesPanel } from "@/components/ProjectNotesPanel"
 import { formatDateShort } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
@@ -51,11 +55,15 @@ const activityTone = (type: string) =>
 
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:projectName")
+  const [, setLocation] = useLocation()
   const projectName = params?.projectName ? decodeURIComponent(params.projectName) : ""
   const { user } = usePortalAuth()
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const deleteProject = useDeleteProject()
+  const updateProject = useUpdateProject()
+  const [isEditOpen, setIsEditOpen] = React.useState(false)
+  const [projectNameDraft, setProjectNameDraft] = React.useState("")
   const { data: projects, isLoading: projectsLoading } = useListProjects()
   const { data: drawings, isLoading: drawingsLoading } = useListDrawings()
   const { data: contacts, isLoading: contactsLoading } = useListContacts(
@@ -109,6 +117,19 @@ export default function ProjectDetail() {
       }),
     })
   }
+  function handleUpdateProject(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!project || !projectNameDraft.trim()) return
+    updateProject.mutate({ id: project.id, data: { name: projectNameDraft.trim() } }, {
+      onSuccess: (updatedProject) => {
+        void queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() })
+        setIsEditOpen(false)
+        toast({ title: "Project renamed" })
+        setLocation(`/projects/${encodeURIComponent(updatedProject.name)}`)
+      },
+      onError: (error) => toast({ title: "Project could not be renamed", description: error instanceof Error ? error.message : "Please try again." }),
+    })
+  }
 
   if (isLoading) {
     return (
@@ -152,7 +173,9 @@ export default function ProjectDetail() {
                 <p className="mt-1.5 text-sm text-muted-foreground">Dedicated view of drawings, coordination, notes, and project progress.</p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3">
+             <div className="flex flex-wrap items-center gap-1.5">
+               <Button variant="outline" className="rounded-sm" onClick={() => { setProjectNameDraft(project.name); setIsEditOpen(true) }} disabled={!isAdmin || updateProject.isPending} title={isAdmin ? "Edit project name" : "Administrator access required"} data-testid="button-edit-project-detail"><Pencil className="mr-2 h-4 w-4" />Edit</Button>
+               <Button variant="outline" className="rounded-sm text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={handleDeleteProject} disabled={!isAdmin || deleteProject.isPending} title={isAdmin ? "Move project to recycle bin" : "Administrator access required"} data-testid="button-recycle-project-detail"><Trash2 className="mr-2 h-4 w-4" />{deleteProject.isPending ? "Recycling..." : "Recycle"}</Button>
               <Button variant="outline" className="rounded-sm" asChild><Link href={`/drawings?project=${encodeURIComponent(project.name)}`}><FileText className="mr-2 h-4 w-4" />View drawings</Link></Button>
               <Button className="rounded-sm shadow-sm" asChild><Link href={`/contacts?project=${encodeURIComponent(project.name)}`}><UsersRound className="mr-2 h-4 w-4" />Directory</Link></Button>
             </div>
@@ -163,7 +186,22 @@ export default function ProjectDetail() {
             <span className="inline-flex items-center gap-1.5"><UsersRound className="h-3.5 w-3.5" />{contacts?.length ?? 0} partner{contacts?.length === 1 ? "" : "s"}</span>
           </div>
         </div>
-      </header>
+       </header>
+       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+         <DialogContent className="rounded-sm">
+           <DialogHeader>
+             <DialogTitle>Edit project</DialogTitle>
+             <DialogDescription>Rename this project without breaking its drawings, notes, contacts, or checklists.</DialogDescription>
+           </DialogHeader>
+           <form onSubmit={handleUpdateProject} className="space-y-4">
+             <Input value={projectNameDraft} onChange={(event) => setProjectNameDraft(event.target.value)} placeholder="Project name" aria-label="Project name" autoFocus required />
+             <DialogFooter>
+               <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+               <Button type="submit" disabled={!projectNameDraft.trim() || updateProject.isPending}>{updateProject.isPending ? "Saving..." : "Save changes"}</Button>
+             </DialogFooter>
+           </form>
+         </DialogContent>
+       </Dialog>
 
       <main className="flex-1 overflow-auto p-4 sm:p-8">
         <div className="mx-auto max-w-7xl space-y-6">

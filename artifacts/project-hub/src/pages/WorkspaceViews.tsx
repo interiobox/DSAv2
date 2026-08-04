@@ -1,8 +1,8 @@
 import * as React from "react"
 import { Link } from "wouter"
-import { Archive as ArchiveIcon, ArrowRight, CalendarDays, CheckCircle2, Clock3, FileText, FolderKanban, History, RotateCcw, Search, SlidersHorizontal, Trash2 } from "lucide-react"
+import { Archive as ArchiveIcon, ArrowRight, CalendarDays, CheckCircle2, Clock3, FileText, FolderKanban, History, Pencil, RotateCcw, Search, SlidersHorizontal, Trash2 } from "lucide-react"
 
-import { getListProjectsQueryKey, getListRecycleBinQueryKey, useDeleteProject, useListActivity, useListDrawings, useListProjects, useListRecycleBin, useRestoreRecycleBinEntry } from "@workspace/api-client-react"
+import { getListDrawingsQueryKey, getListProjectsQueryKey, getListRecycleBinQueryKey, useDeleteProject, useListActivity, useListDrawings, useListProjects, useListRecycleBin, useRestoreRecycleBinEntry, useUpdateProject } from "@workspace/api-client-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatDate, formatDateShort } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
 import { useQueryClient } from "@tanstack/react-query"
@@ -48,7 +49,10 @@ export function Projects() {
   const { data: projects, isLoading: projectsLoading } = useListProjects()
   const { data: drawings, isLoading: drawingsLoading } = useListDrawings()
   const deleteProject = useDeleteProject()
+  const updateProject = useUpdateProject()
   const [search, setSearch] = React.useState("")
+  const [editingProject, setEditingProject] = React.useState<{ id: number; name: string } | null>(null)
+  const [projectNameDraft, setProjectNameDraft] = React.useState("")
   const isAdmin = user?.role === "admin"
   const visibleProjects = (projects ?? []).filter((project) => project.name.toLowerCase().includes(search.toLowerCase()))
   const loading = projectsLoading || drawingsLoading
@@ -62,6 +66,19 @@ export function Projects() {
         toast({ title: "Project moved to recycle bin", description: "Its drawings remain available for recovery." })
       },
       onError: (error) => toast({ title: "Project could not be moved to recycle bin", description: error instanceof Error ? error.message : "Please try again." }),
+    })
+  }
+  function handleUpdateProject(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!editingProject || !projectNameDraft.trim()) return
+    updateProject.mutate({ id: editingProject.id, data: { name: projectNameDraft.trim() } }, {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() })
+        void queryClient.invalidateQueries({ queryKey: getListDrawingsQueryKey() })
+        setEditingProject(null)
+        toast({ title: "Project renamed" })
+      },
+      onError: (error) => toast({ title: "Project could not be renamed", description: error instanceof Error ? error.message : "Please try again." }),
     })
   }
   return (
@@ -90,12 +107,38 @@ export function Projects() {
                       <Link href={`/projects/${encodeURIComponent(project.name)}`} className="flex items-center gap-1.5 text-primary hover:underline">
                         <span>Workspace</span><ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                       </Link>
+                       {project.id > 0 && (
+                         <div className="flex items-center gap-1.5">
+                           <Button type="button" variant="ghost" size="sm" className="h-8 rounded-sm px-2 text-xs font-medium" onClick={() => { setEditingProject({ id: project.id, name: project.name }); setProjectNameDraft(project.name) }} disabled={!isAdmin || updateProject.isPending} title={isAdmin ? "Edit project name" : "Administrator access required"} data-testid={`button-edit-project-${project.id}`}>
+                             <Pencil className="mr-1.5 h-3.5 w-3.5" />Edit
+                           </Button>
+                           <Button type="button" variant="outline" size="sm" className="h-8 rounded-sm px-2 text-xs font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={(event) => handleDeleteProject(event, project.id, project.name)} disabled={!isAdmin || deleteProject.isPending} title={isAdmin ? "Move project to recycle bin" : "Administrator access required"} data-testid={`button-recycle-project-${project.id}`}>
+                             <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
+                           </Button>
+                         </div>
+                       )}
                     </div>
                 </CardContent>
             </Card>
           })}</div>
         )}
-      </div></div>
+       </div>
+       <Dialog open={Boolean(editingProject)} onOpenChange={(open) => { if (!open) setEditingProject(null) }}>
+         <DialogContent className="rounded-sm">
+           <DialogHeader>
+             <DialogTitle>Edit project</DialogTitle>
+             <DialogDescription>Rename this project without breaking its drawings, notes, contacts, or checklists.</DialogDescription>
+           </DialogHeader>
+           <form onSubmit={handleUpdateProject} className="space-y-4">
+             <Input value={projectNameDraft} onChange={(event) => setProjectNameDraft(event.target.value)} placeholder="Project name" aria-label="Project name" autoFocus required />
+             <DialogFooter>
+               <Button type="button" variant="outline" onClick={() => setEditingProject(null)}>Cancel</Button>
+               <Button type="submit" disabled={!projectNameDraft.trim() || updateProject.isPending}>{updateProject.isPending ? "Saving..." : "Save changes"}</Button>
+             </DialogFooter>
+           </form>
+         </DialogContent>
+       </Dialog>
+       </div>
     </div>
   )
 }
