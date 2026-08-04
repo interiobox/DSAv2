@@ -7,4 +7,4 @@ The app should feel like one focused Drawing Library workspace rather than a col
 
 **Why:** Showing every individual feature created duplicate tabs and made the workspace harder to scan; users prefer direct access without an extra “More tools” interaction, but only for distinct destinations.
 
-**How to apply:** Use the consolidated visible navigation: Overview, Drawing Library, Projects, Work queue, My work, Collaboration, Reference, Recycle bin, Settings, and Team & admin. Keep underlying routes accessible through their parent workspace and avoid duplicate dashboard shortcuts.
+**How to apply:** Use the consolidated visible navigation: Overview, Drawing Library, Projects, Work queue, My work, Collaboration, Notifications, Reference, Recycle bin, Settings, and Team & admin. Keep underlying routes accessible through their parent workspace and avoid duplicate dashboard shortcuts; Notifications stays distinct because it is an unread, user-specific destination.

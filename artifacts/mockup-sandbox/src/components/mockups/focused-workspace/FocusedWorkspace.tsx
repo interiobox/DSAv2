@@ -70,6 +70,7 @@ const allNavItems = [
   { label: "Work queue", icon: ClipboardCheck, count: "12" },
   { label: "My work", icon: Sparkles, count: "7" },
   { label: "Collaboration", icon: MessageSquare, count: "3" },
+  { label: "Notifications", icon: Bell, count: "4" },
   { label: "Reference", icon: BookOpen },
   { label: "Recycle bin", icon: Archive },
   { label: "Settings", icon: Settings2 },
