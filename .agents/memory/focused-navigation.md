@@ -3,8 +3,8 @@ name: Focused navigation
 description: Navigation hierarchy for the architectural drawing register
 ---
 
-The app should feel like one focused Drawing Library workspace rather than a collection of equally weighted modules. Consolidate related destinations into focused workspaces while keeping their deep links available.
+The app should feel like one focused Drawing Library workspace rather than a collection of equally weighted modules. Keep the visible sidebar compact and make supporting destinations available through search and deep links.
 
-**Why:** The user prefers immediate access to every workspace without an extra “More tools” interaction, but separate pages for closely related drawing and people tasks created unnecessary navigation fragmentation.
+**Why:** The user wants a compact daily-work sidebar without losing access to supporting tools, and separate pages for closely related drawing and people tasks created unnecessary navigation fragmentation.
 
-**How to apply:** Keep Drawing Workspace as the entry point for library, review, deadlines, and files; keep People as the admin-only entry point for the assignment directory and portal-user area; preserve old URLs through redirects and keep unrelated personal, audit, and external-contact workflows separate.
+**How to apply:** Keep Overview, Drawing Workspace, Projects, Assignments, My Feed, Team Chat, People, and Settings visible; expose notifications, checklists, contacts, issues, files, standards, reports, activity, recycle bin, and admin through Universal Search and direct URLs. Keep Drawing Workspace as the entry point for library, review, deadlines, and files; keep People admin-only.
