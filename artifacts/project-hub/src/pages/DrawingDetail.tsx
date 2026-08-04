@@ -34,6 +34,7 @@ type DrawingComment = {
   drawingId: number
   comment: string
   author: string
+  authorId: number | null
   createdAt: string
 }
 
@@ -64,6 +65,7 @@ export default function DrawingDetail() {
   const deleteDrawing = useDeleteDrawing()
   const { data: projects, isLoading: projectsLoading } = useListProjects()
   const [isUploading, setIsUploading] = React.useState(false)
+  const [deletingUploadId, setDeletingUploadId] = React.useState<number | null>(null)
   const [uploads, setUploads] = React.useState<DrawingUpload[]>([])
   const [comments, setComments] = React.useState<DrawingComment[]>([])
   const [commentText, setCommentText] = React.useState("")
@@ -274,6 +276,7 @@ export default function DrawingDetail() {
 
   const handleUploadDelete = async (upload: DrawingUpload) => {
     if (!confirm(`Move ${upload.fileName} to the recycle bin? The stored file is retained for 30 days.`)) return
+    setDeletingUploadId(upload.id)
     try {
       const response = await fetch(`/api/drawings/${id}/uploads/${upload.id}`, { method: "DELETE" })
       if (!response.ok) throw new Error("The upload could not be moved to the recycle bin")
@@ -283,6 +286,8 @@ export default function DrawingDetail() {
       toast({ title: "Upload moved to recycle bin" })
     } catch (error) {
       toast({ title: "Could not move upload to recycle bin", description: error instanceof Error ? error.message : "The upload could not be recycled." })
+    } finally {
+      setDeletingUploadId(null)
     }
   }
 
@@ -473,6 +478,19 @@ export default function DrawingDetail() {
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
                           <span className="font-mono text-xs text-muted-foreground">{upload.contentType}</span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2 text-xs text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive"
+                            onClick={() => void handleUploadDelete(upload)}
+                            disabled={deletingUploadId === upload.id}
+                            aria-label={`Move ${upload.fileName} to recycle bin`}
+                            data-testid={`button-recycle-upload-${upload.id}`}
+                          >
+                            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                            {deletingUploadId === upload.id ? "Recycling..." : "Recycle"}
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -518,8 +536,8 @@ export default function DrawingDetail() {
                             <span className="font-medium text-foreground">{item.author}</span>
                             <span className="ml-2 text-xs text-muted-foreground">{formatDate(item.createdAt)}</span>
                           </div>
-                            {(isAdmin || item.author === currentUserName) && <div className="flex items-center gap-1.5">
-                              <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => void handleCommentEdit(item)} data-testid={`button-edit-comment-${item.id}`}><Pencil className="mr-1.5 h-3.5 w-3.5" />Edit</Button>
+                            {(isAdmin || item.authorId === user?.id || item.author === currentUserName) && <div className="flex items-center gap-1.5">
+                              {(isAdmin || item.authorId === user?.id) && <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => void handleCommentEdit(item)} data-testid={`button-edit-comment-${item.id}`}><Pencil className="mr-1.5 h-3.5 w-3.5" />Edit</Button>}
                               <Button variant="outline" size="sm" className="h-8 px-2 text-xs text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive" onClick={() => void handleCommentDelete(item)} data-testid={`button-recycle-comment-${item.id}`}><Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle</Button>
                             </div>}
                         </div>

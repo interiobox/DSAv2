@@ -163,8 +163,8 @@ Project notes are shared per project, while personal notes are private to their 
 
 **How to apply:** Keep project-note access authenticated and author/admin-managed for edits and deletes; keep personal-note mutations owner-only and expose the admin overview as read-only.
 
-All recyclable records use their own `deletedAt` timestamp for a 30-day retention window; active lists exclude them, restore access is visibility-aware, and stored upload objects are deleted only when their retention expires.
+All recyclable records use their own `deletedAt` timestamp for a 30-day retention window; active lists exclude them, restore access is visibility-aware, and stored upload objects are deleted only when their retention expires. Edit/recycle controls must mirror the API’s access rule, using stable portal user IDs for ownership rather than display names.
 
-**Why:** Recovery must be reliable for both parent and child records, and deleting an upload object at recycle time would make restoration incomplete.
+**Why:** Recovery must be reliable for both parent and child records, deleting an upload object at recycle time would make restoration incomplete, and display-name matching can expose actions to the wrong user when names are duplicated.
 
-**How to apply:** Set `deletedAt` when recycling, calculate expiry only from that value, purge children before parents, and keep object-storage deletion inside the expiry purge path.
+**How to apply:** Set `deletedAt` when recycling, calculate expiry only from that value, purge children before parents, keep object-storage deletion inside the expiry purge path, and render each action only when its matching authenticated user/role check passes.
