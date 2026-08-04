@@ -495,6 +495,7 @@ export const ActivityType = {
   drawing_approved: 'drawing_approved',
   drawing_uploaded: 'drawing_uploaded',
   drawing_assigned: 'drawing_assigned',
+  drawing_deleted: 'drawing_deleted',
   comment_added: 'comment_added',
 } as const;
 

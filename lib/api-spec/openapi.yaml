@@ -1908,7 +1908,7 @@ components:
           type: number
         type:
           type: string
-          enum: [drawing_added, drawing_updated, drawing_issued, drawing_approved, drawing_uploaded, drawing_assigned, comment_added]
+          enum: [drawing_added, drawing_updated, drawing_issued, drawing_approved, drawing_uploaded, drawing_assigned, drawing_deleted, comment_added]
         message:
           type: string
         drawingId:

@@ -1156,7 +1156,7 @@ export const AdminDeleteDisciplineResponse = zod.void()
  */
 export const AdminListActivityResponseItem = zod.object({
   "id": zod.number(),
-  "type": zod.enum(['drawing_added', 'drawing_updated', 'drawing_issued', 'drawing_approved', 'drawing_uploaded', 'drawing_assigned', 'comment_added']),
+  "type": zod.enum(['drawing_added', 'drawing_updated', 'drawing_issued', 'drawing_approved', 'drawing_uploaded', 'drawing_assigned', 'drawing_deleted', 'comment_added']),
   "message": zod.string(),
   "drawingId": zod.number().nullable(),
   "actor": zod.string().nullable(),
@@ -1511,7 +1511,7 @@ export const GetDashboardSummaryResponse = zod.object({
  */
 export const ListActivityResponseItem = zod.object({
   "id": zod.number(),
-  "type": zod.enum(['drawing_added', 'drawing_updated', 'drawing_issued', 'drawing_approved', 'drawing_uploaded', 'drawing_assigned', 'comment_added']),
+  "type": zod.enum(['drawing_added', 'drawing_updated', 'drawing_issued', 'drawing_approved', 'drawing_uploaded', 'drawing_assigned', 'drawing_deleted', 'comment_added']),
   "message": zod.string(),
   "drawingId": zod.number().nullable(),
   "actor": zod.string().nullable(),
