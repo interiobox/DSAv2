@@ -7,6 +7,12 @@ The product is centered on a searchable architectural drawing library rather tha
 
 Drawing files are stored in object storage behind first-party portal authentication; each drawing keeps an upload history recording the signed-in user's display name, timestamp, size, and type.
 
+File uploads require the managed object-storage bucket environment to be provisioned before the API can generate signed upload URLs.
+
+**Why:** The upload flow is otherwise valid, but a missing `PRIVATE_OBJECT_DIR` causes the request-url endpoint to fail before authentication and direct storage upload can complete.
+
+**How to apply:** When setting up or restoring this app, provision managed object storage and verify its environment configuration before debugging the client upload flow.
+
 Reviewers use the library primarily on mobile and leave named comments directly under each drawing; comments are chronological review records, not private notes.
 
 The product is intentionally single-purpose: the drawing library remains the core workflow, while dashboard, notifications, chat, and settings are supporting navigation explicitly requested for coordination.
