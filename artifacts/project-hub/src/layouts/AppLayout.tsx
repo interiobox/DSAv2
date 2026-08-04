@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { FileText, FolderKanban, Layers, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Users, UsersRound } from "lucide-react"
+import { Archive, BarChart3, Bell, BookOpen, FileText, FileWarning, FolderKanban, History, Layers, ListChecks, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Users, UsersRound } from "lucide-react"
+import { getListNotificationsQueryKey, useListNotifications } from "@workspace/api-client-react"
 import { cn } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
 import { UniversalSearch } from "@/components/UniversalSearch"
@@ -42,6 +43,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = usePortalAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const displayName = user?.name || user?.username || "Signed-in user"
+  const notificationsQuery = useListNotifications({
+    query: {
+      queryKey: getListNotificationsQueryKey(),
+      refetchInterval: 5000,
+    },
+  })
+  const unreadNotifications = (notificationsQuery.data ?? []).filter((notification) => !notification.readAt).length
   React.useEffect(() => {
     setMobileMenuOpen(false)
   }, [location])
@@ -54,6 +62,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <NavItem href="/assignments" icon={Users}>Assignments</NavItem>
       <NavItem href="/feed" icon={FileText}>My Feed</NavItem>
       <NavItem href="/chat" icon={MessageSquare}>Team Chat</NavItem>
+      <NavItem href="/notifications" icon={Bell} badge={unreadNotifications > 0 ? (unreadNotifications > 99 ? "99+" : unreadNotifications) : undefined}>Notifications</NavItem>
+      <NavItem href="/checklists" icon={ListChecks}>Checklists</NavItem>
+      <NavItem href="/contacts" icon={UsersRound}>Contacts</NavItem>
+      <NavItem href="/issues" icon={FileWarning}>Issue register</NavItem>
+      <NavItem href="/standards" icon={BookOpen}>Standards</NavItem>
+      <NavItem href="/reports" icon={BarChart3}>Reports</NavItem>
+      <NavItem href="/activity" icon={History}>Activity history</NavItem>
+      <NavItem href="/archive" icon={Archive}>Recycle bin</NavItem>
       {user?.role === "admin" && <NavItem href="/people" icon={UsersRound}>People</NavItem>}
       <NavItem href="/settings" icon={Settings}>Settings</NavItem>
       {user?.role === "admin" && <NavItem href="/admin" icon={ShieldCheck}>Admin</NavItem>}
