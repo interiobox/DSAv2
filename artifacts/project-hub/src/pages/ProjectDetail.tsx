@@ -155,7 +155,6 @@ export default function ProjectDetail() {
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="rounded-sm" asChild><Link href={`/drawings?project=${encodeURIComponent(project.name)}`}><FileText className="mr-2 h-4 w-4" />View drawings</Link></Button>
               <Button className="rounded-sm shadow-sm" asChild><Link href={`/contacts?project=${encodeURIComponent(project.name)}`}><UsersRound className="mr-2 h-4 w-4" />Directory</Link></Button>
-              {project.id > 0 && <Button variant="outline" className="rounded-sm text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={handleDeleteProject} disabled={!isAdmin || deleteProject.isPending} title={isAdmin ? "Move project to recycle bin" : "Administrator access required"} data-testid="button-recycle-project-detail"><Trash2 className="mr-2 h-4 w-4" />{deleteProject.isPending ? "Recycling..." : "Recycle project"}</Button>}
             </div>
           </div>
           <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">

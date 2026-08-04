@@ -90,11 +90,6 @@ export function Projects() {
                       <Link href={`/projects/${encodeURIComponent(project.name)}`} className="flex items-center gap-1.5 text-primary hover:underline">
                         <span>Workspace</span><ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                       </Link>
-                      {project.id > 0 && (
-                        <Button type="button" variant="outline" size="sm" className="h-8 rounded-sm px-2.5 text-xs font-semibold text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={(event) => handleDeleteProject(event, project.id, project.name)} disabled={!isAdmin || deleteProject.isPending} title={isAdmin ? "Move project to recycle bin" : "Administrator access required"} data-testid={`button-recycle-project-${project.id}`}>
-                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle project
-                        </Button>
-                      )}
                     </div>
                 </CardContent>
             </Card>

@@ -341,9 +341,14 @@ export default function DrawingDetail() {
         </div>
         
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-          <Button className="flex-1 sm:flex-none" variant="outline" size="sm" onClick={openDrawingEdit}>
-            <Pencil className="mr-2 h-4 w-4" /> Edit
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button className="flex-1 sm:flex-none" variant="outline" size="sm" onClick={openDrawingEdit} data-testid="button-edit-drawing-detail">
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Button>
+            <Button variant="outline" size="sm" className="text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={handleDelete} disabled={!isAdmin || deleteDrawing.isPending} title={isAdmin ? "Move drawing to recycle bin" : "Administrator access required"} data-testid="button-recycle-drawing-detail">
+              <Trash2 className="mr-2 h-4 w-4" />Recycle
+            </Button>
+          </div>
           {drawing.status === 'draft' && (
             <Button className="flex-1 sm:flex-none" variant="outline" size="sm" onClick={() => handleStatusChange('in_review')}>
               <Clock className="w-4 h-4 mr-2" /> Request Review
@@ -364,7 +369,6 @@ export default function DrawingDetail() {
               <Archive className="w-4 h-4 mr-2" /> Archive
             </Button>
           )}
-          <><div className="w-px h-8 bg-border mx-1" /><Button variant="outline" size="sm" className="text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={handleDelete} disabled={!isAdmin || deleteDrawing.isPending} title={isAdmin ? "Move drawing to recycle bin" : "Administrator access required"} data-testid="button-recycle-drawing-detail"><Trash2 className="mr-2 w-4 h-4" />Recycle drawing</Button></>
         </div>
       </div>
 
@@ -467,9 +471,6 @@ export default function DrawingDetail() {
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
                           <span className="font-mono text-xs text-muted-foreground">{upload.contentType}</span>
-                           <Button variant="outline" size="sm" className="h-8 text-xs text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive" onClick={() => void handleUploadDelete(upload)} title={`Move ${upload.fileName} to recycle bin`} data-testid={`button-recycle-upload-${upload.id}`}>
-                             <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle upload
-                           </Button>
                         </div>
                       </div>
                     ))}

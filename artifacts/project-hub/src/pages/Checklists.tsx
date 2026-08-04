@@ -316,9 +316,6 @@ function ChecklistCard({ checklist }: { checklist: ProjectChecklist }) {
               {isComplete && <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10 shrink-0">Complete</Badge>}
             </CardTitle>
           </div>
-          <Button variant="outline" size="sm" className="shrink-0 text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive" onClick={handleDelete} title="Move checklist to recycle bin" data-testid={`button-delete-checklist-${checklist.id}`}>
-            <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
-          </Button>
         </div>
         <div className="mt-4 flex items-center gap-3">
           <Progress value={progress} className="h-2 flex-1" />
