@@ -1,12 +1,11 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { Archive, BarChart3, Bell, BookOpen, CalendarDays, ChevronDown, ClipboardCheck, FileText, FileWarning, FolderKanban, FolderOpen, History, Layers, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, Users, UserRoundCog, UsersRound } from "lucide-react"
+import { Archive, BarChart3, Bell, BookOpen, CalendarDays, ClipboardCheck, FileText, FileWarning, FolderKanban, FolderOpen, History, Layers, ListChecks, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Users, UserRoundCog, UsersRound } from "lucide-react"
 import { getListNotificationsQueryKey, useListNotifications } from "@workspace/api-client-react"
 import { cn } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
 import { UniversalSearch } from "@/components/UniversalSearch"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 function NavItem({ href, icon: Icon, children, badge, onClick }: { href: string; icon: React.ElementType; children: React.ReactNode; badge?: React.ReactNode; onClick?: () => void }) {
   const [location] = useLocation()
@@ -39,71 +38,6 @@ function NavItem({ href, icon: Icon, children, badge, onClick }: { href: string;
   )
 }
 
-function NavGroup({ title }: { title: string }) {
-  return (
-    <div className="px-3 pb-2 pt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/40 first:pt-2">
-      {title}
-    </div>
-  )
-}
-
-type MoreNavItem = {
-  href: string
-  label: string
-  icon: React.ElementType
-}
-
-function MoreNav({ items }: { items: MoreNavItem[] }) {
-  const [location, setLocation] = useLocation()
-  const isActive = items.some((item) => location.startsWith(item.href))
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "group flex w-full items-center justify-between rounded-sm px-3 py-2 text-sm font-medium outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar",
-            isActive
-              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-              : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-[0.98]",
-          )}
-          aria-label="Open more workspace tools"
-        >
-          <span className="flex items-center gap-3">
-            <MoreHorizontal className={cn("h-4 w-4", isActive ? "text-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-accent-foreground")} />
-            <span>More tools</span>
-          </span>
-          <ChevronDown className="h-3.5 w-3.5 text-sidebar-foreground/40 transition-transform group-data-[state=open]:rotate-180" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        side="right"
-        sideOffset={8}
-        className="min-w-56 rounded-sm border-border/80 bg-popover p-1 shadow-xl"
-      >
-        <div className="px-2.5 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Workspace tools
-        </div>
-        {items.map((item) => {
-          const Icon = item.icon
-          return (
-            <DropdownMenuItem
-              key={item.href}
-              className="cursor-pointer gap-2 rounded-sm px-2.5 py-2 text-sm"
-              onSelect={() => setLocation(item.href)}
-            >
-              <Icon className="h-4 w-4 text-muted-foreground" />
-              <span>{item.label}</span>
-            </DropdownMenuItem>
-          )
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
-
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()
   const { user, logout } = usePortalAuth()
@@ -116,50 +50,37 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     },
   })
   const unreadNotifications = (notificationsQuery.data ?? []).filter((notification) => !notification.readAt).length
-  const moreItems: MoreNavItem[] = [
-    { href: "/checklists", icon: ListChecks, label: "Checklists" },
-    { href: "/activity", icon: History, label: "Activity history" },
-    { href: "/reports", icon: BarChart3, label: "Reports" },
-    { href: "/standards", icon: BookOpen, label: "Standards" },
-    { href: "/issues", icon: FileWarning, label: "Issue register" },
-    { href: "/files", icon: FolderOpen, label: "Files & documents" },
-    { href: "/contacts", icon: UsersRound, label: "Contacts" },
-    { href: "/archive", icon: Archive, label: "Recycle bin" },
-    { href: "/settings", icon: Settings, label: "Settings" },
-  ]
-  if (user?.role === "admin") {
-    moreItems.push(
-      { href: "/team", icon: UsersRound, label: "Team directory" },
-      { href: "/users", icon: UserRoundCog, label: "Portal users" },
-      { href: "/admin", icon: ShieldCheck, label: "Admin" },
-    )
-  }
-
   React.useEffect(() => {
     setMobileMenuOpen(false)
   }, [location])
 
   const navigation = (
     <div className="space-y-0.5">
-      <NavGroup title="Start" />
       <NavItem href="/dashboard" icon={Layers}>Overview</NavItem>
-
-      <NavGroup title="Register" />
       <NavItem href="/drawings" icon={FileText}>Drawing register</NavItem>
       <NavItem href="/projects" icon={FolderKanban}>Projects</NavItem>
-
-      <NavGroup title="Delivery" />
       <NavItem href="/assignments" icon={Users}>Assignments</NavItem>
       <NavItem href="/review-queue" icon={ClipboardCheck}>Review Queue</NavItem>
       <NavItem href="/deadlines" icon={CalendarDays}>Deadlines</NavItem>
-
-      <NavGroup title="Collaborate" />
-      <NavItem href="/chat" icon={MessageSquare}>Team Chat</NavItem>
       <NavItem href="/feed" icon={FileText}>My Feed</NavItem>
+      <NavItem href="/chat" icon={MessageSquare}>Team Chat</NavItem>
       <NavItem href="/notifications" icon={Bell} badge={unreadNotifications > 0 ? (unreadNotifications > 99 ? "99+" : unreadNotifications) : undefined}>Notifications</NavItem>
-
-      <NavGroup title="Tools" />
-      <MoreNav items={moreItems} />
+      <NavItem href="/checklists" icon={ListChecks}>Checklists</NavItem>
+      <NavItem href="/contacts" icon={UsersRound}>Contacts</NavItem>
+      <NavItem href="/issues" icon={FileWarning}>Issue register</NavItem>
+      <NavItem href="/files" icon={FolderOpen}>Files & documents</NavItem>
+      <NavItem href="/standards" icon={BookOpen}>Standards</NavItem>
+      <NavItem href="/reports" icon={BarChart3}>Reports</NavItem>
+      <NavItem href="/activity" icon={History}>Activity history</NavItem>
+      <NavItem href="/archive" icon={Archive}>Recycle bin</NavItem>
+      <NavItem href="/settings" icon={Settings}>Settings</NavItem>
+      {user?.role === "admin" && (
+        <>
+          <NavItem href="/team" icon={UsersRound}>Team directory</NavItem>
+          <NavItem href="/users" icon={UserRoundCog}>Portal users</NavItem>
+          <NavItem href="/admin" icon={ShieldCheck}>Admin</NavItem>
+        </>
+      )}
     </div>
   )
 
