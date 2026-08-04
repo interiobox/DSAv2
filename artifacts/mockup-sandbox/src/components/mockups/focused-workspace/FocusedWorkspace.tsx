@@ -68,6 +68,7 @@ const allNavItems = [
   { label: "Drawing Library", icon: FileText, count: "248" },
   { label: "Projects", icon: FolderKanban },
   { label: "Work queue", icon: ClipboardCheck, count: "12" },
+  { label: "Checklists", icon: CheckCircle2 },
   { label: "My work", icon: Sparkles, count: "7" },
   { label: "Collaboration", icon: MessageSquare, count: "3" },
   { label: "Notifications", icon: Bell, count: "4" },
@@ -241,7 +242,7 @@ export function FocusedWorkspace() {
                   <button className="fw-attention-item is-urgent" onClick={() => setSelectedDrawing(drawings[0])}><div className="fw-attention-icon"><Clock3 size={15} /></div><div><strong>A-204 is due today</strong><span>Review from Maya · Harbour House</span><em className="fw-mono">16:00 / 4 hrs</em></div><ChevronRight size={15} /></button>
                   <button className="fw-attention-item" onClick={() => setSelectedDrawing(drawings[1])}><div className="fw-attention-icon"><MessageSquare size={15} /></div><div><strong>Coordination note needs reply</strong><span>Transfer beam setting out · S-118</span><em className="fw-mono">D. Okafor / 32 min</em></div><ChevronRight size={15} /></button>
                    <button className="fw-attention-item" onClick={() => chooseNav("My work")}><div className="fw-attention-icon"><UsersRound size={15} /></div><div><strong>2 assignments are unclaimed</strong><span>North Quay Lofts package</span><em className="fw-mono">MY WORK / 2 OPEN</em></div><ChevronRight size={15} /></button>
-                   <button className="fw-attention-item" onClick={() => chooseNav("Work queue")}><div className="fw-attention-icon"><CheckCircle2 size={15} /></div><div><strong>Stage 04 checklist is 80%</strong><span>Civic Arts Centre · issue gate</span><em className="fw-mono">WORK QUEUE / 2 CHECKS</em></div><ChevronRight size={15} /></button>
+                   <button className="fw-attention-item" onClick={() => chooseNav("Checklists")}><div className="fw-attention-icon"><CheckCircle2 size={15} /></div><div><strong>Stage 04 checklist is 80%</strong><span>Civic Arts Centre · issue gate</span><em className="fw-mono">CHECKLISTS / 2 CHECKS</em></div><ChevronRight size={15} /></button>
                  </div>
                  <button className="fw-attention-footer" onClick={() => chooseNav("Collaboration")}>Open collaboration <ArrowUpRight size={13} /></button>
               </aside>
