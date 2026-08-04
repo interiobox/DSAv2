@@ -63,40 +63,25 @@ const drawings: Drawing[] = [
   { number: "A-109", title: "Ground floor general arrangement", discipline: "Architecture", project: "North Quay Lofts", status: "Issued", revision: "P07", owner: "J. Patel", due: "18 Mar", updated: "Yesterday" },
 ];
 
-const navGroups = [
-  {
-    label: "Workspace",
-    items: [
-      { label: "Overview", icon: LayoutDashboard },
-      { label: "Drawing register", icon: FileText, count: "248" },
-      { label: "Projects", icon: FolderKanban },
-    ],
-  },
-  {
-    label: "Delivery",
-    items: [
-      { label: "Assignments", icon: UsersRound, count: "7" },
-      { label: "Review queue", icon: ClipboardCheck, count: "12" },
-      { label: "Deadlines", icon: CalendarClock, count: "4" },
-      { label: "Checklists", icon: CheckCircle2 },
-    ],
-  },
-  {
-    label: "Studio",
-    items: [
-      { label: "My feed", icon: Sparkles },
-      { label: "Team chat", icon: MessageSquare, count: "3" },
-      { label: "Activity", icon: History },
-    ],
-  },
-];
-
-const referenceItems = [
+const allNavItems = [
+  { label: "Overview", icon: LayoutDashboard },
+  { label: "Drawing Library", icon: FileText, count: "248" },
+  { label: "Projects", icon: FolderKanban },
+  { label: "Assignments", icon: UsersRound, count: "7" },
+  { label: "Review queue", icon: ClipboardCheck, count: "12" },
+  { label: "Deadlines", icon: CalendarClock, count: "4" },
+  { label: "Checklists", icon: CheckCircle2 },
+  { label: "My feed", icon: Sparkles },
+  { label: "Team chat", icon: MessageSquare, count: "3" },
+  { label: "Activity", icon: History },
   { label: "Standards", icon: BookOpen },
   { label: "Issue register", icon: FileCheck2 },
   { label: "Files", icon: FolderOpen },
   { label: "Contacts", icon: UserRound },
   { label: "Reports", icon: Layers3 },
+  { label: "Recycle bin", icon: Archive },
+  { label: "Team & admin", icon: ShieldCheck },
+  { label: "Settings", icon: Settings2 },
 ];
 
 function StatusPill({ status }: { status: Status }) {
@@ -107,16 +92,6 @@ function StatusPill({ status }: { status: Status }) {
     Coordination: "coordination",
   }[status];
   return <span className={`fw-status fw-status-${tone}`}><span className="fw-status-dot" />{status}</span>;
-}
-
-function Metric({ label, value, detail, tone }: { label: string; value: string; detail: string; tone: "blue" | "amber" | "green" | "ink" }) {
-  return (
-    <div className={`fw-metric fw-metric-${tone}`}>
-      <div className="fw-metric-label">{label}</div>
-      <div className="fw-metric-value fw-mono">{value}</div>
-      <div className="fw-metric-detail">{detail}</div>
-    </div>
-  );
 }
 
 function RailItem({
@@ -160,7 +135,7 @@ export function FocusedWorkspace() {
   function chooseNav(label: string) {
     setActiveNav(label);
     setMobileRailOpen(false);
-    if (label !== "Overview" && label !== "Drawing register") {
+    if (label !== "Overview" && label !== "Drawing Library") {
       setShowToast(true);
       window.setTimeout(() => setShowToast(false), 2400);
     }
@@ -185,27 +160,16 @@ export function FocusedWorkspace() {
       </div>
       <div className="fw-workspace-switcher">
         <div className="fw-switcher-kicker fw-mono">CURRENT WORKSPACE</div>
-        <div className="fw-switcher-row"><span className="fw-project-dot" /><strong>Studio register</strong><ChevronDown size={14} /></div>
+          <div className="fw-switcher-row"><span className="fw-project-dot" /><strong>Drawing Library</strong><ChevronDown size={14} /></div>
         <div className="fw-switcher-meta fw-mono">3 active projects · 248 drawings</div>
       </div>
-      <nav className="fw-nav">
-        {navGroups.map((group) => (
-          <div className="fw-nav-group" key={group.label}>
-            <div className="fw-nav-label fw-mono">{group.label}</div>
-            {group.items.map((item) => (
-              <RailItem key={item.label} {...item} active={activeNav === item.label} onClick={() => chooseNav(item.label)} />
-            ))}
-          </div>
-        ))}
-        <div className="fw-nav-group">
-          <div className="fw-nav-label fw-mono">Reference</div>
-          {referenceItems.map((item) => <RailItem key={item.label} {...item} active={activeNav === item.label} onClick={() => chooseNav(item.label)} />)}
-          <RailItem label="Recycle bin" icon={Archive} active={activeNav === "Recycle bin"} onClick={() => chooseNav("Recycle bin")} />
-        </div>
+        <nav className="fw-nav">
+          <div className="fw-nav-label fw-mono">ALL WORKSPACE TABS</div>
+          {allNavItems.map((item) => (
+            <RailItem key={item.label} {...item} active={activeNav === item.label} onClick={() => chooseNav(item.label)} />
+          ))}
       </nav>
       <div className="fw-rail-bottom">
-        <RailItem label="Team & admin" icon={ShieldCheck} active={activeNav === "Team & admin"} onClick={() => chooseNav("Team & admin")} />
-        <RailItem label="Settings" icon={Settings2} active={activeNav === "Settings"} onClick={() => chooseNav("Settings")} />
         <div className="fw-user-chip"><div className="fw-avatar">MC</div><div><strong>Maya Chen</strong><span className="fw-mono">PROJECT LEAD</span></div><MoreHorizontal size={15} /></div>
       </div>
     </aside>
@@ -222,7 +186,7 @@ export function FocusedWorkspace() {
           <header className="fw-topbar">
             <div className="fw-breadcrumb">
               <button className="fw-mobile-menu" onClick={() => setMobileRailOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
-              <span className="fw-breadcrumb-muted">Studio register</span><ChevronRight size={14} /><strong>{activeNav === "Overview" ? "Overview" : activeNav}</strong>
+              <span className="fw-breadcrumb-muted">Drawing Library</span><ChevronRight size={14} /><strong>{activeNav === "Overview" ? "Overview" : activeNav}</strong>
             </div>
             <div className="fw-top-actions">
               <div className="fw-sync"><span className="fw-sync-dot" />Live <span className="fw-mono">09:42</span></div>
@@ -244,21 +208,14 @@ export function FocusedWorkspace() {
               </div>
             </section>
 
-            <section className="fw-metrics fw-animate-in fw-animate-delay-1">
-              <Metric label="Register total" value="248" detail="+12 this month" tone="blue" />
-              <Metric label="Needs review" value="12" detail="4 due today" tone="amber" />
-              <Metric label="Issued this week" value="18" detail="92% on programme" tone="green" />
-              <Metric label="Open coordination" value="07" detail="3 with consultants" tone="ink" />
-            </section>
-
             <div className="fw-workspace-grid">
               <section className="fw-register-panel fw-animate-in fw-animate-delay-2">
                 <div className="fw-panel-heading">
                   <div>
                     <div className="fw-section-kicker fw-mono">PRIMARY WORK SURFACE</div>
-                    <h2>Drawing register <span className="fw-heading-count fw-mono">248</span></h2>
+                    <h2>Drawing Library <span className="fw-heading-count fw-mono">248</span></h2>
                   </div>
-                  <button className="fw-text-button" onClick={() => chooseNav("Drawing register")}>Open full register <ArrowUpRight size={14} /></button>
+                  <button className="fw-text-button" onClick={() => chooseNav("Drawing Library")}>Open full library <ArrowUpRight size={14} /></button>
                 </div>
                 <div className="fw-register-toolbar">
                   <div className="fw-search"><Search size={15} /><input aria-label="Search drawings" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search number, title, project..." /></div>
@@ -282,7 +239,7 @@ export function FocusedWorkspace() {
                   ))}
                   {visibleDrawings.length === 0 && <div className="fw-empty"><FileArchive size={24} /><strong>No drawings match this view</strong><span>Try a different status or search term.</span></div>}
                 </div>
-                <div className="fw-table-footer"><span className="fw-mono">SHOWING {visibleDrawings.length} OF 248 DRAWINGS</span><button onClick={() => chooseNav("Drawing register")}>View register <ArrowUpRight size={13} /></button></div>
+                <div className="fw-table-footer"><span className="fw-mono">SHOWING {visibleDrawings.length} OF 248 DRAWINGS</span><button onClick={() => chooseNav("Drawing Library")}>View library <ArrowUpRight size={13} /></button></div>
               </section>
 
               <aside className="fw-attention fw-animate-in fw-animate-delay-3">

@@ -104,16 +104,6 @@
 .fw-button-quiet:hover { border-color:#aabac5; color:var(--fw-ink); background:#fff; }
 .fw-button-primary { color:#fff; border-color:var(--fw-blue); background:var(--fw-blue); box-shadow:0 2px 5px rgba(21,89,166,.17); }
 .fw-button-primary:hover { background:#0f4d91; }
-.fw-metrics { display:grid; grid-template-columns:repeat(4, 1fr); border-bottom:1px solid var(--fw-line); margin-bottom:25px; }
-.fw-metric { position:relative; min-height:112px; padding:21px 22px 17px; border-right:1px solid var(--fw-line); }
-.fw-metric:first-child { padding-left:0; }
-.fw-metric:last-child { border-right:0; }
-.fw-metric-label { color:var(--fw-muted); font:9px 'DM Mono', monospace; letter-spacing:.1em; text-transform:uppercase; }
-.fw-metric-value { margin:8px 0 3px; font-size:28px; letter-spacing:-.04em; font-weight:500; color:var(--fw-ink); }
-.fw-metric-detail { color:var(--fw-muted); font-size:10px; }
-.fw-metric-blue .fw-metric-value { color:var(--fw-blue); }
-.fw-metric-amber .fw-metric-value { color:var(--fw-amber); }
-.fw-metric-green .fw-metric-value { color:var(--fw-green); }
 .fw-workspace-grid { display:grid; grid-template-columns:minmax(0, 1fr) 316px; gap:24px; }
 .fw-register-panel, .fw-attention, .fw-project-strip, .fw-activity-panel { background:rgba(251,250,247,.83); border:1px solid var(--fw-line); }
 .fw-panel-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:15px; padding:19px 19px 16px; border-bottom:1px solid var(--fw-line); }
@@ -238,10 +228,6 @@
   .fw-attention { order:-1; }
   .fw-attention-list { display:grid; grid-template-columns:repeat(2,1fr); }
   .fw-attention-footer { border-top:1px solid var(--fw-line); }
-  .fw-metrics { grid-template-columns:repeat(2,1fr); }
-  .fw-metric:nth-child(2) { border-right:0; }
-  .fw-metric:nth-child(-n+2) { border-bottom:1px solid var(--fw-line); }
-  .fw-metric:first-child { padding-left:0; }
 }
 @media (max-width: 700px) {
   .fw-desktop-rail { display:none; }
@@ -259,10 +245,6 @@
   .fw-heading-actions { width:100%; }
   .fw-heading-actions .fw-button { flex:1; }
   .fw-heading p { max-width:310px; line-height:1.5; }
-  .fw-metrics { margin-left:-14px; margin-right:-14px; padding:0 14px; }
-  .fw-metric { min-height:95px; padding:17px 12px; }
-  .fw-metric:first-child { padding-left:0; }
-  .fw-metric-value { font-size:23px; }
   .fw-workspace-grid, .fw-bottom-grid { gap:14px; }
   .fw-panel-heading { padding:16px 14px 13px; align-items:flex-start; }
   .fw-panel-heading .fw-text-button { font-size:0; gap:0; }
