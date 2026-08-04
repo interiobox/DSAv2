@@ -15,12 +15,12 @@ import DrawingList from "@/pages/DrawingList";
 import ProjectDetail from "@/pages/ProjectDetail";
 import MyFeed from "@/pages/MyFeed";
 import NotFound from "@/pages/not-found";
-import { Activity, Archive, Projects } from "@/pages/WorkspaceViews";
-import { Issues, Notifications, Reports, Standards } from "@/pages/ManagementViews";
+import UsersPage from "@/pages/Users";
+import { Activity, Archive, Deadlines, Projects, ReviewQueue } from "@/pages/WorkspaceViews";
+import { Files, Issues, Notifications, Reports, Standards, Team } from "@/pages/ManagementViews";
 import SettingsPage from "@/pages/Settings";
 import Dashboard from "@/pages/Dashboard";
 import ContactsPage from "@/pages/Contacts";
-import { DrawingWorkspace, PeopleWorkspace } from "@/pages/ConsolidatedWorkspaces";
 import { Layers } from "lucide-react";
 
 const queryClient = new QueryClient({
@@ -200,9 +200,9 @@ function LoadingScreen() {
   );
 }
 
-function AdminPeopleRoute() {
+function AdminUsersRoute() {
   const { user } = usePortalAuth();
-  return user?.role === "admin" ? <PeopleWorkspace /> : <Redirect to="/drawings" />;
+  return user?.role === "admin" ? <UsersPage /> : <Redirect to="/drawings" />;
 }
 
 function ProtectedRoutes() {
@@ -213,14 +213,14 @@ function ProtectedRoutes() {
     <AppLayout>
       <Switch>
         <Route path="/dashboard" component={Dashboard} />
-        <Route path="/drawings" component={DrawingWorkspace} />
+        <Route path="/drawings" component={DrawingList} />
         <Route path="/drawings/:id" component={DrawingDetail} />
         <Route path="/assignments" component={Assignments} />
         <Route path="/projects" component={Projects} />
         <Route path="/projects/:projectName" component={ProjectDetail} />
-        <Route path="/review-queue"><Redirect to="/drawings?view=review" /></Route>
+        <Route path="/review-queue" component={ReviewQueue} />
         <Route path="/activity" component={Activity} />
-        <Route path="/deadlines"><Redirect to="/drawings?view=deadlines" /></Route>
+        <Route path="/deadlines" component={Deadlines} />
         <Route path="/archive" component={Archive} />
         <Route path="/checklists" component={ChecklistsPage} />
         <Route path="/chat" component={ChatPage} />
@@ -228,12 +228,11 @@ function ProtectedRoutes() {
         <Route path="/reports" component={Reports} />
         <Route path="/standards" component={Standards} />
         <Route path="/issues" component={Issues} />
-        <Route path="/files"><Redirect to="/drawings?view=files" /></Route>
-        <Route path="/team"><Redirect to="/people" /></Route>
+        <Route path="/files" component={Files} />
+        <Route path="/team" component={Team} />
         <Route path="/contacts" component={ContactsPage} />
         <Route path="/settings" component={SettingsPage} />
-        <Route path="/users"><Redirect to="/people" /></Route>
-        <Route path="/people" component={AdminPeopleRoute} />
+        <Route path="/users" component={AdminUsersRoute} />
         <Route path="/feed" component={MyFeed} />
         <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />

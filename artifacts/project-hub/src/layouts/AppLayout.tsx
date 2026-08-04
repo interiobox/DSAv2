@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { Archive, BarChart3, Bell, BookOpen, FileText, FileWarning, FolderKanban, History, Layers, ListChecks, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Users, UsersRound } from "lucide-react"
+import { Archive, BarChart3, Bell, BookOpen, CalendarDays, ClipboardCheck, FileText, FileWarning, FolderKanban, FolderOpen, History, Layers, ListChecks, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Users, UserRoundCog, UsersRound } from "lucide-react"
 import { getListNotificationsQueryKey, useListNotifications } from "@workspace/api-client-react"
 import { cn } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
@@ -57,22 +57,30 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navigation = (
     <div className="space-y-0.5">
       <NavItem href="/dashboard" icon={Layers}>Overview</NavItem>
-      <NavItem href="/drawings" icon={FileText}>Drawing Workspace</NavItem>
+      <NavItem href="/drawings" icon={FileText}>Drawing Library</NavItem>
       <NavItem href="/projects" icon={FolderKanban}>Projects</NavItem>
       <NavItem href="/assignments" icon={Users}>Assignments</NavItem>
+      <NavItem href="/review-queue" icon={ClipboardCheck}>Review Queue</NavItem>
+      <NavItem href="/deadlines" icon={CalendarDays}>Deadlines</NavItem>
       <NavItem href="/feed" icon={FileText}>My Feed</NavItem>
       <NavItem href="/chat" icon={MessageSquare}>Team Chat</NavItem>
       <NavItem href="/notifications" icon={Bell} badge={unreadNotifications > 0 ? (unreadNotifications > 99 ? "99+" : unreadNotifications) : undefined}>Notifications</NavItem>
       <NavItem href="/checklists" icon={ListChecks}>Checklists</NavItem>
       <NavItem href="/contacts" icon={UsersRound}>Contacts</NavItem>
       <NavItem href="/issues" icon={FileWarning}>Issue register</NavItem>
+      <NavItem href="/files" icon={FolderOpen}>Files & documents</NavItem>
       <NavItem href="/standards" icon={BookOpen}>Standards</NavItem>
       <NavItem href="/reports" icon={BarChart3}>Reports</NavItem>
       <NavItem href="/activity" icon={History}>Activity history</NavItem>
       <NavItem href="/archive" icon={Archive}>Recycle bin</NavItem>
-      {user?.role === "admin" && <NavItem href="/people" icon={UsersRound}>People</NavItem>}
       <NavItem href="/settings" icon={Settings}>Settings</NavItem>
-      {user?.role === "admin" && <NavItem href="/admin" icon={ShieldCheck}>Admin</NavItem>}
+      {user?.role === "admin" && (
+        <>
+          <NavItem href="/team" icon={UsersRound}>Team directory</NavItem>
+          <NavItem href="/users" icon={UserRoundCog}>Portal users</NavItem>
+          <NavItem href="/admin" icon={ShieldCheck}>Admin</NavItem>
+        </>
+      )}
     </div>
   )
 
