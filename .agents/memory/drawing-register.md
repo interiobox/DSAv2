@@ -73,11 +73,11 @@ Primary navigation should lead with Dashboard, Drawing Library, Projects, Assign
 
 **How to apply:** Preserve this order when adding or restoring sidebar destinations, and keep dashboard activity compact rather than using a wide alternating timeline in a narrow card.
 
-Projects use soft deletion with administrator-only recycle and restore, while their drawings and supporting records remain recoverable; drawing approval is also administrator-only and enforced server-side.
+Authenticated users can edit persisted projects and drawings, while projects and drawings use administrator-only recycle and restore; their supporting records remain recoverable, and drawing approval is also administrator-only and enforced server-side.
 
-**Why:** Project history must remain auditable and recoverable, and approval is a governance action that cannot depend on hiding a button in the client.
+**Why:** Collaborative editing should not be blocked by the recycle-bin governance rule; project history must remain auditable and recoverable, and approval is a governance action that cannot depend on hiding a button in the client.
 
-**How to apply:** Keep deleted projects out of active pickers, expose them only in the administrator recycle bin, preserve associated drawing records, and guard every mutation path that sets an approved drawing status.
+**How to apply:** Keep Edit available to authenticated users for persisted projects/drawings, keep deleted records out of active pickers, expose recycle/restore only to administrators, preserve associated drawing records, and guard every mutation path that sets an approved drawing status.
 
 Recycle-bin restoration is access-aware rather than role-gated: authenticated users can restore shared records and their own personal notes, while administrators can restore every recyclable record, including other users' personal notes and portal users.
 

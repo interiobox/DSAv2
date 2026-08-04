@@ -78,7 +78,7 @@ router.post("/projects", async (req, res): Promise<void> => {
   res.status(201).json(CreateProjectResponse.parse(project));
 });
 
-router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
+router.patch("/projects/:id", async (req, res): Promise<void> => {
   const id = Number.parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
   const parsed = UpdateProjectBody.safeParse(req.body);
   if (!Number.isInteger(id) || id < 1) {

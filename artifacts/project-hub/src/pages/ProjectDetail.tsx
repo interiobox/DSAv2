@@ -174,8 +174,12 @@ export default function ProjectDetail() {
               </div>
             </div>
              <div className="flex flex-wrap items-center gap-1.5">
-               <Button variant="outline" className="rounded-sm" onClick={() => { setProjectNameDraft(project.name); setIsEditOpen(true) }} disabled={!isAdmin || updateProject.isPending} title={isAdmin ? "Edit project name" : "Administrator access required"} data-testid="button-edit-project-detail"><Pencil className="mr-2 h-4 w-4" />Edit</Button>
-               <Button variant="outline" className="rounded-sm text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={handleDeleteProject} disabled={!isAdmin || deleteProject.isPending} title={isAdmin ? "Move project to recycle bin" : "Administrator access required"} data-testid="button-recycle-project-detail"><Trash2 className="mr-2 h-4 w-4" />{deleteProject.isPending ? "Recycling..." : "Recycle"}</Button>
+               {project.id > 0 && <Button variant="outline" className="rounded-sm" onClick={() => { setProjectNameDraft(project.name); setIsEditOpen(true) }} disabled={updateProject.isPending} data-testid="button-edit-project-detail"><Pencil className="mr-2 h-4 w-4" />Edit</Button>}
+               {isAdmin && (
+                 <>
+                   <Button variant="outline" className="rounded-sm text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={handleDeleteProject} disabled={deleteProject.isPending} data-testid="button-recycle-project-detail"><Trash2 className="mr-2 h-4 w-4" />{deleteProject.isPending ? "Recycling..." : "Recycle"}</Button>
+                 </>
+               )}
               <Button variant="outline" className="rounded-sm" asChild><Link href={`/drawings?project=${encodeURIComponent(project.name)}`}><FileText className="mr-2 h-4 w-4" />View drawings</Link></Button>
               <Button className="rounded-sm shadow-sm" asChild><Link href={`/contacts?project=${encodeURIComponent(project.name)}`}><UsersRound className="mr-2 h-4 w-4" />Directory</Link></Button>
             </div>

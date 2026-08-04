@@ -109,12 +109,14 @@ export function Projects() {
                       </Link>
                        {project.id > 0 && (
                          <div className="flex items-center gap-1.5">
-                           <Button type="button" variant="ghost" size="sm" className="h-8 rounded-sm px-2 text-xs font-medium" onClick={() => { setEditingProject({ id: project.id, name: project.name }); setProjectNameDraft(project.name) }} disabled={!isAdmin || updateProject.isPending} title={isAdmin ? "Edit project name" : "Administrator access required"} data-testid={`button-edit-project-${project.id}`}>
+                           <Button type="button" variant="ghost" size="sm" className="h-8 rounded-sm px-2 text-xs font-medium" onClick={() => { setEditingProject({ id: project.id, name: project.name }); setProjectNameDraft(project.name) }} disabled={updateProject.isPending} data-testid={`button-edit-project-${project.id}`}>
                              <Pencil className="mr-1.5 h-3.5 w-3.5" />Edit
                            </Button>
-                           <Button type="button" variant="outline" size="sm" className="h-8 rounded-sm px-2 text-xs font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={(event) => handleDeleteProject(event, project.id, project.name)} disabled={!isAdmin || deleteProject.isPending} title={isAdmin ? "Move project to recycle bin" : "Administrator access required"} data-testid={`button-recycle-project-${project.id}`}>
-                             <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
-                           </Button>
+                           {isAdmin && (
+                             <Button type="button" variant="outline" size="sm" className="h-8 rounded-sm px-2 text-xs font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60" onClick={(event) => handleDeleteProject(event, project.id, project.name)} disabled={deleteProject.isPending} data-testid={`button-recycle-project-${project.id}`}>
+                               <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
+                             </Button>
+                           )}
                          </div>
                        )}
                     </div>

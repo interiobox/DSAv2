@@ -273,18 +273,19 @@ export default function DrawingList() {
                           >
                             <Pencil className="mr-1.5 h-3.5 w-3.5" />Edit
                           </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-8 rounded-sm px-2 text-xs font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60"
-                            onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}
-                            disabled={!isAdmin || deleteDrawing.isPending}
-                            title={isAdmin ? "Move drawing to recycle bin" : "Administrator access required"}
-                            data-testid={`button-recycle-drawing-mobile-${drawing.id}`}
-                          >
-                            <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
-                          </Button>
+                          {isAdmin && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8 rounded-sm px-2 text-xs font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60"
+                              onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}
+                              disabled={deleteDrawing.isPending}
+                              data-testid={`button-recycle-drawing-mobile-${drawing.id}`}
+                            >
+                              <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -368,18 +369,19 @@ export default function DrawingList() {
                         >
                           <Pencil className="mr-1.5 h-3.5 w-3.5" />Edit
                         </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-8 rounded-sm px-2 text-xs font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60"
-                          onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}
-                          disabled={!isAdmin || deleteDrawing.isPending}
-                          title={isAdmin ? "Move drawing to recycle bin" : "Administrator access required"}
-                          data-testid={`button-recycle-drawing-${drawing.id}`}
-                        >
-                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
-                        </Button>
+                        {isAdmin && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-8 rounded-sm px-2 text-xs font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60"
+                            onClick={(event) => { event.stopPropagation(); handleDelete(drawing.id, drawing.title) }}
+                            disabled={deleteDrawing.isPending}
+                            data-testid={`button-recycle-drawing-${drawing.id}`}
+                          >
+                            <Trash2 className="mr-1.5 h-3.5 w-3.5" />Recycle
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
