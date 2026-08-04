@@ -110,6 +110,212 @@ function RailItem({
   );
 }
 
+type WorkspaceTabViewProps = {
+  activeNav: string;
+  activeFilter: "All" | Status;
+  setActiveFilter: (filter: "All" | Status) => void;
+  query: string;
+  setQuery: (query: string) => void;
+  onNav: (label: string) => void;
+  onToast: (message?: string) => void;
+  selectedDrawing: Drawing | null;
+  setSelectedDrawing: (drawing: Drawing) => void;
+  note: string;
+  setNote: (note: string) => void;
+  postNote: () => void;
+  checklistDone: number;
+  setChecklistDone: (value: number) => void;
+  restoredCount: number;
+  setRestoredCount: (value: number) => void;
+  notificationsRead: boolean;
+  setNotificationsRead: (value: boolean) => void;
+  compactMode: boolean;
+  setCompactMode: (value: boolean) => void;
+};
+
+function WorkspaceTabView({
+  activeNav,
+  activeFilter,
+  setActiveFilter,
+  query,
+  setQuery,
+  onNav,
+  onToast,
+  selectedDrawing,
+  setSelectedDrawing,
+  note,
+  setNote,
+  postNote,
+  checklistDone,
+  setChecklistDone,
+  restoredCount,
+  setRestoredCount,
+  notificationsRead,
+  setNotificationsRead,
+  compactMode,
+  setCompactMode,
+}: WorkspaceTabViewProps) {
+  const visible = drawings.filter((drawing) => {
+    const matchesFilter = activeFilter === "All" || drawing.status === activeFilter;
+    return matchesFilter && `${drawing.number} ${drawing.title} ${drawing.project} ${drawing.discipline}`.toLowerCase().includes(query.toLowerCase());
+  });
+
+  const title = activeNav === "Drawing Library" ? "Drawing Library" : activeNav;
+  const descriptions: Record<string, string> = {
+    "Drawing Library": "Search, filter, and open every project drawing from one working register.",
+    "Work queue": "Assignments, review gates, and deadlines that need a decision.",
+    Checklists: "Track issue gates and project checks without hiding the checklist workflow.",
+    "My work": "Your assigned drawings, open actions, and personal progress.",
+    Collaboration: "Keep project conversations, activity, and coordination notes together.",
+    Notifications: "Unread mentions, approvals, assignments, and system updates.",
+    Reference: "Standards, contacts, files, issues, and reports for project decisions.",
+    "Recycle bin": "Restore deleted drawings during the 30-day retention window.",
+    Settings: "Personal workspace preferences and display controls.",
+    "Team & admin": "People, permissions, and administrator tools.",
+  };
+
+  return (
+    <div className="fw-tab-view fw-animate-in">
+      <div className="fw-tab-hero">
+        <div>
+          <div className="fw-eyebrow fw-mono"><span className="fw-eyebrow-rule" /> WORKSPACE TAB / LIVE VIEW</div>
+          <h1>{title}</h1>
+          <p>{descriptions[activeNav] ?? "A focused workspace for architectural drawing coordination."}</p>
+        </div>
+        <div className="fw-tab-actions">
+          {activeNav === "Drawing Library" && <button className="fw-button fw-button-primary" onClick={() => onToast("New drawing form opened")}><Plus size={15} />New drawing</button>}
+          {activeNav === "Work queue" && <button className="fw-button fw-button-primary" onClick={() => onToast("Queue refreshed")}><Check size={15} />Refresh queue</button>}
+          {activeNav === "Settings" && <button className="fw-button fw-button-quiet" onClick={() => setCompactMode(!compactMode)}><SlidersHorizontal size={15} />{compactMode ? "Comfortable rows" : "Compact rows"}</button>}
+        </div>
+      </div>
+
+      {activeNav === "Drawing Library" && (
+        <section className="fw-tab-panel">
+          <div className="fw-tab-toolbar">
+            <div className="fw-search"><Search size={15} /><input aria-label="Search drawings" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search number, title, project..." /></div>
+            <div className="fw-filter-tabs">
+              {(["All", "In review", "Coordination", "Approved", "Issued"] as const).map((filter) => (
+                <button key={filter} className={activeFilter === filter ? "is-active" : ""} onClick={() => setActiveFilter(filter)}>{filter}<span className="fw-mono">{filter === "All" ? "248" : filter === "In review" ? "12" : filter === "Coordination" ? "7" : filter === "Approved" ? "31" : "198"}</span></button>
+              ))}
+              <button className="fw-filter-tab-archive" onClick={() => onNav("Recycle bin")} aria-label="Open recycle bin" title="Recycle bin"><Archive size={15} /></button>
+            </div>
+          </div>
+          <div className={`fw-table ${compactMode ? "is-compact" : ""}`}>
+            <div className="fw-table-head fw-mono"><span>DRAWING</span><span>PROJECT / DISCIPLINE</span><span>STATUS</span><span>OWNER</span><span>DUE</span><span /></div>
+            {visible.map((drawing) => (
+              <button key={drawing.number} className={`fw-table-row ${selectedDrawing?.number === drawing.number ? "is-selected" : ""}`} onClick={() => setSelectedDrawing(drawing)}>
+                <div className="fw-drawing-cell"><span className="fw-drawing-number fw-mono">{drawing.number}</span><strong>{drawing.title}</strong><span className="fw-revision fw-mono">{drawing.revision}</span></div>
+                <div className="fw-project-cell"><strong>{drawing.project}</strong><span>{drawing.discipline}</span></div>
+                <div><StatusPill status={drawing.status} /></div>
+                <div className="fw-owner"><span className="fw-small-avatar">{drawing.owner.split(" ").map((part) => part[0]).join("")}</span>{drawing.owner}</div>
+                <div className={`fw-due fw-mono ${drawing.dueTone === "soon" ? "is-soon" : ""}`}>{drawing.due}</div>
+                <ChevronRight className="fw-row-chevron" size={16} />
+              </button>
+            ))}
+            {visible.length === 0 && <div className="fw-empty"><FileArchive size={24} /><strong>No drawings match this view</strong><span>Try a different status or search term.</span></div>}
+          </div>
+        </section>
+      )}
+
+      {activeNav === "Projects" && (
+        <section className="fw-tab-panel">
+          <div className="fw-list-heading"><div><div className="fw-section-kicker fw-mono">ACTIVE PROJECTS / 03</div><h2>Project workspaces</h2></div><button className="fw-button fw-button-primary" onClick={() => onToast("New project form opened")}><Plus size={14} />New project</button></div>
+          <div className="fw-projects fw-projects-tab">
+            {[
+              ["Harbour House", "17 Henrietta Street, London", "TENDER / LIVE", "68%", "84 drawings · 6 in review"],
+              ["Civic Arts Centre", "Kingsway, Birmingham", "CONSTRUCTION", "84%", "96 drawings · 2 in review"],
+              ["North Quay Lofts", "Canal Basin, Leeds", "PLANNING", "41%", "68 drawings · 4 in review"],
+            ].map(([name, address, stage, progress, summary]) => (
+              <button className="fw-project-card" key={name} onClick={() => { setQuery(name); onNav("Drawing Library"); }}>
+                <div className="fw-project-top"><span className="fw-project-index fw-mono">PROJECT</span><span className="fw-project-stage">{stage}</span></div>
+                <strong>{name}</strong><span className="fw-project-address">{address}</span>
+                <div className="fw-progress-label"><span>Package progress</span><span className="fw-mono">{progress}</span></div>
+                <div className="fw-progress"><span style={{ width: progress }} /></div><small className="fw-mono">{summary}</small>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {activeNav === "Work queue" && (
+        <div className="fw-card-grid">
+          {[
+            ["Review queue", "12 drawings waiting for a review decision", "Open review queue", "Review Queue"],
+            ["Assignments", "2 drawings are still unclaimed", "Manage assignments", "My work"],
+            ["Deadlines", "4 drawing deadlines fall within the next 48 hours", "Open deadlines", "Work queue"],
+          ].map(([heading, body, action, target]) => (
+            <section className="fw-tab-card" key={heading}><div className="fw-card-icon"><ClipboardCheck size={17} /></div><h2>{heading}</h2><p>{body}</p><button className="fw-text-button" onClick={() => target === "Work queue" ? onToast("Deadline view refreshed") : onNav(target)}>{action}<ArrowUpRight size={13} /></button></section>
+          ))}
+        </div>
+      )}
+
+      {activeNav === "Checklists" && (
+        <section className="fw-tab-panel">
+          <div className="fw-list-heading"><div><div className="fw-section-kicker fw-mono">CIVIC ARTS CENTRE / ISSUE GATE</div><h2>Stage 04 coordination checklist</h2></div><strong className="fw-progress-number">{checklistDone}/5 complete</strong></div>
+          <div className="fw-checklist">
+            {["Confirm latest consultant backgrounds", "Verify plant room route against M-301", "Resolve transfer beam coordination note", "Attach signed issue sheet", "Record client issue decision"].map((item, index) => (
+              <button key={item} className={`fw-check-row ${index < checklistDone ? "is-done" : ""}`} onClick={() => setChecklistDone(index < checklistDone ? index : index + 1)}><span className="fw-check-box">{index < checklistDone && <Check size={13} />}</span><span>{item}</span><ChevronRight size={14} /></button>
+            ))}
+          </div>
+          <button className="fw-button fw-button-primary" onClick={() => { setChecklistDone(5); onToast("Checklist marked complete"); }}><CheckCircle2 size={15} />Complete checklist</button>
+        </section>
+      )}
+
+      {activeNav === "My work" && (
+        <section className="fw-tab-panel">
+          <div className="fw-list-heading"><div><div className="fw-section-kicker fw-mono">MAYA CHEN / PROJECT LEAD</div><h2>My open drawing work</h2></div><span className="fw-attention-count fw-mono">07</span></div>
+          {drawings.slice(0, 4).map((drawing, index) => <button className="fw-work-row" key={drawing.number} onClick={() => setSelectedDrawing(drawing)}><span className="fw-drawing-number fw-mono">{drawing.number}</span><div><strong>{drawing.title}</strong><span>{drawing.project} · {index % 2 === 0 ? "Review due today" : "Coordination follow-up"}</span></div><StatusPill status={drawing.status} /><ChevronRight size={15} /></button>)}
+        </section>
+      )}
+
+      {activeNav === "Collaboration" && (
+        <section className="fw-tab-panel">
+          <div className="fw-list-heading"><div><div className="fw-section-kicker fw-mono">PROJECT ACTIVITY</div><h2>Latest collaboration</h2></div><button className="fw-button fw-button-primary" onClick={postNote}><Send size={14} />Post note</button></div>
+          <div className="fw-activity-list fw-tab-activity"><div className="fw-activity-row"><span className="fw-small-avatar fw-avatar-blue">DO</span><p><strong>Daniel Okafor</strong> commented on <b>S-118</b><span>“Please confirm the transfer zone is clear of the riser.”</span></p><time className="fw-mono">09:10</time></div><div className="fw-activity-row"><span className="fw-small-avatar fw-avatar-sand">LB</span><p><strong>Lucía Byrne</strong> submitted <b>A-611</b> for review<span>Revision P05 · North Quay Lofts</span></p><time className="fw-mono">08:42</time></div></div>
+          <div className="fw-quick-note"><input value={note} onChange={(event) => setNote(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") postNote(); }} placeholder="Add a coordination note..." /><button onClick={postNote} aria-label="Send note"><Send size={15} /></button></div>
+        </section>
+      )}
+
+      {activeNav === "Notifications" && (
+        <section className="fw-tab-panel">
+          <div className="fw-list-heading"><div><div className="fw-section-kicker fw-mono">INBOX / {notificationsRead ? "ALL READ" : "4 UNREAD"}</div><h2>Notifications</h2></div><button className="fw-text-button" onClick={() => setNotificationsRead(true)}>Mark all read <Check size={13} /></button></div>
+          {["A-204 is due today", "You were assigned S-118 for coordination", "M-301 was approved by Ravi Singh", "Lucía Byrne mentioned you in a note"].map((item, index) => <button className={`fw-notification-row ${notificationsRead || index > 1 ? "is-read" : ""}`} key={item} onClick={() => setNotificationsRead(true)}><span className="fw-notification-indicator" /><div><strong>{item}</strong><span>{index === 0 ? "Harbour House · due at 16:00" : "Drawing Library · today"}</span></div><time className="fw-mono">{index + 1}h ago</time></button>)}
+        </section>
+      )}
+
+      {activeNav === "Reference" && (
+        <div className="fw-card-grid">
+          {[["Standards", "12 office standards and issue protocols", BookOpen], ["Issue register", "8 open coordination issues across 3 projects", FileArchive], ["Files & documents", "46 shared project documents", FolderOpen], ["Contacts", "24 consultant and client contacts", UsersRound], ["Reports", "Monthly register activity and issue reports", ArrowDown]].map(([heading, body, Icon]) => <section className="fw-tab-card" key={heading as string}><div className="fw-card-icon"><Icon size={17} /></div><h2>{heading as string}</h2><p>{body as string}</p><button className="fw-text-button" onClick={() => onToast(`${heading as string} opened`)}>Open {heading as string}<ArrowUpRight size={13} /></button></section>)}
+        </div>
+      )}
+
+      {activeNav === "Recycle bin" && (
+        <section className="fw-tab-panel">
+          <div className="fw-list-heading"><div><div className="fw-section-kicker fw-mono">RETENTION / 30 DAYS</div><h2>Recently recycled drawings</h2></div><span className="fw-mono fw-muted-label">{Math.max(0, 3 - restoredCount)} records</span></div>
+          {drawings.slice(3, 6).slice(restoredCount).map((drawing, index) => <div className="fw-work-row fw-recycle-row" key={drawing.number}><span className="fw-drawing-number fw-mono">{drawing.number}</span><div><strong>{drawing.title}</strong><span>{drawing.project} · Deleted {index + restoredCount + 1} day ago</span></div><button className="fw-button fw-button-quiet" onClick={() => { setRestoredCount(restoredCount + 1); onToast(`${drawing.number} restored to Drawing Library`); }}>Restore</button></div>)}
+          {restoredCount >= 3 && <div className="fw-empty"><Archive size={24} /><strong>Recycle bin is empty</strong><span>Restored drawings return to the Drawing Library.</span></div>}
+        </section>
+      )}
+
+      {activeNav === "Settings" && (
+        <section className="fw-tab-panel fw-settings-panel">
+          <div className="fw-list-heading"><div><div className="fw-section-kicker fw-mono">PERSONAL WORKSPACE</div><h2>Display preferences</h2></div></div>
+          <button className="fw-setting-row" onClick={() => setCompactMode(!compactMode)}><div><strong>Compact drawing rows</strong><span>Fit more drawings into the register view.</span></div><span className={`fw-toggle ${compactMode ? "is-on" : ""}`}><span /></span></button>
+          <button className="fw-setting-row" onClick={() => onToast("Live updates are enabled")}><div><strong>Live activity updates</strong><span>Keep notifications and collaboration changes current.</span></div><span className="fw-toggle is-on"><span /></span></button>
+          <button className="fw-setting-row" onClick={() => onToast("Preferences saved")}><div><strong>Save workspace preferences</strong><span>Your display choices are saved for this session.</span></div><Check size={16} /></button>
+        </section>
+      )}
+
+      {activeNav === "Team & admin" && (
+        <section className="fw-tab-panel">
+          <div className="fw-list-heading"><div><div className="fw-section-kicker fw-mono">DESIGN SENSE / ADMINISTRATION</div><h2>Team directory</h2></div><button className="fw-button fw-button-primary" onClick={() => onToast("Invite flow opened")}><Plus size={14} />Invite member</button></div>
+          {[["MC", "Maya Chen", "Project Lead", "4 active drawings"], ["DO", "Daniel Okafor", "Structural Lead", "8 active drawings"], ["LB", "Lucía Byrne", "Architect", "6 active drawings"], ["RS", "Ravi Singh", "Project Architect", "12 active drawings"]].map(([initials, name, role, work]) => <div className="fw-team-row" key={name}><span className="fw-avatar fw-avatar-blue">{initials}</span><div><strong>{name}</strong><span>{role} · {work}</span></div><button className="fw-text-button" onClick={() => onToast(`${name}'s profile opened`)}>View profile</button></div>)}
+        </section>
+      )}
+    </div>
+  );
+}
+
 export function FocusedWorkspace() {
   const [activeNav, setActiveNav] = useState("Overview");
   const [activeFilter, setActiveFilter] = useState<"All" | Status>("All");
@@ -117,8 +323,12 @@ export function FocusedWorkspace() {
   const [selectedDrawing, setSelectedDrawing] = useState<Drawing | null>(drawings[0]);
   const [mobileRailOpen, setMobileRailOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("Workspace action saved locally");
   const [note, setNote] = useState("");
   const [compactMode, setCompactMode] = useState(false);
+  const [checklistDone, setChecklistDone] = useState(2);
+  const [restoredCount, setRestoredCount] = useState(0);
+  const [notificationsRead, setNotificationsRead] = useState(false);
 
   const visibleDrawings = useMemo(() => drawings.filter((drawing) => {
     const matchesFilter = activeFilter === "All" || drawing.status === activeFilter;
@@ -130,16 +340,20 @@ export function FocusedWorkspace() {
     setActiveNav(label);
     setMobileRailOpen(false);
     if (label !== "Overview" && label !== "Drawing Library") {
-      setShowToast(true);
-      window.setTimeout(() => setShowToast(false), 2400);
+      setSelectedDrawing(null);
     }
+  }
+
+  function showActionToast(message = "Workspace action saved locally") {
+    setShowToast(true);
+    window.setTimeout(() => setShowToast(false), 2400);
+    setToastMessage(message);
   }
 
   function postNote() {
     if (!note.trim()) return;
     setNote("");
-    setShowToast(true);
-    window.setTimeout(() => setShowToast(false), 2400);
+    showActionToast("Coordination note posted");
   }
 
   const rail = (
@@ -190,6 +404,31 @@ export function FocusedWorkspace() {
           </header>
 
           <div className="fw-content">
+            {activeNav !== "Overview" ? (
+              <WorkspaceTabView
+                activeNav={activeNav}
+                activeFilter={activeFilter}
+                setActiveFilter={setActiveFilter}
+                query={query}
+                setQuery={setQuery}
+                onNav={chooseNav}
+                onToast={showActionToast}
+                selectedDrawing={selectedDrawing}
+                setSelectedDrawing={setSelectedDrawing}
+                note={note}
+                setNote={setNote}
+                postNote={postNote}
+                checklistDone={checklistDone}
+                setChecklistDone={setChecklistDone}
+                restoredCount={restoredCount}
+                setRestoredCount={setRestoredCount}
+                notificationsRead={notificationsRead}
+                setNotificationsRead={setNotificationsRead}
+                compactMode={compactMode}
+                setCompactMode={setCompactMode}
+              />
+            ) : (
+            <>
             <section className="fw-heading fw-animate-in">
               <div>
                 <div className="fw-eyebrow fw-mono"><span className="fw-eyebrow-rule" /> THURSDAY 13 MARCH 2025 / CONTROL ROOM</div>
@@ -264,6 +503,8 @@ export function FocusedWorkspace() {
                 <div className="fw-quick-note"><input value={note} onChange={(event) => setNote(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") postNote(); }} placeholder="Add a coordination note..." /><button onClick={postNote} aria-label="Send note"><Send size={15} /></button></div>
               </div>
             </section>
+            </>
+            )}
           </div>
         </main>
         {selectedDrawing && (
@@ -276,7 +517,7 @@ export function FocusedWorkspace() {
              <div className="fw-drawer-actions"><button className="fw-button fw-button-primary" onClick={() => { setShowToast(true); window.setTimeout(() => setShowToast(false), 2400); }}><FileText size={15} />Open drawing</button><button className="fw-button fw-button-quiet" onClick={() => chooseNav("Work queue")}><ClipboardCheck size={15} />Work queue</button></div>
           </aside>
         )}
-        {showToast && <div className="fw-toast"><Check size={15} />Workspace action saved locally<span className="fw-mono">LOCAL MOCK</span></div>}
+         {showToast && <div className="fw-toast"><Check size={15} />{toastMessage}<span className="fw-mono">LOCAL MOCK</span></div>}
       </div>
     </div>
   );
