@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { formatDate } from "@/lib/utils"
 import { usePortalAuth } from "@/App"
+import { SheetPreview, getStorageObjectUrl } from "@/components/SheetPreview"
 
 type DrawingUpload = {
   id: number
@@ -431,7 +432,7 @@ export default function DrawingDetail() {
                       </p>
                     </div>
                     <Button asChild variant="outline" size="sm" className="shrink-0">
-                      <a href={`/api/storage${drawing.attachmentPath.replace("/objects", "/objects")}`} target="_blank" rel="noreferrer">
+                      <a href={getStorageObjectUrl(drawing.attachmentPath) ?? "#"} target="_blank" rel="noreferrer">
                         <Download className="mr-2 h-4 w-4" /> Open file
                       </a>
                     </Button>
@@ -469,7 +470,7 @@ export default function DrawingDetail() {
                     {uploads.map((upload) => (
                       <div key={upload.id} className="flex flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="min-w-0">
-                          <a className="truncate font-medium text-primary hover:underline" href={`/api/storage${upload.filePath}`} target="_blank" rel="noreferrer">
+                          <a className="truncate font-medium text-primary hover:underline" href={getStorageObjectUrl(upload.filePath) ?? "#"} target="_blank" rel="noreferrer">
                             {upload.fileName}
                           </a>
                           <p className="mt-1 text-xs text-muted-foreground">
@@ -575,16 +576,21 @@ export default function DrawingDetail() {
               </CardContent>
             </Card>
 
-            {/* Mock preview area just to add visual texture to the layout */}
-            <div className="rounded-lg border bg-card p-2 shadow-sm overflow-hidden group">
-              <div className="aspect-[4/3] bg-muted relative overflow-hidden rounded-md border border-dashed border-border/60 flex items-center justify-center">
-                <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:10px_10px]" />
-                <div className="text-center text-muted-foreground">
-                  <FileText className="w-10 h-10 mx-auto mb-2 opacity-20" />
-                  <p className="text-xs font-mono font-medium tracking-widest uppercase opacity-50">Sheet Preview</p>
-                </div>
-              </div>
-            </div>
+            <Card>
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Sheet Preview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-2">
+                <SheetPreview
+                  filePath={drawing.attachmentPath}
+                  fileName={drawing.attachmentName}
+                  contentType={drawing.attachmentContentType}
+                />
+              </CardContent>
+            </Card>
           </div>
 
         </div>
