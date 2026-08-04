@@ -2,7 +2,7 @@ import * as React from "react"
 import { Link, useLocation } from "wouter"
 import { useGetDashboardSummary, useListActivity } from "@workspace/api-client-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { ArrowRight, CheckCircle2, Clock3, FileText, FolderKanban, Plus, Send, Activity as ActivityIcon } from "lucide-react"
+import { ArrowRight, CheckCircle2, Clock3, FileText, Plus, Send, Activity as ActivityIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDateShort } from "@/lib/utils"
@@ -31,9 +31,6 @@ export default function Dashboard() {
             <p className="mt-2 text-sm text-muted-foreground max-w-2xl">A quick read on drawing progress and activity across all active projects.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button variant="outline" onClick={() => setLocation("/projects")} className="shrink-0 rounded-sm">
-              <FolderKanban className="mr-2 h-4 w-4" /> Browse projects
-            </Button>
             <Button onClick={() => setLocation('/drawings?create=true')} className="shrink-0 rounded-sm shadow-sm group">
               <Plus className="w-4 h-4 mr-2 transition-transform group-active:rotate-90 group-hover:scale-110" />
               New Drawing
@@ -86,7 +83,6 @@ export default function Dashboard() {
             </div>
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" className="rounded-sm bg-background hover:bg-muted" asChild><Link href="/review-queue">Open review queue <ArrowRight className="ml-1.5 h-4 w-4" /></Link></Button>
-              <Button size="sm" variant="ghost" className="rounded-sm hover:bg-muted" asChild><Link href="/deadlines">View deadlines <ArrowRight className="ml-1.5 h-4 w-4" /></Link></Button>
             </div>
           </CardContent>
         </Card>
