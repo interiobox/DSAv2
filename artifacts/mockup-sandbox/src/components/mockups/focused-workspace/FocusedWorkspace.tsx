@@ -1,0 +1,333 @@
+import "./_group.css";
+
+import { useMemo, useState } from "react";
+import {
+  Archive,
+  ArrowDown,
+  ArrowUpRight,
+  Bell,
+  BookOpen,
+  CalendarClock,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  ClipboardCheck,
+  Clock3,
+  FileArchive,
+  FileCheck2,
+  FilePlus2,
+  FileText,
+  FolderKanban,
+  FolderOpen,
+  History,
+  Layers3,
+  LayoutDashboard,
+  Menu,
+  MessageSquare,
+  MoreHorizontal,
+  PanelRight,
+  Plus,
+  Search,
+  Send,
+  Settings2,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  UserRound,
+  UsersRound,
+  X,
+} from "lucide-react";
+
+type Status = "In review" | "Approved" | "Issued" | "Coordination";
+
+type Drawing = {
+  number: string;
+  title: string;
+  discipline: string;
+  project: string;
+  status: Status;
+  revision: string;
+  owner: string;
+  due: string;
+  dueTone?: "overdue" | "soon";
+  updated: string;
+};
+
+const drawings: Drawing[] = [
+  { number: "A-204", title: "Level 02 reflected ceiling plan", discipline: "Architecture", project: "Harbour House", status: "In review", revision: "P04", owner: "M. Chen", due: "Today · 16:00", dueTone: "soon", updated: "8 min ago" },
+  { number: "S-118", title: "Transfer beam setting out", discipline: "Structure", project: "Harbour House", status: "Coordination", revision: "P03", owner: "D. Okafor", due: "Tomorrow", updated: "32 min ago" },
+  { number: "M-301", title: "Plant room services layout", discipline: "Mechanical", project: "Civic Arts Centre", status: "Approved", revision: "P02", owner: "R. Singh", due: "14 Mar", updated: "1 hr ago" },
+  { number: "A-611", title: "Typical bathroom details", discipline: "Architecture", project: "North Quay Lofts", status: "In review", revision: "P05", owner: "L. Byrne", due: "14 Mar", updated: "2 hrs ago" },
+  { number: "E-402", title: "Lighting control schematic", discipline: "Electrical", project: "Civic Arts Centre", status: "Issued", revision: "C01", owner: "T. Wilson", due: "18 Mar", updated: "Yesterday" },
+  { number: "A-109", title: "Ground floor general arrangement", discipline: "Architecture", project: "North Quay Lofts", status: "Issued", revision: "P07", owner: "J. Patel", due: "18 Mar", updated: "Yesterday" },
+];
+
+const navGroups = [
+  {
+    label: "Workspace",
+    items: [
+      { label: "Overview", icon: LayoutDashboard },
+      { label: "Drawing register", icon: FileText, count: "248" },
+      { label: "Projects", icon: FolderKanban },
+    ],
+  },
+  {
+    label: "Delivery",
+    items: [
+      { label: "Assignments", icon: UsersRound, count: "7" },
+      { label: "Review queue", icon: ClipboardCheck, count: "12" },
+      { label: "Deadlines", icon: CalendarClock, count: "4" },
+      { label: "Checklists", icon: CheckCircle2 },
+    ],
+  },
+  {
+    label: "Studio",
+    items: [
+      { label: "My feed", icon: Sparkles },
+      { label: "Team chat", icon: MessageSquare, count: "3" },
+      { label: "Activity", icon: History },
+    ],
+  },
+];
+
+const referenceItems = [
+  { label: "Standards", icon: BookOpen },
+  { label: "Issue register", icon: FileCheck2 },
+  { label: "Files", icon: FolderOpen },
+  { label: "Contacts", icon: UserRound },
+  { label: "Reports", icon: Layers3 },
+];
+
+function StatusPill({ status }: { status: Status }) {
+  const tone = {
+    "In review": "review",
+    Approved: "approved",
+    Issued: "issued",
+    Coordination: "coordination",
+  }[status];
+  return <span className={`fw-status fw-status-${tone}`}><span className="fw-status-dot" />{status}</span>;
+}
+
+function Metric({ label, value, detail, tone }: { label: string; value: string; detail: string; tone: "blue" | "amber" | "green" | "ink" }) {
+  return (
+    <div className={`fw-metric fw-metric-${tone}`}>
+      <div className="fw-metric-label">{label}</div>
+      <div className="fw-metric-value fw-mono">{value}</div>
+      <div className="fw-metric-detail">{detail}</div>
+    </div>
+  );
+}
+
+function RailItem({
+  label,
+  icon: Icon,
+  active,
+  count,
+  onClick,
+}: {
+  label: string;
+  icon: typeof FileText;
+  active?: boolean;
+  count?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button className={`fw-rail-item ${active ? "is-active" : ""}`} onClick={onClick}>
+      <Icon size={15} strokeWidth={active ? 2.2 : 1.8} />
+      <span>{label}</span>
+      {count && <span className="fw-rail-count fw-mono">{count}</span>}
+    </button>
+  );
+}
+
+export function FocusedWorkspace() {
+  const [activeNav, setActiveNav] = useState("Overview");
+  const [activeFilter, setActiveFilter] = useState<"All" | Status>("All");
+  const [query, setQuery] = useState("");
+  const [selectedDrawing, setSelectedDrawing] = useState<Drawing | null>(drawings[0]);
+  const [mobileRailOpen, setMobileRailOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [note, setNote] = useState("");
+  const [compactMode, setCompactMode] = useState(false);
+
+  const visibleDrawings = useMemo(() => drawings.filter((drawing) => {
+    const matchesFilter = activeFilter === "All" || drawing.status === activeFilter;
+    const matchesQuery = `${drawing.number} ${drawing.title} ${drawing.project} ${drawing.discipline}`.toLowerCase().includes(query.toLowerCase());
+    return matchesFilter && matchesQuery;
+  }), [activeFilter, query]);
+
+  function chooseNav(label: string) {
+    setActiveNav(label);
+    setMobileRailOpen(false);
+    if (label !== "Overview" && label !== "Drawing register") {
+      setShowToast(true);
+      window.setTimeout(() => setShowToast(false), 2400);
+    }
+  }
+
+  function postNote() {
+    if (!note.trim()) return;
+    setNote("");
+    setShowToast(true);
+    window.setTimeout(() => setShowToast(false), 2400);
+  }
+
+  const rail = (
+    <aside className="fw-rail">
+      <div className="fw-brand">
+        <div className="fw-mark"><Layers3 size={18} /></div>
+        <div>
+          <div className="fw-brand-name">DESIGN SENSE</div>
+          <div className="fw-brand-sub fw-mono">ARCHITECTS / REGISTER</div>
+        </div>
+        <button className="fw-rail-close" onClick={() => setMobileRailOpen(false)} aria-label="Close navigation"><X size={18} /></button>
+      </div>
+      <div className="fw-workspace-switcher">
+        <div className="fw-switcher-kicker fw-mono">CURRENT WORKSPACE</div>
+        <div className="fw-switcher-row"><span className="fw-project-dot" /><strong>Studio register</strong><ChevronDown size={14} /></div>
+        <div className="fw-switcher-meta fw-mono">3 active projects · 248 drawings</div>
+      </div>
+      <nav className="fw-nav">
+        {navGroups.map((group) => (
+          <div className="fw-nav-group" key={group.label}>
+            <div className="fw-nav-label fw-mono">{group.label}</div>
+            {group.items.map((item) => (
+              <RailItem key={item.label} {...item} active={activeNav === item.label} onClick={() => chooseNav(item.label)} />
+            ))}
+          </div>
+        ))}
+        <div className="fw-nav-group">
+          <div className="fw-nav-label fw-mono">Reference</div>
+          {referenceItems.map((item) => <RailItem key={item.label} {...item} active={activeNav === item.label} onClick={() => chooseNav(item.label)} />)}
+          <RailItem label="Recycle bin" icon={Archive} active={activeNav === "Recycle bin"} onClick={() => chooseNav("Recycle bin")} />
+        </div>
+      </nav>
+      <div className="fw-rail-bottom">
+        <RailItem label="Team & admin" icon={ShieldCheck} active={activeNav === "Team & admin"} onClick={() => chooseNav("Team & admin")} />
+        <RailItem label="Settings" icon={Settings2} active={activeNav === "Settings"} onClick={() => chooseNav("Settings")} />
+        <div className="fw-user-chip"><div className="fw-avatar">MC</div><div><strong>Maya Chen</strong><span className="fw-mono">PROJECT LEAD</span></div><MoreHorizontal size={15} /></div>
+      </div>
+    </aside>
+  );
+
+  return (
+    <div className="fw-root">
+      <div className="fw-app-shell">
+        <div className={`fw-mobile-rail ${mobileRailOpen ? "is-open" : ""}`}>
+          {rail}
+        </div>
+        <div className="fw-desktop-rail">{rail}</div>
+        <main className="fw-main">
+          <header className="fw-topbar">
+            <div className="fw-breadcrumb">
+              <button className="fw-mobile-menu" onClick={() => setMobileRailOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
+              <span className="fw-breadcrumb-muted">Studio register</span><ChevronRight size={14} /><strong>{activeNav === "Overview" ? "Overview" : activeNav}</strong>
+            </div>
+            <div className="fw-top-actions">
+              <div className="fw-sync"><span className="fw-sync-dot" />Live <span className="fw-mono">09:42</span></div>
+              <button className="fw-icon-button" aria-label="Notifications" onClick={() => chooseNav("Notifications")}><Bell size={17} /><span className="fw-notification-dot">4</span></button>
+              <button className="fw-icon-button" aria-label="Open settings" onClick={() => chooseNav("Settings")}><Settings2 size={17} /></button>
+            </div>
+          </header>
+
+          <div className="fw-content">
+            <section className="fw-heading fw-animate-in">
+              <div>
+                <div className="fw-eyebrow fw-mono"><span className="fw-eyebrow-rule" /> THURSDAY 13 MARCH 2025 / CONTROL ROOM</div>
+                <h1>Good morning, Maya.</h1>
+                <p>One register, one read. Here is the work that needs a decision today.</p>
+              </div>
+              <div className="fw-heading-actions">
+                <button className="fw-button fw-button-quiet" onClick={() => setCompactMode(!compactMode)}><SlidersHorizontal size={15} />{compactMode ? "Comfortable rows" : "Compact rows"}</button>
+                <button className="fw-button fw-button-primary" onClick={() => { setShowToast(true); window.setTimeout(() => setShowToast(false), 2400); }}><Plus size={16} />New drawing</button>
+              </div>
+            </section>
+
+            <section className="fw-metrics fw-animate-in fw-animate-delay-1">
+              <Metric label="Register total" value="248" detail="+12 this month" tone="blue" />
+              <Metric label="Needs review" value="12" detail="4 due today" tone="amber" />
+              <Metric label="Issued this week" value="18" detail="92% on programme" tone="green" />
+              <Metric label="Open coordination" value="07" detail="3 with consultants" tone="ink" />
+            </section>
+
+            <div className="fw-workspace-grid">
+              <section className="fw-register-panel fw-animate-in fw-animate-delay-2">
+                <div className="fw-panel-heading">
+                  <div>
+                    <div className="fw-section-kicker fw-mono">PRIMARY WORK SURFACE</div>
+                    <h2>Drawing register <span className="fw-heading-count fw-mono">248</span></h2>
+                  </div>
+                  <button className="fw-text-button" onClick={() => chooseNav("Drawing register")}>Open full register <ArrowUpRight size={14} /></button>
+                </div>
+                <div className="fw-register-toolbar">
+                  <div className="fw-search"><Search size={15} /><input aria-label="Search drawings" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search number, title, project..." /></div>
+                  <div className="fw-filter-tabs">
+                    {(["All", "In review", "Coordination", "Approved", "Issued"] as const).map((filter) => (
+                      <button key={filter} className={activeFilter === filter ? "is-active" : ""} onClick={() => setActiveFilter(filter)}>{filter}<span className="fw-mono">{filter === "All" ? "248" : filter === "In review" ? "12" : filter === "Coordination" ? "7" : filter === "Approved" ? "31" : "198"}</span></button>
+                    ))}
+                  </div>
+                </div>
+                <div className={`fw-table ${compactMode ? "is-compact" : ""}`}>
+                  <div className="fw-table-head fw-mono"><span>DRAWING</span><span>PROJECT / DISCIPLINE</span><span>STATUS</span><span>OWNER</span><span>DUE</span><span /></div>
+                  {visibleDrawings.map((drawing) => (
+                    <button key={drawing.number} className={`fw-table-row ${selectedDrawing?.number === drawing.number ? "is-selected" : ""}`} onClick={() => setSelectedDrawing(drawing)}>
+                      <div className="fw-drawing-cell"><span className="fw-drawing-number fw-mono">{drawing.number}</span><strong>{drawing.title}</strong><span className="fw-revision fw-mono">{drawing.revision}</span></div>
+                      <div className="fw-project-cell"><strong>{drawing.project}</strong><span>{drawing.discipline}</span></div>
+                      <div><StatusPill status={drawing.status} /></div>
+                      <div className="fw-owner"><span className="fw-small-avatar">{drawing.owner.split(" ").map((part) => part[0]).join("")}</span>{drawing.owner}</div>
+                      <div className={`fw-due fw-mono ${drawing.dueTone === "soon" ? "is-soon" : ""}`}>{drawing.due}</div>
+                      <ChevronRight className="fw-row-chevron" size={16} />
+                    </button>
+                  ))}
+                  {visibleDrawings.length === 0 && <div className="fw-empty"><FileArchive size={24} /><strong>No drawings match this view</strong><span>Try a different status or search term.</span></div>}
+                </div>
+                <div className="fw-table-footer"><span className="fw-mono">SHOWING {visibleDrawings.length} OF 248 DRAWINGS</span><button onClick={() => chooseNav("Drawing register")}>View register <ArrowUpRight size={13} /></button></div>
+              </section>
+
+              <aside className="fw-attention fw-animate-in fw-animate-delay-3">
+                <div className="fw-attention-header"><div><div className="fw-section-kicker fw-mono">DECISION LOG</div><h2>Needs attention</h2></div><span className="fw-attention-count fw-mono">04</span></div>
+                <div className="fw-attention-list">
+                  <button className="fw-attention-item is-urgent" onClick={() => setSelectedDrawing(drawings[0])}><div className="fw-attention-icon"><Clock3 size={15} /></div><div><strong>A-204 is due today</strong><span>Review from Maya · Harbour House</span><em className="fw-mono">16:00 / 4 hrs</em></div><ChevronRight size={15} /></button>
+                  <button className="fw-attention-item" onClick={() => setSelectedDrawing(drawings[1])}><div className="fw-attention-icon"><MessageSquare size={15} /></div><div><strong>Coordination note needs reply</strong><span>Transfer beam setting out · S-118</span><em className="fw-mono">D. Okafor / 32 min</em></div><ChevronRight size={15} /></button>
+                  <button className="fw-attention-item" onClick={() => chooseNav("Assignments")}><div className="fw-attention-icon"><UsersRound size={15} /></div><div><strong>2 assignments are unclaimed</strong><span>North Quay Lofts package</span><em className="fw-mono">ASSIGNMENTS / 2 OPEN</em></div><ChevronRight size={15} /></button>
+                  <button className="fw-attention-item" onClick={() => chooseNav("Checklists")}><div className="fw-attention-icon"><CheckCircle2 size={15} /></div><div><strong>Stage 04 checklist is 80%</strong><span>Civic Arts Centre · issue gate</span><em className="fw-mono">2 CHECKS LEFT</em></div><ChevronRight size={15} /></button>
+                </div>
+                <button className="fw-attention-footer" onClick={() => chooseNav("Activity")}>Open activity trail <ArrowUpRight size={13} /></button>
+              </aside>
+            </div>
+
+            <section className="fw-bottom-grid fw-animate-in fw-animate-delay-3">
+              <div className="fw-project-strip">
+                <div className="fw-panel-heading"><div><div className="fw-section-kicker fw-mono">ACTIVE WORKSPACES</div><h2>Project pulse</h2></div><button className="fw-text-button" onClick={() => chooseNav("Projects")}>All projects <ArrowUpRight size={14} /></button></div>
+                <div className="fw-projects">
+                  <button className="fw-project-card is-featured" onClick={() => setQuery("Harbour House")}><div className="fw-project-top"><span className="fw-project-index fw-mono">01</span><span className="fw-project-stage">TENDER / LIVE</span></div><strong>Harbour House</strong><span className="fw-project-address">17 Henrietta Street, London</span><div className="fw-progress-label"><span>Package progress</span><span className="fw-mono">68%</span></div><div className="fw-progress"><span style={{ width: "68%" }} /></div><small className="fw-mono">84 drawings · 6 in review</small></button>
+                  <button className="fw-project-card" onClick={() => setQuery("Civic Arts Centre")}><div className="fw-project-top"><span className="fw-project-index fw-mono">02</span><span className="fw-project-stage">CONSTRUCTION</span></div><strong>Civic Arts Centre</strong><span className="fw-project-address">Kingsway, Birmingham</span><div className="fw-progress-label"><span>Package progress</span><span className="fw-mono">84%</span></div><div className="fw-progress"><span style={{ width: "84%" }} /></div><small className="fw-mono">96 drawings · 2 in review</small></button>
+                  <button className="fw-project-card" onClick={() => setQuery("North Quay Lofts")}><div className="fw-project-top"><span className="fw-project-index fw-mono">03</span><span className="fw-project-stage">PLANNING</span></div><strong>North Quay Lofts</strong><span className="fw-project-address">Canal Basin, Leeds</span><div className="fw-progress-label"><span>Package progress</span><span className="fw-mono">41%</span></div><div className="fw-progress"><span style={{ width: "41%" }} /></div><small className="fw-mono">68 drawings · 4 in review</small></button>
+                </div>
+              </div>
+              <div className="fw-activity-panel">
+                <div className="fw-panel-heading"><div><div className="fw-section-kicker fw-mono">COLLABORATION</div><h2>Latest activity</h2></div><button className="fw-text-button" onClick={() => chooseNav("Team chat")}>Team chat <MessageSquare size={13} /></button></div>
+                <div className="fw-activity-list"><div className="fw-activity-row"><span className="fw-small-avatar fw-avatar-blue">DO</span><p><strong>Daniel Okafor</strong> commented on <b>S-118</b><span>“Please confirm the transfer zone is clear of the riser.”</span></p><time className="fw-mono">09:10</time></div><div className="fw-activity-row"><span className="fw-small-avatar fw-avatar-sand">LB</span><p><strong>Lucía Byrne</strong> submitted <b>A-611</b> for review<span>Revision P05 · North Quay Lofts</span></p><time className="fw-mono">08:42</time></div><div className="fw-activity-row"><span className="fw-small-avatar fw-avatar-green">RS</span><p><strong>Ravi Singh</strong> marked <b>M-301</b> approved<span>Civic Arts Centre · package 04</span></p><time className="fw-mono">Yesterday</time></div></div>
+                <div className="fw-quick-note"><input value={note} onChange={(event) => setNote(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") postNote(); }} placeholder="Add a coordination note..." /><button onClick={postNote} aria-label="Send note"><Send size={15} /></button></div>
+              </div>
+            </section>
+          </div>
+        </main>
+        {selectedDrawing && (
+          <aside className="fw-detail-drawer">
+            <div className="fw-drawer-head"><div><div className="fw-section-kicker fw-mono">DRAWING DETAIL</div><h2>{selectedDrawing.number}</h2></div><button onClick={() => setSelectedDrawing(null)} aria-label="Close drawing detail"><X size={17} /></button></div>
+            <div className="fw-drawer-title"><h3>{selectedDrawing.title}</h3><StatusPill status={selectedDrawing.status} /></div>
+            <div className="fw-drawing-preview"><div className="fw-preview-grid" /><div className="fw-preview-label fw-mono">A / {selectedDrawing.revision} / 1:100</div><div className="fw-preview-line one" /><div className="fw-preview-line two" /><div className="fw-preview-box" /></div>
+            <dl className="fw-detail-list"><div><dt>Project</dt><dd>{selectedDrawing.project}</dd></div><div><dt>Discipline</dt><dd>{selectedDrawing.discipline}</dd></div><div><dt>Owner</dt><dd>{selectedDrawing.owner}</dd></div><div><dt>Due</dt><dd className={selectedDrawing.dueTone === "soon" ? "is-soon" : ""}>{selectedDrawing.due}</dd></div><div><dt>Last update</dt><dd>{selectedDrawing.updated}</dd></div></dl>
+            <div className="fw-drawer-note"><div className="fw-section-kicker fw-mono">COORDINATION NOTE</div><p>{selectedDrawing.number === "S-118" ? "Transfer beam alignment needs confirmation against M-301 plant room route." : "Review mark-up is ready for your decision. No unresolved consultant comments."}</p></div>
+            <div className="fw-drawer-actions"><button className="fw-button fw-button-primary" onClick={() => { setShowToast(true); window.setTimeout(() => setShowToast(false), 2400); }}><FileText size={15} />Open drawing</button><button className="fw-button fw-button-quiet" onClick={() => chooseNav("Review queue")}><ClipboardCheck size={15} />Review queue</button></div>
+          </aside>
+        )}
+        {showToast && <div className="fw-toast"><Check size={15} />Workspace action saved locally<span className="fw-mono">LOCAL MOCK</span></div>}
+      </div>
+    </div>
+  );
+}
+
+export default FocusedWorkspace;
