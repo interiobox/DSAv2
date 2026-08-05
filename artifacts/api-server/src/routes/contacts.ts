@@ -81,7 +81,7 @@ router.post("/contacts", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Company or contact name is required" });
     return;
   }
-  const [contact] = await db.insert(contactsTable).values({
+  const [{ id }] = await db.insert(contactsTable).values({
     companyName,
     contactName: cleanOptional(parsed.data.contactName),
     type: parsed.data.type,
@@ -92,7 +92,8 @@ router.post("/contacts", async (req, res): Promise<void> => {
     address: cleanOptional(parsed.data.address),
     notes: cleanOptional(parsed.data.notes),
     createdBy: user.id,
-  }).returning();
+  }).$returningId();
+  const [contact] = await db.select().from(contactsTable).where(eq(contactsTable.id, id)).limit(1);
   if (parsed.data.projectName?.trim()) {
     await db.insert(contactProjectsTable).values({
       contactId: contact.id,
@@ -121,7 +122,7 @@ router.patch("/contacts/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Contact not found" });
     return;
   }
-  const [updated] = await db.update(contactsTable).set({
+  await db.update(contactsTable).set({
     ...(parsed.data.companyName !== undefined ? { companyName: parsed.data.companyName.trim() } : {}),
     ...(parsed.data.contactName !== undefined ? { contactName: cleanOptional(parsed.data.contactName) } : {}),
     ...(parsed.data.type !== undefined ? { type: parsed.data.type } : {}),
@@ -131,7 +132,8 @@ router.patch("/contacts/:id", async (req, res): Promise<void> => {
     ...(parsed.data.website !== undefined ? { website: cleanOptional(parsed.data.website) } : {}),
     ...(parsed.data.address !== undefined ? { address: cleanOptional(parsed.data.address) } : {}),
     ...(parsed.data.notes !== undefined ? { notes: cleanOptional(parsed.data.notes) } : {}),
-  }).where(eq(contactsTable.id, id)).returning();
+  }).where(eq(contactsTable.id, id));
+  const [updated] = await db.select().from(contactsTable).where(eq(contactsTable.id, id)).limit(1);
   res.json(await loadContact(updated.id));
 });
 

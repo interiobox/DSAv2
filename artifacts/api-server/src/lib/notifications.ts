@@ -84,10 +84,12 @@ export async function listUserNotifications(userId: number) {
 }
 
 export async function markNotificationRead(notificationId: number, userId: number) {
-  const [notification] = await db.update(notificationsTable)
+  await db.update(notificationsTable)
     .set({ readAt: new Date() })
     .where(and(eq(notificationsTable.id, notificationId), eq(notificationsTable.recipientId, userId), isNull(notificationsTable.readAt)))
-    .returning();
+  const [notification] = await db.select().from(notificationsTable)
+    .where(and(eq(notificationsTable.id, notificationId), eq(notificationsTable.recipientId, userId)))
+    .limit(1);
   if (notification) return notification;
   const [alreadyRead] = await db.select().from(notificationsTable)
     .where(and(eq(notificationsTable.id, notificationId), eq(notificationsTable.recipientId, userId)))

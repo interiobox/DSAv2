@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, or, sql, like } from "drizzle-orm";
 import { db, chatChannelsTable, chatMessagesTable, drawingActivityTable, drawingsTable } from "@workspace/db";
 
 export function getIdParam(value: string | string[]): number {
@@ -36,7 +36,7 @@ export async function addActivity(
       name: "drawing-reviews",
       description: "Questions and decisions about drawing reviews",
       createdBy: Number(actor),
-    }).onConflictDoNothing({ target: chatChannelsTable.name });
+    }).onDuplicateKeyUpdate({ set: { name: sql`${chatChannelsTable.name}` } });
     [channel] = await db
       .select({ id: chatChannelsTable.id })
       .from(chatChannelsTable)
@@ -79,10 +79,10 @@ export async function listDrawingRows(filters: {
     const search = `%${filters.search}%`;
     conditions.push(
       or(
-        ilike(drawingsTable.drawingNumber, search),
-        ilike(drawingsTable.title, search),
-        ilike(drawingsTable.projectName, search),
-        ilike(drawingsTable.author, search),
+        like(drawingsTable.drawingNumber, search),
+        like(drawingsTable.title, search),
+        like(drawingsTable.projectName, search),
+        like(drawingsTable.author, search),
       ),
     );
   }

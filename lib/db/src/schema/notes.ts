@@ -1,27 +1,28 @@
 import { createInsertSchema } from "drizzle-zod";
-import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { datetime, int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 import { z } from "zod/v4";
 
-export const projectNotesTable = pgTable("project_notes", {
-  id: serial("id").primaryKey(),
-  projectName: text("project_name").notNull(),
+export const projectNotesTable = mysqlTable("project_notes", {
+  id: int("id").autoincrement().primaryKey(),
+  projectName: varchar("project_name", { length: 255 }).notNull(),
   content: text("content").notNull(),
-  authorId: integer("author_id").notNull(),
-  authorName: text("author_name").notNull(),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  authorId: int("author_id").notNull(),
+  authorName: varchar("author_name", { length: 255 }).notNull(),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
+  updatedAt: datetime("updated_at", { mode: "date" }).default(sql`(now())`).$onUpdateFn(() => new Date()).notNull(),
 });
 
-export const personalNotesTable = pgTable("personal_notes", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  authorName: text("author_name").notNull(),
-  title: text("title").notNull().default("Personal note"),
+export const personalNotesTable = mysqlTable("personal_notes", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id").notNull(),
+  authorName: varchar("author_name", { length: 255 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull().default("Personal note"),
   content: text("content").notNull(),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
+  updatedAt: datetime("updated_at", { mode: "date" }).default(sql`(now())`).$onUpdateFn(() => new Date()).notNull(),
 });
 
 export const insertProjectNoteSchema = createInsertSchema(projectNotesTable).omit({

@@ -53,11 +53,12 @@ router.post("/chat/channels", async (req, res): Promise<void> => {
     res.status(409).json({ error: "A channel with this name already exists" });
     return;
   }
-  const [channel] = await db.insert(chatChannelsTable).values({
+  const [{ id }] = await db.insert(chatChannelsTable).values({
     name,
     description,
     createdBy: user.id,
-  }).returning();
+  }).$returningId();
+  const [channel] = await db.select().from(chatChannelsTable).where(eq(chatChannelsTable.id, id)).limit(1);
   res.status(201).json(channel);
 });
 
@@ -106,12 +107,13 @@ router.post("/chat/channels/:channelId/messages", async (req, res): Promise<void
     res.status(404).json({ error: "Chat channel not found" });
     return;
   }
-  const [message] = await db.insert(chatMessagesTable).values({
+  const [{ id }] = await db.insert(chatMessagesTable).values({
     channelId: channel.id,
     authorId: user.id,
     authorName: user.name,
     content,
-  }).returning();
+  }).$returningId();
+  const [message] = await db.select().from(chatMessagesTable).where(eq(chatMessagesTable.id, id)).limit(1);
   await safelyNotify(() => notifyMentions(content, {
     type: "mention",
     title: `You were mentioned in #${channel.name}`,

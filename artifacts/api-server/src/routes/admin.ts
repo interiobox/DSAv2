@@ -30,13 +30,14 @@ router.post("/admin/users", async (req, res): Promise<void> => {
     res.status(409).json({ error: "That username is already in use" });
     return;
   }
-  const [user] = await db.insert(usersTable).values({
+  const [{ id }] = await db.insert(usersTable).values({
     name,
     username,
     passwordHash: await hashPassword(password),
     role,
     active: true,
-  }).returning();
+  }).$returningId();
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
   res.status(201).json(publicUser(user));
 });
 
@@ -85,13 +86,14 @@ router.patch("/admin/users/:id", async (req, res): Promise<void> => {
       return;
     }
   }
-  const [updated] = await db.update(usersTable).set({
+  await db.update(usersTable).set({
     ...(name !== undefined ? { name } : {}),
     ...(username !== undefined ? { username } : {}),
     ...(password ? { passwordHash: await hashPassword(password) } : {}),
     ...(role !== undefined ? { role } : {}),
     ...(active !== undefined ? { active } : {}),
-  }).where(eq(usersTable.id, id)).returning();
+  }).where(eq(usersTable.id, id));
+  const [updated] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
   if (password || role !== undefined || active === false) {
     await db.delete(sessionsTable).where(eq(sessionsTable.userId, id));
   }
@@ -131,7 +133,8 @@ router.post("/admin/disciplines", async (req, res): Promise<void> => {
     res.status(409).json({ error: "That discipline already exists" });
     return;
   }
-  const [discipline] = await db.insert(disciplinesTable).values({ name }).returning();
+  const [{ id }] = await db.insert(disciplinesTable).values({ name }).$returningId();
+  const [discipline] = await db.select().from(disciplinesTable).where(eq(disciplinesTable.id, id)).limit(1);
   res.status(201).json(discipline);
 });
 
@@ -156,7 +159,8 @@ router.patch("/admin/disciplines/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Discipline not found" });
     return;
   }
-  const [discipline] = await db.update(disciplinesTable).set({ name }).where(eq(disciplinesTable.id, id)).returning();
+  await db.update(disciplinesTable).set({ name }).where(eq(disciplinesTable.id, id));
+  const [discipline] = await db.select().from(disciplinesTable).where(eq(disciplinesTable.id, id)).limit(1);
   if (!discipline) {
     res.status(404).json({ error: "Discipline not found" });
     return;

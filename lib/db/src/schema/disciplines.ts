@@ -1,12 +1,13 @@
 import { createInsertSchema } from "drizzle-zod";
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { datetime, int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
 import { z } from "zod/v4";
 
-export const disciplinesTable = pgTable("disciplines", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const disciplinesTable = mysqlTable("disciplines", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
 export const insertDisciplineSchema = createInsertSchema(disciplinesTable).omit({

@@ -1,22 +1,23 @@
 import { createInsertSchema } from "drizzle-zod";
-import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { datetime, int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 import { z } from "zod/v4";
 
-export const chatChannelsTable = pgTable("chat_channels", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
+export const chatChannelsTable = mysqlTable("chat_channels", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
   description: text("description"),
-  createdBy: integer("created_by").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdBy: int("created_by").notNull(),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
-export const chatMessagesTable = pgTable("chat_messages", {
-  id: serial("id").primaryKey(),
-  channelId: integer("channel_id").notNull(),
-  authorId: integer("author_id").notNull(),
-  authorName: text("author_name").notNull(),
+export const chatMessagesTable = mysqlTable("chat_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  channelId: int("channel_id").notNull(),
+  authorId: int("author_id").notNull(),
+  authorName: varchar("author_name", { length: 255 }).notNull(),
   content: text("content").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
 export const insertChatChannelSchema = createInsertSchema(chatChannelsTable).omit({

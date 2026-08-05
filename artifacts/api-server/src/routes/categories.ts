@@ -24,7 +24,8 @@ router.post("/categories", async (req, res): Promise<void> => {
     res.status(409).json({ error: "That category already exists" });
     return;
   }
-  const [category] = await db.insert(disciplinesTable).values({ name }).returning();
+  const [{ id }] = await db.insert(disciplinesTable).values({ name }).$returningId();
+  const [category] = await db.select().from(disciplinesTable).where(eq(disciplinesTable.id, id)).limit(1);
   res.status(201).json(category);
 });
 
@@ -50,10 +51,10 @@ router.patch("/categories/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Category not found" });
     return;
   }
-  const [category] = await db.update(disciplinesTable)
+  await db.update(disciplinesTable)
     .set({ name })
-    .where(sql`${disciplinesTable.id} = ${id} AND ${disciplinesTable.deletedAt} IS NULL`)
-    .returning();
+    .where(sql`${disciplinesTable.id} = ${id} AND ${disciplinesTable.deletedAt} IS NULL`);
+  const [category] = await db.select().from(disciplinesTable).where(eq(disciplinesTable.id, id)).limit(1);
   const affectedDrawings = await db.select({ id: drawingsTable.id, title: drawingsTable.title })
     .from(drawingsTable)
     .where(and(eq(drawingsTable.discipline, currentCategory.name), isNull(drawingsTable.deletedAt)));

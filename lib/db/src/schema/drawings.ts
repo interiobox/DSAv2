@@ -1,12 +1,13 @@
 import { createInsertSchema } from "drizzle-zod";
-import { date, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { date, datetime, int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 import { z } from "zod/v4";
 
-export const projectsTable = pgTable("projects", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const projectsTable = mysqlTable("projects", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
 export const insertProjectSchema = createInsertSchema(projectsTable).omit({
@@ -17,28 +18,28 @@ export const insertProjectSchema = createInsertSchema(projectsTable).omit({
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Project = typeof projectsTable.$inferSelect;
 
-export const drawingsTable = pgTable("drawings", {
-  id: serial("id").primaryKey(),
+export const drawingsTable = mysqlTable("drawings", {
+  id: int("id").autoincrement().primaryKey(),
   drawingNumber: text("drawing_number").notNull(),
   title: text("title").notNull(),
-  discipline: text("discipline").notNull(),
-  status: text("status").notNull().default("draft"),
+  discipline: varchar("discipline", { length: 100 }).notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("draft"),
   assignedTo: text("assigned_to"),
-  assignedToUserId: integer("assigned_to_user_id"),
+  assignedToUserId: int("assigned_to_user_id"),
   revision: text("revision").notNull().default("A"),
-  projectName: text("project_name").notNull(),
-  sheetSize: text("sheet_size").notNull().default("A1"),
+  projectName: varchar("project_name", { length: 255 }).notNull(),
+  sheetSize: varchar("sheet_size", { length: 20 }).notNull().default("A1"),
   author: text("author").notNull(),
   description: text("description"),
   dueDate: date("due_date", { mode: "string" }),
   issuedDate: date("issued_date", { mode: "string" }),
   attachmentPath: text("attachment_path"),
   attachmentName: text("attachment_name"),
-  attachmentSize: integer("attachment_size"),
+  attachmentSize: int("attachment_size"),
   attachmentContentType: text("attachment_content_type"),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  updatedAt: datetime("updated_at", { mode: "date" }).default(sql`(now())`).notNull(),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
 export const insertDrawingSchema = createInsertSchema(drawingsTable).omit({
@@ -50,25 +51,25 @@ export const insertDrawingSchema = createInsertSchema(drawingsTable).omit({
 export type InsertDrawing = z.infer<typeof insertDrawingSchema>;
 export type Drawing = typeof drawingsTable.$inferSelect;
 
-export const drawingActivityTable = pgTable("drawing_activity", {
-  id: serial("id").primaryKey(),
+export const drawingActivityTable = mysqlTable("drawing_activity", {
+  id: int("id").autoincrement().primaryKey(),
   type: text("type").notNull(),
   message: text("message").notNull(),
-  drawingId: integer("drawing_id"),
+  drawingId: int("drawing_id"),
   actor: text("actor"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
-export const drawingUploadsTable = pgTable("drawing_uploads", {
-  id: serial("id").primaryKey(),
-  drawingId: integer("drawing_id").notNull(),
+export const drawingUploadsTable = mysqlTable("drawing_uploads", {
+  id: int("id").autoincrement().primaryKey(),
+  drawingId: int("drawing_id").notNull(),
   filePath: text("file_path").notNull(),
   fileName: text("file_name").notNull(),
-  fileSize: integer("file_size").notNull(),
+  fileSize: int("file_size").notNull(),
   contentType: text("content_type").notNull(),
   uploadedBy: text("uploaded_by").notNull(),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  uploadedAt: datetime("uploaded_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
 export const insertDrawingUploadSchema = createInsertSchema(drawingUploadsTable).omit({
@@ -79,14 +80,14 @@ export const insertDrawingUploadSchema = createInsertSchema(drawingUploadsTable)
 export type InsertDrawingUpload = z.infer<typeof insertDrawingUploadSchema>;
 export type DrawingUpload = typeof drawingUploadsTable.$inferSelect;
 
-export const drawingCommentsTable = pgTable("drawing_comments", {
-  id: serial("id").primaryKey(),
-  drawingId: integer("drawing_id").notNull(),
+export const drawingCommentsTable = mysqlTable("drawing_comments", {
+  id: int("id").autoincrement().primaryKey(),
+  drawingId: int("drawing_id").notNull(),
   comment: text("comment").notNull(),
   author: text("author").notNull(),
-  authorId: integer("author_id"),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  authorId: int("author_id"),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
 export const insertDrawingCommentSchema = createInsertSchema(drawingCommentsTable).omit({

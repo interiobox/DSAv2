@@ -73,11 +73,12 @@ router.post("/checklist-templates", async (req, res): Promise<void> => {
     res.status(409).json({ error: "A checklist template with this name already exists" });
     return;
   }
-  const [template] = await db.insert(checklistTemplatesTable).values({
+  const [{ id }] = await db.insert(checklistTemplatesTable).values({
     name,
     description: parsed.data.description?.trim() || null,
     createdBy: user.id,
-  }).returning();
+  }).$returningId();
+  const [template] = await db.select().from(checklistTemplatesTable).where(eq(checklistTemplatesTable.id, id)).limit(1);
   await db.insert(checklistTemplateItemsTable).values(items.map((title, position) => ({
     templateId: template.id,
     title,
@@ -177,12 +178,13 @@ router.post("/project-checklists", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Checklist template not found" });
     return;
   }
-  const [checklist] = await db.insert(projectChecklistsTable).values({
+  const [{ id }] = await db.insert(projectChecklistsTable).values({
     projectName: project.name,
     templateId: template.id,
     name: template.name,
     createdBy: user.id,
-  }).returning();
+  }).$returningId();
+  const [checklist] = await db.select().from(projectChecklistsTable).where(eq(projectChecklistsTable.id, id)).limit(1);
   await db.insert(projectChecklistItemsTable).values(template.items.map((item) => ({
     projectChecklistId: checklist.id,
     title: item.title,

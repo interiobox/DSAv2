@@ -46,12 +46,13 @@ router.post("/project-notes", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Project name and note content are required" });
     return;
   }
-  const [note] = await db.insert(projectNotesTable).values({
+  const [{ id }] = await db.insert(projectNotesTable).values({
     projectName,
     content,
     authorId: user.id,
     authorName: user.name,
-  }).returning();
+  }).$returningId();
+  const [note] = await db.select().from(projectNotesTable).where(eq(projectNotesTable.id, id)).limit(1);
   res.status(201).json(note);
 });
 
@@ -77,7 +78,8 @@ router.patch("/project-notes/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Note content is required" });
     return;
   }
-  const [note] = await db.update(projectNotesTable).set({ content }).where(and(eq(projectNotesTable.id, id), isNull(projectNotesTable.deletedAt))).returning();
+  await db.update(projectNotesTable).set({ content }).where(and(eq(projectNotesTable.id, id), isNull(projectNotesTable.deletedAt)));
+  const [note] = await db.select().from(projectNotesTable).where(eq(projectNotesTable.id, id)).limit(1);
   res.json(note);
 });
 
@@ -122,12 +124,13 @@ router.post("/personal-notes", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Note content is required" });
     return;
   }
-  const [note] = await db.insert(personalNotesTable).values({
+  const [{ id }] = await db.insert(personalNotesTable).values({
     userId: user.id,
     authorName: user.name,
     title,
     content,
-  }).returning();
+  }).$returningId();
+  const [note] = await db.select().from(personalNotesTable).where(eq(personalNotesTable.id, id)).limit(1);
   res.status(201).json(note);
 });
 
@@ -154,7 +157,8 @@ router.patch("/personal-notes/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Note content is required" });
     return;
   }
-  const [note] = await db.update(personalNotesTable).set({ title, content }).where(and(eq(personalNotesTable.id, id), isNull(personalNotesTable.deletedAt))).returning();
+  await db.update(personalNotesTable).set({ title, content }).where(and(eq(personalNotesTable.id, id), isNull(personalNotesTable.deletedAt)));
+  const [note] = await db.select().from(personalNotesTable).where(eq(personalNotesTable.id, id)).limit(1);
   res.json(note);
 });
 

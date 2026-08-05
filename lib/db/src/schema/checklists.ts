@@ -1,42 +1,43 @@
 import { createInsertSchema } from "drizzle-zod";
-import { boolean, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { boolean, datetime, int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 import { z } from "zod/v4";
 
-export const checklistTemplatesTable = pgTable("checklist_templates", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
+export const checklistTemplatesTable = mysqlTable("checklist_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
   description: text("description"),
-  createdBy: integer("created_by").notNull(),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  createdBy: int("created_by").notNull(),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
+  updatedAt: datetime("updated_at", { mode: "date" }).default(sql`(now())`).$onUpdateFn(() => new Date()).notNull(),
 });
 
-export const checklistTemplateItemsTable = pgTable("checklist_template_items", {
-  id: serial("id").primaryKey(),
-  templateId: integer("template_id").notNull(),
+export const checklistTemplateItemsTable = mysqlTable("checklist_template_items", {
+  id: int("id").autoincrement().primaryKey(),
+  templateId: int("template_id").notNull(),
   title: text("title").notNull(),
-  position: integer("position").notNull().default(0),
+  position: int("position").notNull().default(0),
 });
 
-export const projectChecklistsTable = pgTable("project_checklists", {
-  id: serial("id").primaryKey(),
-  projectName: text("project_name").notNull(),
-  templateId: integer("template_id").notNull(),
-  name: text("name").notNull(),
-  createdBy: integer("created_by").notNull(),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const projectChecklistsTable = mysqlTable("project_checklists", {
+  id: int("id").autoincrement().primaryKey(),
+  projectName: varchar("project_name", { length: 255 }).notNull(),
+  templateId: int("template_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  createdBy: int("created_by").notNull(),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
-export const projectChecklistItemsTable = pgTable("project_checklist_items", {
-  id: serial("id").primaryKey(),
-  projectChecklistId: integer("project_checklist_id").notNull(),
+export const projectChecklistItemsTable = mysqlTable("project_checklist_items", {
+  id: int("id").autoincrement().primaryKey(),
+  projectChecklistId: int("project_checklist_id").notNull(),
   title: text("title").notNull(),
-  position: integer("position").notNull().default(0),
+  position: int("position").notNull().default(0),
   completed: boolean("completed").notNull().default(false),
-  completedBy: integer("completed_by"),
-  completedAt: timestamp("completed_at", { withTimezone: true }),
+  completedBy: int("completed_by"),
+  completedAt: datetime("completed_at", { mode: "date" }),
 });
 
 export const insertChecklistTemplateSchema = createInsertSchema(checklistTemplatesTable).omit({

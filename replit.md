@@ -9,13 +9,13 @@ An architectural drawing management app for Design Sense Architects, maintaining
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required secret: `MYSQL_URL` — encrypted MySQL connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
+- DB: MySQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
@@ -23,7 +23,7 @@ An architectural drawing management app for Design Sense Architects, maintaining
 ## Where things live
 
 - `lib/api-spec/openapi.yaml` — source of truth for the drawing library API
-- `lib/db/src/schema/drawings.ts` — PostgreSQL schema for drawings and activity
+- `lib/db/src/schema/drawings.ts` — MySQL schema for drawings and activity
 - `artifacts/api-server/src/routes/drawings.ts` — drawing CRUD and activity routes
 - `artifacts/project-hub/src/pages/` — drawing library and drawing detail/review screens
 - `artifacts/project-hub/src/index.css` — blueprint-inspired visual theme
@@ -31,7 +31,8 @@ An architectural drawing management app for Design Sense Architects, maintaining
 ## Architecture decisions
 
 - The API contract is OpenAPI-first and generated clients are used by the React app.
-- Calendar-only due and issue dates are stored as PostgreSQL `date` values to avoid timezone shifts.
+- Calendar-only due and issue dates are stored as MySQL `date` values to avoid timezone shifts.
+- API writes re-read inserted or updated rows because MySQL does not support PostgreSQL-style `RETURNING`.
 - Status transitions are explicit actions from drawing detail, with dashboard and activity caches refreshed after mutations.
 
 ## Product
@@ -39,17 +40,17 @@ An architectural drawing management app for Design Sense Architects, maintaining
 - Searchable and filterable drawing library
 - Drawing detail view with revision metadata and review/issue workflow
 - Mobile-friendly review comments, uploads, and full edit/delete controls
-- Persistent PostgreSQL storage with authenticated activity history and personal My Feed
+- Persistent MySQL storage with authenticated activity history and personal My Feed
 - First-party username/password sign-in with profile-based upload, comment, and assignment attribution
 - Administrator-managed portal accounts, passwords, roles, drawing disciplines, and complete activity history
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Use MySQL for application persistence.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Keep `MYSQL_URL` in Replit Secrets; never put the connection string in source files.
 
 ## Pointers
 

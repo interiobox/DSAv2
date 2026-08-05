@@ -43,6 +43,14 @@ export type RecycleBinEntry = {
 const objectStorageService = new ObjectStorageService();
 const expiredBefore = () => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
+async function restoreDeletedRow(table: any, idColumn: any, where: any): Promise<any[]> {
+  const [existing] = await db.select().from(table).where(where).limit(1);
+  if (!existing) return [];
+  await db.update(table).set({ deletedAt: null }).where(where);
+  const [restored] = await db.select().from(table).where(eq(idColumn, existing.id)).limit(1);
+  return restored ? [restored] : [];
+}
+
 export async function listRecycleBin(user: PortalUser): Promise<RecycleBinEntry[]> {
   const [
     projects, drawings, uploads, comments, projectNotes, personalNotes,
@@ -99,24 +107,29 @@ export async function listRecycleBin(user: PortalUser): Promise<RecycleBinEntry[
 export async function restoreRecycleBinEntry(type: RecycleBinType, id: number, user: PortalUser) {
   const isAdmin = user.role === "admin";
   switch (type) {
-    case "project": return db.update(projectsTable).set({ deletedAt: null }).where(and(eq(projectsTable.id, id), isNotNull(projectsTable.deletedAt))).returning();
-    case "drawing": return db.update(drawingsTable).set({ deletedAt: null }).where(and(eq(drawingsTable.id, id), isNotNull(drawingsTable.deletedAt))).returning();
-    case "upload": return db.update(drawingUploadsTable).set({ deletedAt: null }).where(and(eq(drawingUploadsTable.id, id), isNotNull(drawingUploadsTable.deletedAt))).returning();
-    case "comment": return db.update(drawingCommentsTable).set({ deletedAt: null }).where(and(eq(drawingCommentsTable.id, id), isNotNull(drawingCommentsTable.deletedAt))).returning();
-    case "project-note": return db.update(projectNotesTable).set({ deletedAt: null }).where(and(eq(projectNotesTable.id, id), isNotNull(projectNotesTable.deletedAt))).returning();
-    case "personal-note": return db.update(personalNotesTable).set({ deletedAt: null }).where(and(
+    case "project": return restoreDeletedRow(projectsTable, projectsTable.id, and(eq(projectsTable.id, id), isNotNull(projectsTable.deletedAt)));
+    case "drawing": return restoreDeletedRow(drawingsTable, drawingsTable.id, and(eq(drawingsTable.id, id), isNotNull(drawingsTable.deletedAt)));
+    case "upload": return restoreDeletedRow(drawingUploadsTable, drawingUploadsTable.id, and(eq(drawingUploadsTable.id, id), isNotNull(drawingUploadsTable.deletedAt)));
+    case "comment": return restoreDeletedRow(drawingCommentsTable, drawingCommentsTable.id, and(eq(drawingCommentsTable.id, id), isNotNull(drawingCommentsTable.deletedAt)));
+    case "project-note": return restoreDeletedRow(projectNotesTable, projectNotesTable.id, and(eq(projectNotesTable.id, id), isNotNull(projectNotesTable.deletedAt)));
+    case "personal-note": return restoreDeletedRow(personalNotesTable, personalNotesTable.id, and(
       eq(personalNotesTable.id, id),
       isNotNull(personalNotesTable.deletedAt),
       ...(isAdmin ? [] : [eq(personalNotesTable.userId, user.id)]),
-    )).returning();
-    case "contact": return db.update(contactsTable).set({ deletedAt: null }).where(and(eq(contactsTable.id, id), isNotNull(contactsTable.deletedAt))).returning();
-    case "contact-project": return db.update(contactProjectsTable).set({ deletedAt: null }).where(and(eq(contactProjectsTable.id, id), isNotNull(contactProjectsTable.deletedAt))).returning();
-    case "checklist": return db.update(projectChecklistsTable).set({ deletedAt: null }).where(and(eq(projectChecklistsTable.id, id), isNotNull(projectChecklistsTable.deletedAt))).returning();
-    case "template": return db.update(checklistTemplatesTable).set({ deletedAt: null }).where(and(eq(checklistTemplatesTable.id, id), isNotNull(checklistTemplatesTable.deletedAt))).returning();
-    case "category": return db.update(disciplinesTable).set({ deletedAt: null }).where(and(eq(disciplinesTable.id, id), isNotNull(disciplinesTable.deletedAt))).returning();
+    ));
+    case "contact": return restoreDeletedRow(contactsTable, contactsTable.id, and(eq(contactsTable.id, id), isNotNull(contactsTable.deletedAt)));
+    case "contact-project": return restoreDeletedRow(contactProjectsTable, contactProjectsTable.id, and(eq(contactProjectsTable.id, id), isNotNull(contactProjectsTable.deletedAt)));
+    case "checklist": return restoreDeletedRow(projectChecklistsTable, projectChecklistsTable.id, and(eq(projectChecklistsTable.id, id), isNotNull(projectChecklistsTable.deletedAt)));
+    case "template": return restoreDeletedRow(checklistTemplatesTable, checklistTemplatesTable.id, and(eq(checklistTemplatesTable.id, id), isNotNull(checklistTemplatesTable.deletedAt)));
+    case "category": return restoreDeletedRow(disciplinesTable, disciplinesTable.id, and(eq(disciplinesTable.id, id), isNotNull(disciplinesTable.deletedAt)));
     case "user": {
       if (!isAdmin) return [];
-      return db.update(usersTable).set({ deletedAt: null, active: true }).where(and(eq(usersTable.id, id), isNotNull(usersTable.deletedAt))).returning();
+      const [existing] = await db.select().from(usersTable)
+        .where(and(eq(usersTable.id, id), isNotNull(usersTable.deletedAt))).limit(1);
+      if (!existing) return [];
+      await db.update(usersTable).set({ deletedAt: null, active: true }).where(eq(usersTable.id, id));
+      const [restored] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+      return restored ? [restored] : [];
     }
   }
 }

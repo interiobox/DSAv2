@@ -74,7 +74,8 @@ router.post("/projects", async (req, res): Promise<void> => {
     res.status(409).json({ error: "A project with this name already exists" });
     return;
   }
-  const [project] = await db.insert(projectsTable).values({ name }).returning();
+  const [{ id }] = await db.insert(projectsTable).values({ name }).$returningId();
+  const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, id)).limit(1);
   res.status(201).json(CreateProjectResponse.parse(project));
 });
 
@@ -129,16 +130,16 @@ router.patch("/projects/:id", async (req, res): Promise<void> => {
   }
 
   const updatedProject = await db.transaction(async (tx) => {
-    const [updated] = await tx.update(projectsTable)
+    await tx.update(projectsTable)
       .set({ name })
-      .where(and(eq(projectsTable.id, id), isNull(projectsTable.deletedAt)))
-      .returning();
+      .where(and(eq(projectsTable.id, id), isNull(projectsTable.deletedAt)));
     await Promise.all([
       tx.update(drawingsTable).set({ projectName: name }).where(eq(drawingsTable.projectName, currentProject.name)),
       tx.update(projectNotesTable).set({ projectName: name }).where(eq(projectNotesTable.projectName, currentProject.name)),
       tx.update(projectChecklistsTable).set({ projectName: name }).where(eq(projectChecklistsTable.projectName, currentProject.name)),
       tx.update(contactProjectsTable).set({ projectName: name }).where(eq(contactProjectsTable.projectName, currentProject.name)),
     ]);
+    const [updated] = await tx.select().from(projectsTable).where(eq(projectsTable.id, id)).limit(1);
     return updated;
   });
   res.json(CreateProjectResponse.parse(updatedProject));
@@ -150,14 +151,13 @@ router.delete("/projects/:id", requireAdmin, async (req, res): Promise<void> => 
     res.status(400).json({ error: "Valid project id is required" });
     return;
   }
-  const [project] = await db.update(projectsTable)
-    .set({ deletedAt: new Date() })
-    .where(and(eq(projectsTable.id, id), isNull(projectsTable.deletedAt)))
-    .returning();
+  const [project] = await db.select().from(projectsTable)
+    .where(and(eq(projectsTable.id, id), isNull(projectsTable.deletedAt))).limit(1);
   if (!project) {
     res.status(404).json({ error: "Active project not found" });
     return;
   }
+  await db.update(projectsTable).set({ deletedAt: new Date() }).where(eq(projectsTable.id, id));
   res.sendStatus(204);
 });
 
@@ -184,10 +184,8 @@ router.post("/projects/:id/restore", requireAdmin, async (req, res): Promise<voi
     res.status(409).json({ error: "An active project already uses this name" });
     return;
   }
-  const [project] = await db.update(projectsTable)
-    .set({ deletedAt: null })
-    .where(eq(projectsTable.id, id))
-    .returning();
+  await db.update(projectsTable).set({ deletedAt: null }).where(eq(projectsTable.id, id));
+  const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, id)).limit(1);
   res.json(project);
 });
 

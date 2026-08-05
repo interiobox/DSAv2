@@ -64,7 +64,7 @@ router.post("/drawings", async (req, res): Promise<void> => {
     res.status(403).json({ error: "Administrator access required to approve drawings" });
     return;
   }
-  const [drawing] = await db.insert(drawingsTable).values({
+  const [{ id }] = await db.insert(drawingsTable).values({
     drawingNumber: data.drawingNumber ?? `DR-${Date.now().toString().slice(-6)}`,
     title: data.title ?? "Untitled drawing",
     discipline: data.discipline ?? "architectural",
@@ -76,7 +76,8 @@ router.post("/drawings", async (req, res): Promise<void> => {
     description: data.description,
     dueDate: toDateString(data.dueDate),
     issuedDate: toDateString(data.issuedDate),
-  }).returning();
+  }).$returningId();
+  const [drawing] = await db.select().from(drawingsTable).where(eq(drawingsTable.id, id)).limit(1);
   await addActivity("drawing_added", `${drawing.title} was added to the drawing library`, drawing.id, currentUserId(req), currentUserName(req));
   res.status(201).json(CreateDrawingResponse.parse(drawing));
 });
@@ -116,7 +117,7 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
     : data.issuedDate !== undefined
       ? toDateString(data.issuedDate)
       : undefined;
-  const [drawing] = await db.update(drawingsTable).set({
+  await db.update(drawingsTable).set({
     ...(data.drawingNumber !== undefined ? { drawingNumber: data.drawingNumber } : {}),
     ...(data.title !== undefined ? { title: data.title } : {}),
     ...(data.discipline !== undefined ? { discipline: data.discipline } : {}),
@@ -133,7 +134,9 @@ router.patch("/drawings/:id", async (req, res): Promise<void> => {
     ...(data.attachmentSize !== undefined ? { attachmentSize: data.attachmentSize } : {}),
     ...(data.attachmentContentType !== undefined ? { attachmentContentType: data.attachmentContentType } : {}),
     updatedAt: new Date(),
-  }).where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt))).returning();
+  }).where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt)));
+  const [drawing] = await db.select().from(drawingsTable)
+    .where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt))).limit(1);
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
@@ -178,11 +181,13 @@ router.patch("/drawings/:id/assignment", async (req, res): Promise<void> => {
     assigneeUserId = assignee.id;
     canonicalAssigneeName = assignee.name;
   }
-  const [drawing] = await db.update(drawingsTable).set({
+  await db.update(drawingsTable).set({
     assignedTo: canonicalAssigneeName,
     assignedToUserId: assigneeUserId,
     updatedAt: new Date(),
-  }).where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt))).returning();
+  }).where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt)));
+  const [drawing] = await db.select().from(drawingsTable)
+    .where(and(eq(drawingsTable.id, params.data.id), isNull(drawingsTable.deletedAt))).limit(1);
   if (!drawing) {
     res.status(404).json({ error: "Drawing not found" });
     return;
@@ -258,11 +263,12 @@ router.post("/drawings/:id/uploads", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Drawing not found" });
     return;
   }
-  const [upload] = await db.insert(drawingUploadsTable).values({
+  const [{ id }] = await db.insert(drawingUploadsTable).values({
     drawingId: drawing.id,
     ...body.data,
     uploadedBy: currentUserName(req),
-  }).returning();
+  }).$returningId();
+  const [upload] = await db.select().from(drawingUploadsTable).where(eq(drawingUploadsTable.id, id)).limit(1);
   await db.update(drawingsTable).set({
     attachmentPath: upload.filePath,
     attachmentName: upload.fileName,
@@ -338,12 +344,13 @@ router.post("/drawings/:id/comments", async (req, res): Promise<void> => {
     return;
   }
   const currentUser = requireCurrentUser(req);
-  const [comment] = await db.insert(drawingCommentsTable).values({
+  const [{ id }] = await db.insert(drawingCommentsTable).values({
     drawingId: drawing.id,
     ...body.data,
     author: currentUser.name,
     authorId: currentUser.id,
-  }).returning();
+  }).$returningId();
+  const [comment] = await db.select().from(drawingCommentsTable).where(eq(drawingCommentsTable.id, id)).limit(1);
   await addActivity("comment_added", `${comment.author} commented on ${drawing.title}`, drawing.id, currentUserId(req), currentUserName(req));
   await safelyNotify(() => notifyMentions(body.data.comment, {
     type: "mention",
@@ -375,8 +382,9 @@ router.patch("/drawings/:id/comments/:commentId", async (req, res): Promise<void
     res.status(403).json({ error: "You can only edit your own comments" });
     return;
   }
-  const [updated] = await db.update(drawingCommentsTable).set({ comment: body.data.comment })
-    .where(and(eq(drawingCommentsTable.id, comment.id), isNull(drawingCommentsTable.deletedAt))).returning();
+  await db.update(drawingCommentsTable).set({ comment: body.data.comment })
+    .where(and(eq(drawingCommentsTable.id, comment.id), isNull(drawingCommentsTable.deletedAt)));
+  const [updated] = await db.select().from(drawingCommentsTable).where(eq(drawingCommentsTable.id, comment.id)).limit(1);
   await addActivity("drawing_updated", `${updated.author} edited a review comment on drawing ${comment.drawingId}`, comment.drawingId, currentUserId(req), currentUserName(req));
   res.json(UpdateDrawingCommentResponse.parse(updated));
 });

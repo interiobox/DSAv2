@@ -1,7 +1,7 @@
 import { createHash, randomBytes, scrypt as nodeScrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import type { NextFunction, Request, Response } from "express";
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { and, eq, gt, isNull, sql } from "drizzle-orm";
 import { db, disciplinesTable, usersTable, sessionsTable, type User } from "@workspace/db";
 
 const scrypt = promisify(nodeScrypt);
@@ -126,6 +126,6 @@ export async function ensurePortalSeed() {
   }
   const defaults = ["architectural", "structural", "mechanical", "electrical", "plumbing", "landscape", "interiors"];
   for (const name of defaults) {
-    await db.insert(disciplinesTable).values({ name }).onConflictDoNothing();
+    await db.insert(disciplinesTable).values({ name }).onDuplicateKeyUpdate({ set: { name: sql`${disciplinesTable.name}` } });
   }
 }

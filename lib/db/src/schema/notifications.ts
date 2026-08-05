@@ -1,14 +1,15 @@
-import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { datetime, int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 
-export const notificationsTable = pgTable("notifications", {
-  id: serial("id").primaryKey(),
-  recipientId: integer("recipient_id").notNull(),
-  type: text("type").notNull(),
-  title: text("title").notNull(),
+export const notificationsTable = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  recipientId: int("recipient_id").notNull(),
+  type: varchar("type", { length: 100 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
   message: text("message").notNull(),
   link: text("link"),
-  readAt: timestamp("read_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  readAt: datetime("read_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
 export type Notification = typeof notificationsTable.$inferSelect;

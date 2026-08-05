@@ -1,3 +1,4 @@
 - [Drawing register product](drawing-register.md) — preserve the architectural drawing vocabulary, metadata, and review/issue workflow.
 - [Recycle-bin retention](drawing-register.md) — recyclable records use their own deletedAt timestamp; stored files are removed only after expiry.
 - [Focused navigation](focused-navigation.md) — keep daily register work primary; expose supporting tools through one grouped secondary menu.
+- [MySQL Aiven connection](mysql-aiven.md) — Aiven requires encrypted MySQL transport with relaxed certificate-chain validation in this environment.

@@ -1,32 +1,33 @@
 import { createInsertSchema } from "drizzle-zod";
-import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { datetime, int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
 import { z } from "zod/v4";
 
-export const contactsTable = pgTable("contacts", {
-  id: serial("id").primaryKey(),
-  companyName: text("company_name").notNull(),
+export const contactsTable = mysqlTable("contacts", {
+  id: int("id").autoincrement().primaryKey(),
+  companyName: varchar("company_name", { length: 255 }).notNull(),
   contactName: text("contact_name"),
-  type: text("type").notNull().default("consultant"),
+  type: varchar("type", { length: 100 }).notNull().default("consultant"),
   service: text("service"),
   email: text("email"),
   phone: text("phone"),
   website: text("website"),
   address: text("address"),
   notes: text("notes"),
-  createdBy: integer("created_by"),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  createdBy: int("created_by"),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
+  updatedAt: datetime("updated_at", { mode: "date" }).default(sql`(now())`).$onUpdateFn(() => new Date()).notNull(),
 });
 
-export const contactProjectsTable = pgTable("contact_projects", {
-  id: serial("id").primaryKey(),
-  contactId: integer("contact_id").notNull(),
-  projectName: text("project_name").notNull(),
+export const contactProjectsTable = mysqlTable("contact_projects", {
+  id: int("id").autoincrement().primaryKey(),
+  contactId: int("contact_id").notNull(),
+  projectName: varchar("project_name", { length: 255 }).notNull(),
   role: text("role"),
   notes: text("notes"),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: datetime("deleted_at", { mode: "date" }),
+  createdAt: datetime("created_at", { mode: "date" }).default(sql`(now())`).notNull(),
 });
 
 export const insertContactSchema = createInsertSchema(contactsTable).omit({
