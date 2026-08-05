@@ -2,3 +2,4 @@
 - [Recycle-bin retention](drawing-register.md) — recyclable records use their own deletedAt timestamp; stored files are removed only after expiry.
 - [Focused navigation](focused-navigation.md) — keep daily register work primary; expose supporting tools through one grouped secondary menu.
 - [MySQL Aiven connection](mysql-aiven.md) — Aiven requires encrypted MySQL transport with relaxed certificate-chain validation in this environment.
+- [Canonical root artifact](canonical-root-artifact.md) — the complete Drawing Library frontend lives in project-hub and exclusively owns the `/` preview path.
